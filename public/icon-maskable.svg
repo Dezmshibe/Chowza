@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bgMask" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1B1815"/>
+      <stop offset="100%" stop-color="#2D2721"/>
+    </linearGradient>
+    <linearGradient id="greenMask" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#25D366"/>
+      <stop offset="100%" stop-color="#128C7E"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Full-bleed background for maskable safe margin -->
+  <rect width="512" height="512" fill="url(#bgMask)"/>
+
+  <!-- Centered within 80% safe zone circle -->
+  <g transform="translate(256, 256) scale(0.78) translate(-256, -256)">
+    <circle cx="256" cy="220" r="140" fill="url(#greenMask)"/>
+    <path d="M 180 330 L 220 300 L 160 290 Z" fill="url(#greenMask)"/>
+
+    <g fill="#FFFFFF" transform="translate(180, 140) scale(3.2)">
+      <path d="M11 2v9c0 1.1-.9 2-2 2H8v8a1 1 0 0 1-2 0v-8H5c-1.1 0-2-.9-2-2V2a1 1 0 0 1 2 0v5h1V2a1 1 0 0 1 2 0v5h1V2a1 1 0 0 1 2 0z"/>
+      <path d="M19 2c-2.8 0-5 2.2-5 5v5h2v9a1 1 0 0 0 2 0v-9h1a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1z"/>
+    </g>
+
+    <text x="256" y="425" font-family="'Unbounded', -apple-system, sans-serif" font-size="52" font-weight="900" fill="#FFFFFF" text-anchor="middle" letter-spacing="2">
+      CHOWZA
+    </text>
+    <circle cx="390" cy="415" r="9" fill="#25D366"/>
+  </g>
+</svg>
