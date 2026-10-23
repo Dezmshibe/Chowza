@@ -4,8 +4,9 @@ import { Navigation } from './components/Navigation';
 import { CustomerStore } from './components/CustomerStore';
 import { CartBottomSheet } from './components/CartBottomSheet';
 import { OrderTracker } from './components/OrderTracker';
-import { BusinessAreaLayout } from './components/BusinessAreaLayout';
+import { BusinessPortalGate } from './components/BusinessPortalGate';
 import { X, MessageCircle, ShieldCheck, Search, ArrowRight } from 'lucide-react';
+import { PublicBusinessStore } from './components/PublicBusinessStore';
 
 const AppContent: React.FC = () => {
   const {
@@ -16,6 +17,66 @@ const AppContent: React.FC = () => {
     flashMessages,
     removeFlash
   } = useApp();
+
+    const pathMatch = window.location.pathname.match(/^\/business\/([^/]+)\/?$/);
+const paymentSuccessMatch =
+  window.location.pathname === '/payment/success';
+
+if (paymentSuccessMatch) {
+  const params = new URLSearchParams(window.location.search);
+  const orderNumber = params.get('orderNumber');
+
+  return (
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
+      <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-lg text-center">
+        <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
+          <span className="text-3xl">✓</span>
+        </div>
+
+        <h1 className="text-2xl font-bold text-gray-900">
+          Payment Successful
+        </h1>
+
+        <p className="mt-3 text-gray-600">
+          Your payment was successfully submitted to Yoco.
+        </p>
+
+        {orderNumber && (
+          <div className="mt-5 rounded-xl bg-gray-50 p-4">
+            <p className="text-sm text-gray-500">
+              Order Number
+            </p>
+
+            <p className="mt-1 text-xl font-bold text-gray-900">
+              #{orderNumber}
+            </p>
+          </div>
+        )}
+
+        <p className="mt-5 text-sm text-gray-500">
+          Your order is now being processed by the business.
+        </p>
+
+        <button
+          type="button"
+          onClick={() => {
+            window.location.href = '/';
+          }}
+          className="mt-6 w-full rounded-xl bg-green-600 px-5 py-3 font-semibold text-white hover:bg-green-700"
+        >
+          Back to Chowza
+        </button>
+      </div>
+    </div>
+  );
+}
+  if (pathMatch) {
+  if (currentView === 'track') {
+    return <OrderTracker />;
+  }
+
+  return <PublicBusinessStore slug={decodeURIComponent(pathMatch[1])} />;
+}
 
   return (
     <div className="min-h-screen flex flex-col bg-[#F3EEE4] text-[#1B1815]">
@@ -96,14 +157,15 @@ const AppContent: React.FC = () => {
             </div>
           </footer>
         </div>
-      ) : (
-        /* Area 2: Business / Admin Controls Area */
-        <div className="flex-1 flex flex-col">
-          <BusinessAreaLayout />
-          <CartBottomSheet />
-        </div>
-      )}
-    </div>
+) : (
+  /* Area 2: Business authentication — keep demo admin data private */
+  <BusinessPortalGate
+  onBack={() => {
+    setCurrentArea('customer');
+    setCurrentView('store');
+  }}
+/>
+)}</div>
   );
 };
 

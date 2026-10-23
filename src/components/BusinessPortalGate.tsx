@@ -1,0 +1,563 @@
+
+import { useEffect, useState } from 'react';
+import {
+  ArrowLeft,
+  BarChart3,
+  ChevronRight,
+  ClipboardList,
+  ExternalLink,
+  LogOut,
+  Menu as MenuIcon,
+  Settings,
+  Store,
+  Users,
+} from 'lucide-react';
+
+import { supabase } from '../lib/supabase';
+import { BusinessMenuManager } from './BusinessMenuManager';
+import { BusinessOrdersManager } from './BusinessOrdersManager';
+import { BusinessProfileManager } from './BusinessProfileManager';
+import { BusinessStorefrontManager } from './BusinessStorefrontManager';
+import { BusinessAnalyticsManager } from './BusinessAnalyticsManager';
+
+type Business = {
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  logo_url: string | null;
+  public_phone: string | null;
+  whatsapp_number: string | null;
+  public_address: string | null;
+  is_published: boolean;
+};
+
+type DashboardStats = {
+  menuItems: number;
+  orders: number;
+  customers: number;
+  revenue: number;
+};
+
+type BusinessPortalGateProps = {
+  onBack: () => void;
+};
+
+type BusinessPage =
+  | 'dashboard'
+  | 'menu'
+  | 'orders'
+  | 'profile'
+  | 'storefront'
+  | 'analytics';
+
+const emptyStats: DashboardStats = {
+  menuItems: 0,
+  orders: 0,
+  customers: 0,
+  revenue: 0,
+};
+
+function formatCurrency(value: number) {
+  return new Intl.NumberFormat('en-ZA', {
+    style: 'currency',
+    currency: 'ZAR',
+    maximumFractionDigits: 2,
+  }).format(value);
+}
+
+export function BusinessPortalGate({
+  onBack,
+}: BusinessPortalGateProps) {
+  const [business, setBusiness] = useState<Business | null>(null);
+  const [stats, setStats] = useState<DashboardStats>(emptyStats);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [currentPage, setCurrentPage] =
+    useState<BusinessPage>('dashboard');
+
+  useEffect(() => {
+    let mounted = true;
+
+    async function loadDashboard() {
+      setLoading(true);
+      setError('');
+
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
+
+      if (userError || !user) {
+        if (mounted) {
+          setError('Your session has expired. Please log in again.');
+          setLoading(false);
+        }
+        return;
+      }
+
+      const { data: businessData, error: businessError } =
+        await supabase
+          .from('businesses')
+          .select(`
+            id,
+            name,
+            slug,
+            description,
+            logo_url,
+            public_phone,
+            whatsapp_number,
+            public_address,
+            is_published
+          `)
+          .eq('owner_id', user.id)
+          .maybeSingle();
+
+      if (businessError) {
+        if (mounted) {
+          setError(businessError.message);
+          setLoading(false);
+        }
+        return;
+      }
+
+      if (!businessData) {
+        if (mounted) {
+          setError('No business profile was found for this account.');
+          setLoading(false);
+        }
+        return;
+      }
+
+      const [menuResult, ordersResult] = await Promise.all([
+        supabase
+          .from('menu_items')
+          .select('id', { count: 'exact', head: true })
+          .eq('business_id', businessData.id),
+
+        supabase
+          .from('orders')
+          .select('id, total, status')
+          .eq('business_id', businessData.id),
+      ]);
+
+      if (!mounted) return;
+
+      if (menuResult.error || ordersResult.error) {
+        setError(
+          menuResult.error?.message ||
+            ordersResult.error?.message ||
+            'Could not load your dashboard statistics.'
+        );
+        setLoading(false);
+        return;
+      }
+
+      const orderRows = ordersResult.data ?? [];
+
+      const completedRevenue = orderRows
+        .filter((order) => order.status === 'completed')
+        .reduce(
+          (sum, order) => sum + Number(order.total ?? 0),
+          0
+        );
+
+      setBusiness(businessData as Business);
+
+      setStats({
+        menuItems: menuResult.count ?? 0,
+        orders: orderRows.length,
+        customers: 0,
+        revenue: completedRevenue,
+      });
+
+      setLoading(false);
+    }
+
+    void loadDashboard();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  async function handleLogout() {
+    await supabase.auth.signOut();
+    onBack();
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#f7efe5] p-6">
+        <div className="mx-auto flex min-h-[70vh] max-w-6xl items-center justify-center">
+          <div className="rounded-2xl border border-[#d9c9b8] bg-white p-8 text-center shadow-sm">
+            <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-2 border-[#d99a4b] border-t-transparent" />
+            <p className="text-sm text-[#70452e]">
+              Loading your business dashboard...
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !business) {
+    return (
+      <div className="min-h-screen bg-[#f7efe5] p-6">
+        <div className="mx-auto flex min-h-[70vh] max-w-lg items-center justify-center">
+          <div className="w-full rounded-2xl border border-[#d9c9b8] bg-white p-8 shadow-sm">
+            <p className="mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#70452e]">
+              Chowza for Business
+            </p>
+
+            <h1 className="mb-3 text-2xl font-bold text-[#2f160d]">
+              We couldn't load your business
+            </h1>
+
+            <p className="mb-6 text-sm leading-6 text-[#70452e]">
+              {error || 'Your business profile could not be found.'}
+            </p>
+
+            <div className="flex flex-wrap gap-3">
+              <button
+                type="button"
+                onClick={onBack}
+                className="flex items-center gap-2 rounded-xl border border-[#d9c9b8] px-4 py-3 text-sm font-semibold text-[#2f160d] hover:bg-[#f7efe5]"
+              >
+                <ArrowLeft size={17} />
+                Back
+              </button>
+
+              <button
+                type="button"
+                onClick={() => void handleLogout()}
+                className="flex items-center gap-2 rounded-xl bg-[#2f160d] px-4 py-3 text-sm font-semibold text-white hover:opacity-90"
+              >
+                <LogOut size={17} />
+                Log out
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // These page handlers must appear before the dashboard JSX.
+  if (currentPage === 'menu') {
+    return (
+      <BusinessMenuManager
+        businessId={business.id}
+        businessName={business.name}
+        onBack={() => setCurrentPage('dashboard')}
+      />
+    );
+  }
+
+  if (currentPage === 'orders') {
+    return (
+      <BusinessOrdersManager
+        businessId={business.id}
+        businessName={business.name}
+        onBack={() => setCurrentPage('dashboard')}
+      />
+    );
+  }
+
+  if (currentPage === 'profile') {
+    return (
+      <BusinessProfileManager
+        businessId={business.id}
+        onBack={() => setCurrentPage('dashboard')}
+      />
+    );
+  }
+
+  if (currentPage === 'storefront') {
+  return (
+    <BusinessStorefrontManager
+      businessId={business.id}
+      onBack={() => setCurrentPage('dashboard')}
+    />
+  );
+}
+if (currentPage === 'analytics') {
+  return (
+    <BusinessAnalyticsManager
+      businessId={business.id}
+      businessName={business.name}
+      onBack={() => setCurrentPage('dashboard')}
+    />
+  );
+}
+  return (
+    <div className="min-h-screen bg-[#f7efe5] text-[#2f160d]">
+      <header className="border-b border-[#e3d6c8] bg-white">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 lg:px-8">
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={onBack}
+              className="rounded-xl border border-[#d9c9b8] p-2 hover:bg-[#f7efe5]"
+              aria-label="Back"
+            >
+              <ArrowLeft size={19} />
+            </button>
+
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#70452e]">
+                Chowza for Business
+              </p>
+              <h1 className="text-xl font-black tracking-tight">
+                {business.name}
+              </h1>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => void handleLogout()}
+            className="flex items-center gap-2 rounded-full border border-[#d9c9b8] px-4 py-2 text-sm font-semibold hover:bg-[#f7efe5]"
+          >
+            <LogOut size={16} />
+            Log out
+          </button>
+        </div>
+      </header>
+
+      <main className="mx-auto max-w-7xl px-5 py-7 lg:px-8">
+        <section className="mb-7 rounded-2xl bg-[#2f160d] p-6 text-white shadow-sm lg:p-8">
+          <div className="flex flex-col justify-between gap-6 md:flex-row md:items-center">
+            <div>
+              <div className="mb-3 flex items-center gap-2">
+                <span
+                  className={`rounded-full px-3 py-1 text-xs font-bold ${
+                    business.is_published
+                      ? 'bg-[#d99a4b] text-[#2f160d]'
+                      : 'bg-white/10 text-white'
+                  }`}
+                >
+                  {business.is_published ? 'Published' : 'Unpublished'}
+                </span>
+              </div>
+
+              <h2 className="text-3xl font-black tracking-tight">
+                Welcome back, {business.name}.
+              </h2>
+
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-[#f0c27c]">
+                Manage your Chowza store, menu and orders from one place.
+              </p>
+            </div>
+
+            <a
+              href={`/business/${business.slug}`}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#d99a4b] px-5 py-3 text-sm font-bold text-[#2f160d] hover:opacity-90"
+            >
+              <ExternalLink size={17} />
+              View Store
+            </a>
+          </div>
+        </section>
+
+        <section className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <StatCard
+            icon={<MenuIcon size={20} />}
+            label="Menu items"
+            value={stats.menuItems.toString()}
+          />
+
+          <StatCard
+            icon={<ClipboardList size={20} />}
+            label="Orders"
+            value={stats.orders.toString()}
+          />
+
+          <StatCard
+            icon={<Users size={20} />}
+            label="Customers"
+            value={stats.customers.toString()}
+          />
+
+          <StatCard
+            icon={<BarChart3 size={20} />}
+            label="Completed-order revenue"
+            value={formatCurrency(stats.revenue)}
+          />
+        </section>
+
+        <section className="mb-8">
+          <div className="mb-4">
+            <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#70452e]">
+              Manage your business
+            </p>
+            <h2 className="mt-1 text-2xl font-black">
+              Business tools
+            </h2>
+            <p className="mt-2 text-sm text-[#70452e]">
+              Choose a tool to manage your store.
+            </p>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <DashboardCard
+              icon={<MenuIcon size={22} />}
+              title="Menu"
+              description="Add, edit and manage the items available in your store."
+              badge="Manage menu"
+              onClick={() => setCurrentPage('menu')}
+            />
+
+            <DashboardCard
+              icon={<ClipboardList size={22} />}
+              title="Orders"
+              description="View incoming orders and update their status."
+              badge="Open orders"
+              onClick={() => setCurrentPage('orders')}
+            />
+
+            <DashboardCard
+              icon={<Settings size={22} />}
+              title="Business profile"
+              description="Update your business name, contact details and address."
+              badge="Edit profile"
+              onClick={() => setCurrentPage('profile')}
+            />
+
+            <DashboardCard
+  icon={<Store size={22} />}
+  title="Storefront"
+  description="Control what customers see when they visit your store."
+  badge="Manage storefront"
+  onClick={() => setCurrentPage('storefront')}
+/>
+
+            <DashboardCard
+  icon={<BarChart3 size={22} />}
+  title="Analytics"
+  description="Track orders, revenue and your store's performance."
+  badge="View analytics"
+  onClick={() => setCurrentPage('analytics')}
+/>
+
+            <DashboardCard
+              icon={<ExternalLink size={22} />}
+              title="Public store"
+              description={`Your store address is /business/${business.slug}`}
+              badge={business.is_published ? 'Live' : 'Not published'}
+              onClick={() =>
+                window.open(
+                  `/business/${business.slug}`,
+                  '_blank',
+                  'noopener,noreferrer'
+                )
+              }
+            />
+          </div>
+        </section>
+
+        <section className="rounded-2xl border border-[#d9c9b8] bg-white p-6 shadow-sm">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#70452e]">
+                Store status
+              </p>
+
+              <h2 className="mt-1 text-xl font-black">
+                {business.is_published
+                  ? 'Your store is published'
+                  : 'Your store is not published yet'}
+              </h2>
+
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-[#70452e]">
+                {business.is_published
+                  ? 'Your store is marked as published in your business settings.'
+                  : 'Your business information is saved privately. Storefront publishing controls will be added later.'}
+              </p>
+            </div>
+
+            <ChevronRight
+              size={22}
+              className="mt-1 shrink-0 text-[#999]"
+            />
+          </div>
+        </section>
+      </main>
+    </div>
+  );
+}
+
+function StatCard({
+  icon,
+  label,
+  value,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="rounded-2xl border border-[#d9c9b8] bg-white p-5 shadow-sm">
+      <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-[#f0c27c]/30 text-[#70452e]">
+        {icon}
+      </div>
+
+      <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#999]">
+        {label}
+      </p>
+
+      <p className="mt-1 text-2xl font-black text-[#2f160d]">
+        {value}
+      </p>
+    </div>
+  );
+}
+
+function DashboardCard({
+  icon,
+  title,
+  description,
+  badge,
+  onClick,
+  disabled = false,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  description: string;
+  badge: string;
+  onClick?: () => void;
+  disabled?: boolean;
+}) {
+  const isDisabled = disabled || !onClick;
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={isDisabled}
+      className={`group rounded-2xl border border-[#d9c9b8] bg-white p-5 text-left shadow-sm transition ${
+        isDisabled
+          ? 'cursor-not-allowed opacity-75'
+          : 'hover:-translate-y-0.5 hover:shadow-md'
+      }`}
+    >
+      <div className="mb-5 flex items-start justify-between gap-4">
+        <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#f0c27c]/30 text-[#70452e]">
+          {icon}
+        </div>
+
+        <span className="rounded-full bg-[#f7efe5] px-3 py-1 text-[10px] font-bold uppercase tracking-[0.08em] text-[#70452e]">
+          {badge}
+        </span>
+      </div>
+
+      <h3 className="text-lg font-black">{title}</h3>
+
+      <p className="mt-2 text-sm leading-6 text-[#70452e]">
+        {description}
+      </p>
+    </button>
+  );
+}
