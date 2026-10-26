@@ -18,7 +18,7 @@ type PublicCheckoutProps = {
     customerName: string;
     customerPhone: string;
     deliveryAddress: string;
-    paymentMethod: 'cash' | 'eft' | 'online';
+    paymentMethod: 'cash' | 'online';
   }) => Promise<void>;
 };
 
@@ -32,7 +32,7 @@ export function PublicCheckout({
   const [customerPhone, setCustomerPhone] = useState('');
   const [deliveryAddress, setDeliveryAddress] = useState('');
   const [paymentMethod, setPaymentMethod] = useState<
-    'cash' | 'eft' | 'online'
+    'cash' | 'online'
   >('cash');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
@@ -42,9 +42,9 @@ export function PublicCheckout({
       cart.reduce(
         (sum, cartItem) =>
           sum + Number(cartItem.item.price) * cartItem.quantity,
-        0
+        0,
       ),
-    [cart]
+    [cart],
   );
 
   const money = (amount: number) =>
@@ -53,7 +53,9 @@ export function PublicCheckout({
       currency: 'ZAR',
     }).format(amount);
 
-  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(
+    event: React.FormEvent<HTMLFormElement>,
+  ) {
     event.preventDefault();
 
     if (!customerName.trim()) {
@@ -126,8 +128,8 @@ export function PublicCheckout({
             <h1 className="text-2xl font-black">Your details</h1>
 
             <p className="mt-2 text-sm text-[#70452e]">
-              Enter your details so the business knows where to deliver your
-              order.
+              Enter your details so the business knows where to
+              deliver your order.
             </p>
 
             {error && (
@@ -152,7 +154,9 @@ export function PublicCheckout({
                   id="customer-name"
                   type="text"
                   value={customerName}
-                  onChange={(event) => setCustomerName(event.target.value)}
+                  onChange={(event) =>
+                    setCustomerName(event.target.value)
+                  }
                   placeholder="e.g. John Mokoena"
                   autoComplete="name"
                   className="w-full rounded-xl border border-[#d9c9b8] bg-white px-4 py-3 outline-none focus:border-[#70452e]"
@@ -171,7 +175,9 @@ export function PublicCheckout({
                   id="customer-phone"
                   type="tel"
                   value={customerPhone}
-                  onChange={(event) => setCustomerPhone(event.target.value)}
+                  onChange={(event) =>
+                    setCustomerPhone(event.target.value)
+                  }
                   placeholder="e.g. 082 123 4567"
                   autoComplete="tel"
                   className="w-full rounded-xl border border-[#d9c9b8] bg-white px-4 py-3 outline-none focus:border-[#70452e]"
@@ -217,28 +223,7 @@ export function PublicCheckout({
                   <span>
                     <span className="block font-bold">Cash</span>
                     <span className="mt-1 block text-sm text-[#70452e]">
-                      Pay the business when your order is delivered or
-                      collected.
-                    </span>
-                  </span>
-                </label>
-
-                <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-[#d9c9b8] p-4 hover:bg-[#fffaf5]">
-                  <input
-                    type="radio"
-                    name="payment-method"
-                    value="eft"
-                    checked={paymentMethod === 'eft'}
-                    onChange={() => setPaymentMethod('eft')}
-                    className="mt-1"
-                  />
-
-                  <span>
-                    <span className="block font-bold">EFT</span>
-                    <span className="mt-1 block text-sm text-[#70452e]">
-                      The business can provide its payment details after the
-                      order is received.
-                    </span>
+Pay in cash when your order is delivered or collected.</span>
                   </span>
                 </label>
 
@@ -253,10 +238,12 @@ export function PublicCheckout({
                   />
 
                   <span>
-                    <span className="block font-bold">Online / Card</span>
+                    <span className="block font-bold">
+                      Online / Card
+                    </span>
                     <span className="mt-1 block text-sm text-[#70452e]">
-                      Online payment will be connected to the payment provider
-                      later.
+                    Pay securely online with PayFast.
+                      
                     </span>
                   </span>
                 </label>
@@ -268,8 +255,13 @@ export function PublicCheckout({
               disabled={submitting || cart.length === 0}
               className="mt-8 flex w-full items-center justify-center gap-2 rounded-xl bg-[#2f160d] px-5 py-4 font-black text-white disabled:cursor-not-allowed disabled:bg-[#c9bdb2]"
             >
-              {submitting && <LoaderCircle size={19} className="animate-spin" />}
-              {submitting ? 'Placing order...' : `Place order · ${money(total)}`}
+              {submitting && (
+                <LoaderCircle size={19} className="animate-spin" />
+              )}
+
+              {submitting
+                ? 'Placing order...'
+                : `Place order · ${money(total)}`}
             </button>
           </form>
 
@@ -283,7 +275,10 @@ export function PublicCheckout({
                   className="flex items-start justify-between gap-4"
                 >
                   <div>
-                    <p className="font-bold">{cartItem.item.name}</p>
+                    <p className="font-bold">
+                      {cartItem.item.name}
+                    </p>
+
                     <p className="text-sm text-[#70452e]">
                       {cartItem.quantity} ×{' '}
                       {money(Number(cartItem.item.price))}
@@ -292,7 +287,8 @@ export function PublicCheckout({
 
                   <p className="font-bold">
                     {money(
-                      Number(cartItem.item.price) * cartItem.quantity
+                      Number(cartItem.item.price) *
+                        cartItem.quantity,
                     )}
                   </p>
                 </div>
@@ -302,7 +298,9 @@ export function PublicCheckout({
             <div className="mt-6 border-t border-[#e3d6c8] pt-5">
               <div className="flex items-center justify-between">
                 <span className="font-bold">Total</span>
-                <span className="text-xl font-black">{money(total)}</span>
+                <span className="text-xl font-black">
+                  {money(total)}
+                </span>
               </div>
             </div>
           </aside>

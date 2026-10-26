@@ -1,3 +1,4 @@
+
 import { useState, type FormEvent } from 'react';
 import { supabase } from '../lib/supabase';
 
@@ -6,7 +7,10 @@ type BusinessAuthProps = {
   onAuthenticated: () => void;
 };
 
-export function BusinessAuth({ onBack }: BusinessAuthProps) {
+export function BusinessAuth({
+  onBack,
+  onAuthenticated,
+}: BusinessAuthProps) {
   const [mode, setMode] = useState<'login' | 'signup' | 'reset'>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -16,51 +20,157 @@ export function BusinessAuth({ onBack }: BusinessAuthProps) {
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+
+    // Prevent accidental double submission.
+    if (loading) {
+      return;
+    }
+
     setMessage('');
     setError('');
     setLoading(true);
 
     try {
+      const cleanEmail = email.trim();
+
+      if (!cleanEmail) {
+        throw new Error('Please enter your email address.');
+      }
+
       if (mode === 'signup') {
-        const { data, error } = await supabase.auth.signUp({
-          email: email.trim(),
-          password,
-          options: {
-            emailRedirectTo: window.location.origin,
-          },
+        console.log('[Chowza] Starting business signup...');
+
+        const { data, error: signupError } =
+          await supabase.auth.signUp({
+            email: cleanEmail,
+            password,
+            options: {
+              emailRedirectTo: window.location.origin,
+            },
+          });
+
+        console.log('[Chowza] Supabase signup response:', {
+          hasUser: Boolean(data.user),
+          hasSession: Boolean(data.session),
+          error: signupError,
         });
 
-        if (error) throw error;
+        if (signupError) {
+          throw signupError;
+        }
 
-        if (data.session) {
-          setMessage('Your account is ready. You can continue to your business setup.');
+        if (data.session && data.user) {
+          setMessage(
+            'Your account is ready. Loading your business account...'
+          );
+
+          console.log('[Chowza] Signup session created.');
+          console.log('[Chowza] Opening business portal...');
+
+          window.setTimeout(() => {
+            onAuthenticated();
+          }, 100);
         } else {
           setMessage(
             'Registration received! Check your email and click the verification link before logging in.'
           );
         }
-      } else if (mode === 'login') {
-        const { error } = await supabase.auth.signInWithPassword({
-          email: email.trim(),
+
+        return;
+      }
+
+      if (mode === 'login') {
+        console.log('[Chowza] Starting business login...', {
+          email: cleanEmail,
+        });
+
+        const {
+          data,
+          error: loginError,
+        } = await supabase.auth.signInWithPassword({
+          email: cleanEmail,
           password,
         });
 
-        if (error) throw error;
+        console.log('[Chowza] Supabase login response:', {
+          hasUser: Boolean(data.user),
+          hasSession: Boolean(data.session),
+          userId: data.user?.id ?? null,
+          error: loginError,
+        });
 
-        setMessage('Login successful. Loading your account…');
-      } else {
-        const { error } = await supabase.auth.resetPasswordForEmail(
-          email.trim(),
-          {
-            redirectTo: `${window.location.origin}/`,
-          }
-        );
+        if (loginError) {
+          throw loginError;
+        }
 
-        if (error) throw error;
+        if (!data.user || !data.session) {
+          throw new Error(
+            'Supabase accepted the login but did not return an active session.'
+          );
+        }
 
-        setMessage('If the email is registered, a password-reset link will be sent.');
+        console.log('[Chowza] Login session received:', {
+          userId: data.user.id,
+          email: data.user.email,
+        });
+
+        // Confirm that the browser can read the authenticated session.
+        const {
+          data: { user },
+          error: userError,
+        } = await supabase.auth.getUser();
+
+        if (userError) {
+          console.error(
+            '[Chowza] Could not verify authenticated user:',
+            userError
+          );
+          throw userError;
+        }
+
+        if (!user) {
+          throw new Error(
+            'Login succeeded, but Chowza could not verify the active user session.'
+          );
+        }
+
+        console.log('[Chowza] Verified authenticated user:', {
+          userId: user.id,
+          email: user.email,
+        });
+
+        setMessage('Login successful. Loading your account...');
+
+        // Give React a moment to update the auth/session state,
+        // then tell App.tsx to open BusinessPortalGate.
+        window.setTimeout(() => {
+          console.log('[Chowza] Opening business portal...');
+          onAuthenticated();
+        }, 100);
+
+        return;
       }
+
+      // Password reset
+      console.log('[Chowza] Requesting password reset...', {
+        email: cleanEmail,
+      });
+
+      const { error: resetError } =
+        await supabase.auth.resetPasswordForEmail(cleanEmail, {
+          redirectTo: `${window.location.origin}/reset-password`,
+        });
+
+      if (resetError) {
+        throw resetError;
+      }
+
+      setMessage(
+        'If the email is registered, a password-reset link will be sent.'
+      );
     } catch (err) {
+      console.error('[Chowza] Business authentication error:', err);
+
       setError(
         err instanceof Error
           ? err.message
@@ -138,7 +248,9 @@ export function BusinessAuth({ onBack }: BusinessAuthProps) {
                 id="business-password"
                 type="password"
                 autoComplete={
-                  mode === 'signup' ? 'new-password' : 'current-password'
+                  mode === 'signup'
+                    ? 'new-password'
+                    : 'current-password'
                 }
                 minLength={6}
                 required
@@ -235,8 +347,8 @@ export function BusinessAuth({ onBack }: BusinessAuthProps) {
         </div>
 
         <p className="mt-6 text-center text-xs leading-5 text-[#8A8177]">
-          Your account is separate from the Chowza demo businesses. Never share
-          your password with anyone.
+          Your account is separate from the Chowza demo businesses. Never
+          share your password with anyone.
         </p>
       </section>
     </main>

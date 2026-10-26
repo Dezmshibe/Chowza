@@ -60,6 +60,14 @@ export function BusinessMenuManager({
     setLoading(true);
     setError('');
 
+    const { data: testKitchenItems, error: testKitchenItemsError } =
+      await supabase
+        .from('menu_items')
+        .select('id, business_id, name')
+        .neq('business_id', businessId)
+        .limit(1);
+
+    
     const { data, error: loadError } = await supabase
       .from('menu_items')
       .select(

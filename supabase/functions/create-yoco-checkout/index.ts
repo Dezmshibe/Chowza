@@ -191,11 +191,36 @@ export default {
           );
         }
 
-        return Response.json({
-          success: true,
-          checkoutId: result.id,
-          redirectUrl: result.redirectUrl,
-        });
+        const checkoutId = result.id;
+
+const { error: checkoutSaveError } =
+  await ctx.supabaseAdmin
+    .from("orders")
+    .update({
+      yoco_checkout_id: checkoutId,
+    })
+    .eq("id", order.id);
+
+if (checkoutSaveError) {
+  console.error(
+    "Could not save Yoco checkout ID:",
+    checkoutSaveError,
+  );
+
+  return Response.json(
+    {
+      error:
+        "Yoco checkout was created, but Chowza could not save the payment reference.",
+    },
+    { status: 500 },
+  );
+}
+
+return Response.json({
+  success: true,
+  checkoutId,
+  redirectUrl: result.redirectUrl,
+});
       } catch (error) {
         console.error(
           "Create Yoco checkout error:",
