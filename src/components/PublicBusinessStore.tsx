@@ -702,9 +702,9 @@ export function PublicBusinessStore({ slug }: { slug: string }) {
 
   return (
 
-    <div className="min-h-screen bg-[#f7efe5] text-[#2f160d]">
+    <div className="min-h-screen bg-[#F7FAF7] text-[#166534]">
 
-      <header className="sticky top-0 z-40 border-b border-[#e3d6c8] bg-white">
+      <header className="sticky top-0 z-40 border-b border-[#E1EAE3] bg-white">
 
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-5 py-4">
 
@@ -716,7 +716,7 @@ export function PublicBusinessStore({ slug }: { slug: string }) {
 
               onClick={() => window.location.assign('/')}
 
-              className="rounded-xl border border-[#d9c9b8] p-2 hover:bg-[#f7efe5]"
+              className="rounded-xl border border-[#D7E2DA] p-2 hover:bg-[#F7FAF7]"
 
               aria-label="Back to Chowza"
 
@@ -734,7 +734,7 @@ export function PublicBusinessStore({ slug }: { slug: string }) {
 
             <div>
 
-              <p className="text-xs font-bold uppercase tracking-widest text-[#70452e]">
+              <p className="text-xs font-bold uppercase tracking-widest text-[#166534]">
 
                 Chowza
 
@@ -754,7 +754,7 @@ export function PublicBusinessStore({ slug }: { slug: string }) {
 
             onClick={() => setCartOpen(true)}
 
-            className="relative flex items-center gap-2 rounded-xl bg-[#2f160d] px-4 py-3 font-bold text-white"
+            className="relative flex items-center gap-2 rounded-xl bg-[#166534] px-4 py-3 font-bold text-white"
 
           >
 
@@ -766,7 +766,7 @@ export function PublicBusinessStore({ slug }: { slug: string }) {
 
             {cartCount > 0 && (
 
-              <span className="flex h-6 min-w-6 items-center justify-center rounded-full bg-[#25D366] px-1.5 text-xs font-black text-white">
+              <span className="flex h-6 min-w-6 items-center justify-center rounded-full bg-[#22C55E] px-1.5 text-xs font-black text-white">
 
                 {cartCount}
 
@@ -796,11 +796,11 @@ export function PublicBusinessStore({ slug }: { slug: string }) {
 
         <main className="mx-auto max-w-xl px-5 py-20 text-center">
 
-          <Store size={42} className="mx-auto mb-4 text-[#70452e]" />
+          <Store size={42} className="mx-auto mb-4 text-[#166534]" />
 
           <h1 className="text-2xl font-black">Store unavailable</h1>
 
-          <p className="mt-3 text-[#70452e]">{error}</p>
+          <p className="mt-3 text-[#166534]">{error}</p>
 
         </main>
 
@@ -808,7 +808,7 @@ export function PublicBusinessStore({ slug }: { slug: string }) {
 
         <>
 
-          <section className="bg-[#2f160d] text-white">
+          <section className="bg-[#166534] text-white">
 
             <div className="mx-auto max-w-6xl px-5 py-12">
 
@@ -880,7 +880,7 @@ export function PublicBusinessStore({ slug }: { slug: string }) {
 
                   rel="noreferrer"
 
-                  className="mt-5 inline-flex items-center gap-2 rounded-xl bg-[#25D366] px-5 py-3 font-bold text-white"
+                  className="mt-5 inline-flex items-center gap-2 rounded-xl bg-[#22C55E] px-5 py-3 font-bold text-white"
 
                 >
 
@@ -904,7 +904,7 @@ export function PublicBusinessStore({ slug }: { slug: string }) {
 
               <h2 className="text-2xl font-black">Our menu</h2>
 
-              <p className="mt-1 text-sm text-[#70452e]">
+              <p className="mt-1 text-sm text-[#166534]">
 
                 Browse the items currently available from this store.
 
@@ -934,11 +934,11 @@ export function PublicBusinessStore({ slug }: { slug: string }) {
 
             {items.length === 0 ? (
 
-              <div className="rounded-2xl border border-[#e3d6c8] bg-white p-8 text-center">
+              <div className="rounded-2xl border border-[#E1EAE3] bg-white p-8 text-center">
 
                 <p className="font-bold">No available menu items yet.</p>
 
-                <p className="mt-2 text-sm text-[#70452e]">
+                <p className="mt-2 text-sm text-[#166534]">
 
                   Please check back later.
 
@@ -966,7 +966,7 @@ export function PublicBusinessStore({ slug }: { slug: string }) {
 
                       key={item.id}
 
-                      className="overflow-hidden rounded-2xl border border-[#e3d6c8] bg-white shadow-sm"
+                      className="overflow-hidden rounded-2xl border border-[#E1EAE3] bg-white shadow-sm"
 
                     >
 
@@ -988,7 +988,7 @@ export function PublicBusinessStore({ slug }: { slug: string }) {
 
                         <div className="flex h-32 items-center justify-center bg-[#efe3d5]">
 
-                          <Store size={32} className="text-[#70452e]" />
+                          <Store size={32} className="text-[#166534]" />
 
                         </div>
 
@@ -1004,7 +1004,7 @@ export function PublicBusinessStore({ slug }: { slug: string }) {
 
 
 
-                          <span className="shrink-0 font-black text-[#70452e]">
+                          <span className="shrink-0 font-black text-[#166534]">
 
                             {money(Number(item.price))}
 
@@ -1016,7 +1016,7 @@ export function PublicBusinessStore({ slug }: { slug: string }) {
 
                         {item.description && (
 
-                          <p className="mt-2 text-sm text-[#70452e]">
+                          <p className="mt-2 text-sm text-[#166534]">
 
                             {item.description}
 
@@ -1032,7 +1032,7 @@ export function PublicBusinessStore({ slug }: { slug: string }) {
 
                           onClick={() => addToCart(item)}
 
-                          className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-[#2f160d] px-4 py-3 font-bold text-white hover:bg-[#452115]"
+                          className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-[#166534] px-4 py-3 font-bold text-white hover:bg-[#166534]"
 
                         >
 
@@ -1066,7 +1066,7 @@ export function PublicBusinessStore({ slug }: { slug: string }) {
 
 
 
-      <footer className="border-t border-[#e3d6c8] bg-white px-5 py-6 text-center text-sm text-[#70452e]">
+      <footer className="border-t border-[#E1EAE3] bg-white px-5 py-6 text-center text-sm text-[#166534]">
 
         Powered by Chowza
 
@@ -1094,13 +1094,13 @@ export function PublicBusinessStore({ slug }: { slug: string }) {
 
           <aside className="absolute right-0 top-0 flex h-full w-full max-w-md flex-col bg-white shadow-2xl">
 
-            <div className="flex items-center justify-between border-b border-[#e3d6c8] px-5 py-4">
+            <div className="flex items-center justify-between border-b border-[#E1EAE3] px-5 py-4">
 
               <div>
 
                 <h2 className="text-xl font-black">Your cart</h2>
 
-                <p className="text-sm text-[#70452e]">
+                <p className="text-sm text-[#166534]">
 
                   {cartCount} {cartCount === 1 ? 'item' : 'items'}
 
@@ -1116,7 +1116,7 @@ export function PublicBusinessStore({ slug }: { slug: string }) {
 
                 onClick={() => setCartOpen(false)}
 
-                className="rounded-xl p-2 hover:bg-[#f7efe5]"
+                className="rounded-xl p-2 hover:bg-[#F7FAF7]"
 
                 aria-label="Close cart"
 
@@ -1134,11 +1134,11 @@ export function PublicBusinessStore({ slug }: { slug: string }) {
 
               <div className="flex flex-1 flex-col items-center justify-center px-6 text-center">
 
-                <ShoppingCart size={45} className="text-[#70452e]" />
+                <ShoppingCart size={45} className="text-[#166534]" />
 
                 <h3 className="mt-4 text-lg font-black">Your cart is empty</h3>
 
-                <p className="mt-2 text-sm text-[#70452e]">
+                <p className="mt-2 text-sm text-[#166534]">
 
                   Add something delicious from the menu.
 
@@ -1152,7 +1152,7 @@ export function PublicBusinessStore({ slug }: { slug: string }) {
 
                   onClick={() => setCartOpen(false)}
 
-                  className="mt-5 rounded-xl bg-[#2f160d] px-5 py-3 font-bold text-white"
+                  className="mt-5 rounded-xl bg-[#166534] px-5 py-3 font-bold text-white"
 
                 >
 
@@ -1176,7 +1176,7 @@ export function PublicBusinessStore({ slug }: { slug: string }) {
 
                         key={cartItem.item.id}
 
-                        className="rounded-2xl border border-[#e3d6c8] p-4"
+                        className="rounded-2xl border border-[#E1EAE3] p-4"
 
                       >
 
@@ -1190,7 +1190,7 @@ export function PublicBusinessStore({ slug }: { slug: string }) {
 
                             </h3>
 
-                            <p className="mt-1 text-sm text-[#70452e]">
+                            <p className="mt-1 text-sm text-[#166534]">
 
                               {money(Number(cartItem.item.price))} each
 
@@ -1218,7 +1218,7 @@ export function PublicBusinessStore({ slug }: { slug: string }) {
 
                         <div className="mt-4 flex items-center justify-between">
 
-                          <div className="flex items-center gap-2 rounded-xl bg-[#f7efe5] p-1">
+                          <div className="flex items-center gap-2 rounded-xl bg-[#F7FAF7] p-1">
 
                             <button
 
@@ -1310,7 +1310,7 @@ export function PublicBusinessStore({ slug }: { slug: string }) {
 
 
 
-                <div className="border-t border-[#e3d6c8] bg-[#fffaf5] px-5 py-5">
+                <div className="border-t border-[#E1EAE3] bg-[#fffaf5] px-5 py-5">
 
                   <div className="flex items-center justify-between">
 
@@ -1338,7 +1338,7 @@ export function PublicBusinessStore({ slug }: { slug: string }) {
 
                     }}
 
-                    className="mt-4 w-full rounded-xl bg-[#2f160d] px-5 py-3 font-black text-white hover:bg-[#452115]"
+                    className="mt-4 w-full rounded-xl bg-[#166534] px-5 py-3 font-black text-white hover:bg-[#166534]"
 
                   >
 
@@ -1348,7 +1348,7 @@ export function PublicBusinessStore({ slug }: { slug: string }) {
 
 
 
-                  <p className="mt-3 text-center text-xs text-[#70452e]">
+                  <p className="mt-3 text-center text-xs text-[#166534]">
 
                     Continue to checkout to place your order.
 

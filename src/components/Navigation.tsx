@@ -28,7 +28,7 @@ export const Navigation: React.FC = () => {
 
   return (
     <>
-      <header className="topbar sticky top-0 z-40 shadow-sm bg-[#1B1815] py-2.5 px-4 border-b border-white/10">
+      <header className="topbar sticky top-0 z-40 shadow-sm bg-[#17201A] py-2.5 px-4 border-b border-white/10">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
           {/* Left: Chowza Brand */}
           <button
@@ -38,7 +38,7 @@ export const Navigation: React.FC = () => {
             }}
             className="brand text-white hover:opacity-90 transition-opacity flex items-center gap-2 cursor-pointer bg-transparent border-0 p-0 text-left"
           >
-            <div className="w-8 h-8 rounded-full bg-[#25D366] flex items-center justify-center text-white shadow-xs">
+            <div className="w-8 h-8 rounded-full bg-[#15803D] flex items-center justify-center text-white shadow-xs">
               <MessageCircle className="w-5 h-5 fill-current" />
             </div>
             <span className="text-white font-bold tracking-tight text-xl font-display">
@@ -54,7 +54,7 @@ export const Navigation: React.FC = () => {
                 onClick={() => setCurrentView('track')}
                 className="text-white/80 hover:text-white text-xs font-bold px-2.5 py-1.5 rounded-lg hover:bg-white/10 flex items-center gap-1 transition-colors cursor-pointer"
               >
-                <Search className="w-3.5 h-3.5 text-[#EDA430]" />
+                <Search className="w-3.5 h-3.5 text-[#22C55E]" />
                 <span>Track Order</span>
               </button>
 
@@ -69,7 +69,7 @@ export const Navigation: React.FC = () => {
               <ShoppingBag className="w-4 h-4" />
               <span>Cart</span>
               {totalCartItems > 0 && (
-                <span className="bg-white text-[#1B1815] text-[10px] font-black px-1.5 py-0.2 rounded-full ml-0.5">
+                <span className="bg-white text-[#17201A] text-[10px] font-black px-1.5 py-0.2 rounded-full ml-0.5">
                   {totalCartItems}
                 </span>
               )}
@@ -101,11 +101,11 @@ export const Navigation: React.FC = () => {
               }}
               className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2.5 transition-colors cursor-pointer ${
                 currentView === 'store'
-                  ? 'bg-white text-[#1B1815]'
+                  ? 'bg-white text-[#17201A]'
                   : 'text-white hover:bg-white/10'
               }`}
             >
-              <Store className="w-4 h-4 text-[#25D366]" />
+              <Store className="w-4 h-4 text-[#15803D]" />
               <span>Browse Digital Menu</span>
             </button>
 
@@ -116,11 +116,11 @@ export const Navigation: React.FC = () => {
               }}
               className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2.5 transition-colors cursor-pointer ${
                 currentView === 'track'
-                  ? 'bg-white text-[#1B1815]'
+                  ? 'bg-white text-[#17201A]'
                   : 'text-white hover:bg-white/10'
               }`}
             >
-              <Search className="w-4 h-4 text-[#EDA430]" />
+              <Search className="w-4 h-4 text-[#22C55E]" />
               <span>Track Live Order</span>
             </button>
 
@@ -132,7 +132,7 @@ export const Navigation: React.FC = () => {
               }}
               className="w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2.5 text-white hover:bg-white/10 transition-colors cursor-pointer"
             >
-              <MessageCircle className="w-4 h-4 text-[#25D366]" />
+              <MessageCircle className="w-4 h-4 text-[#15803D]" />
               <span>WhatsApp Bot Simulator</span>
             </button>
 
@@ -142,10 +142,10 @@ export const Navigation: React.FC = () => {
                 setCurrentView('dashboard');
                 setIsMenuOpen(false);
               }}
-              className="w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold flex items-center justify-between text-[#EDA430] bg-white/10 hover:bg-white/15 transition-colors cursor-pointer border border-[#EDA430]/30"
+              className="w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold flex items-center justify-between text-[#22C55E] bg-white/10 hover:bg-white/15 transition-colors cursor-pointer border border-[#22C55E]/30"
             >
               <div className="flex items-center gap-2.5">
-                <ShieldCheck className="w-4 h-4 text-[#25D366]" />
+                <ShieldCheck className="w-4 h-4 text-[#15803D]" />
                 <span>Restaurant & Admin Portal</span>
               </div>
               <span className="text-[10px] text-white/60 uppercase">Staff →</span>

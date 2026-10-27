@@ -227,10 +227,10 @@ export const ChowzaHome: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#F3EEE4] text-[#1B1815]">
+      <div className="min-h-screen bg-[#F7FAF7] text-[#17201A]">
         <div className="flex min-h-[70vh] items-center justify-center">
           <div className="text-center">
-            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-[#25D366] text-white">
+            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-[#15803D] text-white">
               <LoaderCircle className="animate-spin" size={24} />
             </div>
 
@@ -249,7 +249,7 @@ export const ChowzaHome: React.FC = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-[#F3EEE4] px-5 py-16 text-[#1B1815]">
+      <div className="min-h-screen bg-[#F7FAF7] px-5 py-16 text-[#17201A]">
         <div className="mx-auto max-w-lg rounded-3xl bg-white p-8 text-center shadow-sm">
           <Store className="mx-auto mb-4" size={36} />
 
@@ -264,7 +264,7 @@ export const ChowzaHome: React.FC = () => {
           <button
             type="button"
             onClick={() => window.location.reload()}
-            className="mt-6 rounded-xl bg-[#1B1815] px-5 py-3 text-sm font-bold text-white"
+            className="mt-6 rounded-xl bg-[#17201A] px-5 py-3 text-sm font-bold text-white"
           >
             Try Again
           </button>
@@ -274,10 +274,10 @@ export const ChowzaHome: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#F3EEE4] text-[#1B1815]">
+    <div className="min-h-screen bg-[#F7FAF7] text-[#17201A]">
 
       {/* Header */}
-      <header className="sticky top-0 z-40 border-b border-black/10 bg-[#1B1815] text-white">
+      <header className="sticky top-0 z-40 border-b border-black/10 bg-[#17201A] text-white">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
 
           <button
@@ -285,7 +285,7 @@ export const ChowzaHome: React.FC = () => {
             onClick={() => window.location.assign('/')}
             className="flex items-center gap-2"
           >
-            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#25D366]">
+            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#15803D]">
               <ShoppingBag size={18} />
             </div>
 
@@ -320,7 +320,7 @@ export const ChowzaHome: React.FC = () => {
                 'Your cart is connected to the restaurant you order from. Open a restaurant to start ordering.'
               );
             }}
-            className="flex items-center gap-2 rounded-xl bg-[#25D366] px-4 py-2 text-sm font-black text-white hover:bg-[#20bd5b]"
+            className="flex items-center gap-2 rounded-xl bg-[#15803D] px-4 py-2 text-sm font-black text-white hover:bg-[#9E351E]"
           >
             <ShoppingBag size={17} />
             <span>Cart</span>
@@ -330,13 +330,13 @@ export const ChowzaHome: React.FC = () => {
       </header>
 
       {/* Hero */}
-      <section className="border-b border-black/10 bg-[#1B1815] text-white">
+      <section className="border-b border-black/10 bg-[#17201A] text-white">
         <div className="mx-auto max-w-7xl px-4 pb-10 pt-8 sm:px-6 sm:pt-12">
 
           <div className="max-w-3xl">
 
             <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-3 py-1.5 text-xs font-bold text-white/80">
-              <span className="h-2 w-2 rounded-full bg-[#25D366]" />
+              <span className="h-2 w-2 rounded-full bg-[#15803D]" />
               Local food. Local businesses.
             </div>
 
@@ -381,12 +381,12 @@ export const ChowzaHome: React.FC = () => {
           {/* Delivery */}
           <div className="mt-4 flex flex-wrap items-center gap-4 text-xs text-white/60">
             <span className="flex items-center gap-1.5">
-              <MapPin size={14} className="text-[#EDA430]" />
+              <MapPin size={14} className="text-[#22C55E]" />
               Delivering around Johannesburg
             </span>
 
             <span className="flex items-center gap-1.5">
-              <Truck size={14} className="text-[#25D366]" />
+              <Truck size={14} className="text-[#15803D]" />
               Local delivery
             </span>
           </div>
@@ -421,7 +421,7 @@ export const ChowzaHome: React.FC = () => {
                     onClick={() => setSelectedCategory(category)}
                     className={`shrink-0 rounded-full px-4 py-2.5 text-xs font-black transition ${
                       selected
-                        ? 'bg-[#1B1815] text-white'
+                        ? 'bg-[#17201A] text-white'
                         : 'bg-white text-black/60 hover:bg-black/5'
                     }`}
                   >
@@ -439,7 +439,7 @@ export const ChowzaHome: React.FC = () => {
 
           <div className="mb-4 flex items-end justify-between gap-4">
             <div>
-              <p className="text-xs font-black uppercase tracking-[0.18em] text-[#EDA430]">
+              <p className="text-xs font-black uppercase tracking-[0.18em] text-[#22C55E]">
                 Food spots
               </p>
 
@@ -486,7 +486,7 @@ export const ChowzaHome: React.FC = () => {
 
                     <div className="flex items-center gap-4 p-4">
 
-                      <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-[#F3EEE4]">
+                      <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-[#F7FAF7]">
 
                         {business.logo_url ? (
                           <img
@@ -510,7 +510,7 @@ export const ChowzaHome: React.FC = () => {
                             {business.name}
                           </h3>
 
-                          <span className="h-2 w-2 shrink-0 rounded-full bg-[#25D366]" />
+                          <span className="h-2 w-2 shrink-0 rounded-full bg-[#15803D]" />
                         </div>
 
                         <p className="mt-1 truncate text-xs text-black/50">
@@ -524,7 +524,7 @@ export const ChowzaHome: React.FC = () => {
                           <span className="flex items-center gap-1">
                             <Star
                               size={12}
-                              className="fill-[#EDA430] text-[#EDA430]"
+                              className="fill-[#22C55E] text-[#22C55E]"
                             />
                             New
                           </span>
@@ -564,7 +564,7 @@ export const ChowzaHome: React.FC = () => {
           <div className="mb-4 flex items-end justify-between gap-4">
 
             <div>
-              <p className="text-xs font-black uppercase tracking-[0.18em] text-[#EDA430]">
+              <p className="text-xs font-black uppercase tracking-[0.18em] text-[#22C55E]">
                 Hungry?
               </p>
 
@@ -603,7 +603,7 @@ export const ChowzaHome: React.FC = () => {
                   setSearchQuery('');
                   setSelectedCategory('All');
                 }}
-                className="mt-5 rounded-xl bg-[#1B1815] px-5 py-3 text-xs font-black text-white"
+                className="mt-5 rounded-xl bg-[#17201A] px-5 py-3 text-xs font-black text-white"
               >
                 Show Everything
               </button>
@@ -676,7 +676,7 @@ export const ChowzaHome: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => openBusiness(food.businessSlug)}
-                      className="flex items-center gap-1 rounded-lg bg-[#25D366] px-3 py-2 text-[10px] font-black text-white hover:bg-[#20bd5b]"
+                      className="flex items-center gap-1 rounded-lg bg-[#15803D] px-3 py-2 text-[10px] font-black text-white hover:bg-[#9E351E]"
                     >
                       <Plus size={13} />
                       Order
@@ -693,12 +693,12 @@ export const ChowzaHome: React.FC = () => {
         </section>
 
         {/* Business CTA */}
-        <section className="mt-12 overflow-hidden rounded-3xl bg-[#1B1815] text-white">
+        <section className="mt-12 overflow-hidden rounded-3xl bg-[#17201A] text-white">
 
           <div className="flex flex-col gap-6 p-7 sm:p-10 md:flex-row md:items-center md:justify-between">
 
             <div>
-              <p className="text-xs font-black uppercase tracking-[0.18em] text-[#EDA430]">
+              <p className="text-xs font-black uppercase tracking-[0.18em] text-[#22C55E]">
                 Own a food business?
               </p>
 
@@ -715,7 +715,7 @@ export const ChowzaHome: React.FC = () => {
             <button
               type="button"
               onClick={() => window.location.assign('/business')}
-              className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-[#25D366] px-5 py-3 text-sm font-black text-white"
+              className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-[#15803D] px-5 py-3 text-sm font-black text-white"
             >
               Restaurant Portal
               <ArrowRight size={17} />
@@ -728,12 +728,12 @@ export const ChowzaHome: React.FC = () => {
       </main>
 
       {/* Footer */}
-      <footer className="mt-10 border-t border-black/10 bg-[#1B1815] px-4 py-8 text-white sm:px-6">
+      <footer className="mt-10 border-t border-black/10 bg-[#17201A] px-4 py-8 text-white sm:px-6">
 
         <div className="mx-auto flex max-w-7xl flex-col gap-4 text-xs sm:flex-row sm:items-center sm:justify-between">
 
           <div className="flex items-center gap-2">
-            <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[#25D366]">
+            <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[#15803D]">
               <ShoppingBag size={14} />
             </div>
 

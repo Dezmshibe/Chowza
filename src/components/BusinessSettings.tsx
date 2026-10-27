@@ -45,12 +45,12 @@ export const BusinessSettings: React.FC = () => {
   return (
     <div className="container max-w-3xl py-8 space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-[#1B1815]/10">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-[#17201A]/10">
         <div>
-          <h1 className="text-2xl md:text-3xl font-extrabold text-[#1B1815] tracking-tight">
+          <h1 className="text-2xl md:text-3xl font-extrabold text-[#17201A] tracking-tight">
             Store Settings
           </h1>
-          <p className="text-xs text-[#5A544C] mt-1">
+          <p className="text-xs text-[#647067] mt-1">
             Configure contact information, delivery fees, banking details and Yoco payment credentials.
           </p>
         </div>
@@ -63,8 +63,8 @@ export const BusinessSettings: React.FC = () => {
           }}
           className={`btn btn-sm font-bold shadow-xs flex items-center gap-2 ${
             formData.isOpen
-              ? 'bg-[#E4F9EC] text-[#176B35] border border-[#25D366]/40'
-              : 'bg-[#FBE6E4] text-[#9E2B25] border border-[#9E2B25]/40'
+              ? 'bg-[#E4F9EC] text-[#166534] border border-[#22C55E]/40'
+              : 'bg-[#FBE6E4] text-[#EF4444] border border-[#EF4444]/40'
           }`}
         >
           <Power className="w-4 h-4" />
@@ -75,8 +75,8 @@ export const BusinessSettings: React.FC = () => {
       <form onSubmit={handleSave} className="stack">
         {/* Basic Business Details */}
         <div className="card space-y-4">
-          <h2 className="text-base font-bold text-[#1B1815] flex items-center gap-2">
-            <Store className="w-5 h-5 text-[#DD5330]" />
+          <h2 className="text-base font-bold text-[#17201A] flex items-center gap-2">
+            <Store className="w-5 h-5 text-[#15803D]" />
             <span>Store Details</span>
           </h2>
 
@@ -171,8 +171,8 @@ export const BusinessSettings: React.FC = () => {
 
         {/* Delivery Settings */}
         <div className="card space-y-4">
-          <h2 className="text-base font-bold text-[#1B1815] flex items-center gap-2">
-            <Truck className="w-5 h-5 text-[#25D366]" />
+          <h2 className="text-base font-bold text-[#17201A] flex items-center gap-2">
+            <Truck className="w-5 h-5 text-[#22C55E]" />
             <span>Delivery Radius & Fees</span>
           </h2>
 
@@ -210,7 +210,7 @@ export const BusinessSettings: React.FC = () => {
                   name="deliveryAvailable"
                   checked={formData.deliveryAvailable}
                   onChange={handleChange}
-                  className="w-4 h-4 rounded text-[#25D366]"
+                  className="w-4 h-4 rounded text-[#22C55E]"
                 />
                 <span>Offer Delivery Service</span>
               </label>
@@ -220,8 +220,8 @@ export const BusinessSettings: React.FC = () => {
 
         {/* Banking Details (EFT) */}
         <div className="card space-y-4">
-          <h2 className="text-base font-bold text-[#1B1815] flex items-center gap-2">
-            <Building2 className="w-5 h-5 text-[#EDA430]" />
+          <h2 className="text-base font-bold text-[#17201A] flex items-center gap-2">
+            <Building2 className="w-5 h-5 text-[#22C55E]" />
             <span>Bank Account for Instant EFT</span>
           </h2>
 
@@ -288,7 +288,7 @@ export const BusinessSettings: React.FC = () => {
         {/* Yoco Payment Gateway */}
         <div className="card space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-base font-bold text-[#1B1815] flex items-center gap-2">
+            <h2 className="text-base font-bold text-[#17201A] flex items-center gap-2">
               <CreditCard className="w-5 h-5 text-[#0284C7]" />
               <span>Yoco Online Card Payments</span>
             </h2>
@@ -337,12 +337,12 @@ export const BusinessSettings: React.FC = () => {
         {/* Save Bar */}
         <div className="flex items-center justify-between pt-2">
           {isSaved ? (
-            <span className="text-sm font-bold text-[#176B35] flex items-center gap-1.5">
+            <span className="text-sm font-bold text-[#166534] flex items-center gap-1.5">
               <CheckCircle2 className="w-4 h-4" />
               <span>Changes saved successfully!</span>
             </span>
           ) : (
-            <span className="text-xs text-[#8C857A]">Ensure phone numbers include country code (27).</span>
+            <span className="text-xs text-[#647067]">Ensure phone numbers include country code (27).</span>
           )}
 
           <button type="submit" className="btn btn-primary font-bold shadow-md">

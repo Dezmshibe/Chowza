@@ -13,3 +13,29 @@ supabase/.temp/
 .venv/
 *.bak
 ChowzaV2-Source.zip
+# Environment / secrets
+.env
+.env.*
+!.env.example
+
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+
+# Android local/generated files
+public/android/.gradle/
+public/android/local.properties
+public/android/.idea/
+public/android/**/build/
+
+# Supabase local state
+public/supabase/.temp/
+
+# IDE / OS
+.vscode/
+.idea/
+*.log
+.DS_Store
+Thumbs.db

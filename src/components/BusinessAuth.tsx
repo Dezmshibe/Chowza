@@ -182,22 +182,22 @@ export function BusinessAuth({
   }
 
   return (
-    <main className="min-h-screen bg-[#F3EEE4] px-4 py-10 flex items-center justify-center">
-      <section className="w-full max-w-md rounded-2xl border border-[#DED5C7] bg-white p-6 shadow-sm sm:p-8">
+    <main className="min-h-screen bg-[#F7FAF7] px-4 py-10 flex items-center justify-center">
+      <section className="w-full max-w-md rounded-2xl border border-[#E1EAE3] bg-white p-6 shadow-sm sm:p-8">
         <button
           type="button"
           onClick={onBack}
-          className="mb-6 text-sm font-semibold text-[#70452E] hover:underline"
+          className="mb-6 text-sm font-semibold text-[#166534] hover:underline"
         >
           ← Back to Chowza
         </button>
 
         <div className="mb-6">
-          <p className="text-sm font-bold uppercase tracking-widest text-[#70452E]">
+          <p className="text-sm font-bold uppercase tracking-widest text-[#166534]">
             Chowza for Business
           </p>
 
-          <h1 className="mt-2 text-3xl font-extrabold text-[#1B1815]">
+          <h1 className="mt-2 text-3xl font-extrabold text-[#17201A]">
             {mode === 'signup'
               ? 'Create your account'
               : mode === 'reset'
@@ -218,7 +218,7 @@ export function BusinessAuth({
           <div>
             <label
               htmlFor="business-email"
-              className="mb-1.5 block text-sm font-semibold text-[#1B1815]"
+              className="mb-1.5 block text-sm font-semibold text-[#17201A]"
             >
               Email address
             </label>
@@ -231,7 +231,7 @@ export function BusinessAuth({
               value={email}
               onChange={(event) => setEmail(event.target.value)}
               placeholder="you@example.com"
-              className="w-full rounded-xl border border-[#D9D0C3] px-4 py-3 text-sm outline-none focus:border-[#70452E] focus:ring-2 focus:ring-[#70452E]/15"
+              className="w-full rounded-xl border border-[#D7E2DA] px-4 py-3 text-sm outline-none focus:border-[#166534] focus:ring-2 focus:ring-[#166534]/15"
             />
           </div>
 
@@ -239,7 +239,7 @@ export function BusinessAuth({
             <div>
               <label
                 htmlFor="business-password"
-                className="mb-1.5 block text-sm font-semibold text-[#1B1815]"
+                className="mb-1.5 block text-sm font-semibold text-[#17201A]"
               >
                 Password
               </label>
@@ -261,7 +261,7 @@ export function BusinessAuth({
                     ? 'At least 6 characters'
                     : 'Enter your password'
                 }
-                className="w-full rounded-xl border border-[#D9D0C3] px-4 py-3 text-sm outline-none focus:border-[#70452E] focus:ring-2 focus:ring-[#70452E]/15"
+                className="w-full rounded-xl border border-[#D7E2DA] px-4 py-3 text-sm outline-none focus:border-[#166534] focus:ring-2 focus:ring-[#166534]/15"
               />
             </div>
           )}
@@ -287,7 +287,7 @@ export function BusinessAuth({
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-xl bg-[#2F160D] px-4 py-3 font-bold text-white transition hover:bg-[#4B2919] disabled:cursor-not-allowed disabled:opacity-60"
+            className="w-full rounded-xl bg-[#166534] px-4 py-3 font-bold text-white transition hover:bg-[#4B2919] disabled:cursor-not-allowed disabled:opacity-60"
           >
             {loading
               ? 'Please wait…'
@@ -309,7 +309,7 @@ export function BusinessAuth({
                   setMessage('');
                   setError('');
                 }}
-                className="font-semibold text-[#70452E] hover:underline"
+                className="font-semibold text-[#166534] hover:underline"
               >
                 Forgot password?
               </button>
@@ -323,7 +323,7 @@ export function BusinessAuth({
                     setMessage('');
                     setError('');
                   }}
-                  className="font-bold text-[#70452E] hover:underline"
+                  className="font-bold text-[#166534] hover:underline"
                 >
                   Create an account
                 </button>
@@ -339,7 +339,7 @@ export function BusinessAuth({
                 setMessage('');
                 setError('');
               }}
-              className="font-semibold text-[#70452E] hover:underline"
+              className="font-semibold text-[#166534] hover:underline"
             >
               Back to login
             </button>

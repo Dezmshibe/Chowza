@@ -360,19 +360,19 @@ export function BusinessProfileManager({
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[#f6f1eb] p-6">
-        <div className="flex flex-col items-center rounded-3xl border border-[#e2d6c8] bg-white px-10 py-9 shadow-sm">
-          <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-[#f7efe5]">
+        <div className="flex flex-col items-center rounded-3xl border border-[#E1EAE3] bg-white px-10 py-9 shadow-sm">
+          <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-[#F7FAF7]">
             <LoaderCircle
-              className="animate-spin text-[#70452e]"
+              className="animate-spin text-[#166534]"
               size={24}
             />
           </div>
 
-          <p className="text-sm font-bold text-[#2f160d]">
+          <p className="text-sm font-bold text-[#166534]">
             Loading business profile
           </p>
 
-          <p className="mt-1 text-xs text-[#8a7b6c]">
+          <p className="mt-1 text-xs text-[#647067]">
             Please wait a moment...
           </p>
         </div>
@@ -381,7 +381,7 @@ export function BusinessProfileManager({
   }
 
   return (
-    <div className="min-h-screen bg-[#f6f1eb] px-4 py-6 text-[#2f160d] sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-[#f6f1eb] px-4 py-6 text-[#166534] sm:px-6 lg:px-8">
       <div className="mx-auto max-w-5xl">
         {/* HEADER */}
         <div className="mb-7 flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
@@ -389,19 +389,19 @@ export function BusinessProfileManager({
             <button
               type="button"
               onClick={onBack}
-              className="mb-4 inline-flex items-center gap-2 rounded-xl border border-[#ddd0c1] bg-white px-3.5 py-2.5 text-sm font-bold text-[#70452e] shadow-sm transition hover:bg-[#f8f2eb]"
+              className="mb-4 inline-flex items-center gap-2 rounded-xl border border-[#ddd0c1] bg-white px-3.5 py-2.5 text-sm font-bold text-[#166534] shadow-sm transition hover:bg-[#F7FAF7]"
             >
               <ArrowLeft size={17} />
               Back to dashboard
             </button>
 
             <div className="flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#2f160d] text-white shadow-sm">
+              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#166534] text-white shadow-sm">
                 <Building2 size={21} />
               </div>
 
               <div>
-                <p className="text-xs font-black uppercase tracking-[0.16em] text-[#a16a3b]">
+                <p className="text-xs font-black uppercase tracking-[0.16em] text-[#15803D]">
                   Chowza for Business
                 </p>
 
@@ -417,7 +417,7 @@ export function BusinessProfileManager({
             </p>
           </div>
 
-          <div className="hidden rounded-2xl border border-[#e2d6c8] bg-white px-4 py-3 shadow-sm sm:block">
+          <div className="hidden rounded-2xl border border-[#E1EAE3] bg-white px-4 py-3 shadow-sm sm:block">
             <div className="flex items-center gap-2">
               <div className="h-2.5 w-2.5 rounded-full bg-green-500" />
               <span className="text-xs font-bold text-[#66574c]">
@@ -460,9 +460,9 @@ export function BusinessProfileManager({
               {/* LEFT COLUMN */}
               <div className="space-y-6">
                 {/* BRAND CARD */}
-                <section className="overflow-hidden rounded-3xl border border-[#e2d6c8] bg-white shadow-sm">
+                <section className="overflow-hidden rounded-3xl border border-[#E1EAE3] bg-white shadow-sm">
                   <div className="border-b border-[#eee5dc] px-6 py-5">
-                    <p className="text-xs font-black uppercase tracking-[0.14em] text-[#a16a3b]">
+                    <p className="text-xs font-black uppercase tracking-[0.14em] text-[#15803D]">
                       Brand identity
                     </p>
 
@@ -477,7 +477,7 @@ export function BusinessProfileManager({
 
                   <div className="p-6">
                     <div className="flex justify-center">
-                      <div className="relative flex h-40 w-40 items-center justify-center overflow-hidden rounded-3xl border border-[#ded2c5] bg-[#faf7f2] shadow-inner">
+                      <div className="relative flex h-40 w-40 items-center justify-center overflow-hidden rounded-3xl border border-[#ded2c5] bg-[#FFFFFF] shadow-inner">
                         {profile.logo_url ? (
                           <img
                             src={profile.logo_url}
@@ -502,13 +502,13 @@ export function BusinessProfileManager({
                     </div>
 
                     <div className="mt-6 text-center">
-                      <h3 className="font-black text-[#2f160d]">
+                      <h3 className="font-black text-[#166534]">
                         {profile.logo_url
                           ? 'Your business logo'
                           : 'Add your business logo'}
                       </h3>
 
-                      <p className="mx-auto mt-1 max-w-xs text-xs leading-5 text-[#8a7b6c]">
+                      <p className="mx-auto mt-1 max-w-xs text-xs leading-5 text-[#647067]">
                         Use a clear image that represents your business well.
                       </p>
                     </div>
@@ -526,7 +526,7 @@ export function BusinessProfileManager({
                         type="button"
                         disabled={uploadingLogo || removingLogo}
                         onClick={() => fileInputRef.current?.click()}
-                        className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#2f160d] px-4 py-3 text-sm font-black text-white transition hover:bg-[#43261b] disabled:cursor-not-allowed disabled:opacity-60"
+                        className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#166534] px-4 py-3 text-sm font-black text-white transition hover:bg-[#43261b] disabled:cursor-not-allowed disabled:opacity-60"
                       >
                         {uploadingLogo ? (
                           <LoaderCircle
@@ -565,8 +565,8 @@ export function BusinessProfileManager({
                       )}
                     </div>
 
-                    <div className="mt-4 rounded-xl bg-[#faf7f2] px-4 py-3 text-center">
-                      <p className="text-[11px] font-bold text-[#8a7b6c]">
+                    <div className="mt-4 rounded-xl bg-[#FFFFFF] px-4 py-3 text-center">
+                      <p className="text-[11px] font-bold text-[#647067]">
                         JPG, PNG or WebP · Maximum 5 MB
                       </p>
                     </div>
@@ -574,7 +574,7 @@ export function BusinessProfileManager({
                 </section>
 
                 {/* PROFILE TIP */}
-                <div className="rounded-3xl border border-[#e2d6c8] bg-[#2f160d] p-6 text-white shadow-sm">
+                <div className="rounded-3xl border border-[#E1EAE3] bg-[#166534] p-6 text-white shadow-sm">
                   <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/10">
                     <UserRound size={19} />
                   </div>
@@ -593,15 +593,15 @@ export function BusinessProfileManager({
               {/* RIGHT COLUMN */}
               <div className="space-y-6">
                 {/* BUSINESS INFORMATION */}
-                <section className="rounded-3xl border border-[#e2d6c8] bg-white shadow-sm">
+                <section className="rounded-3xl border border-[#E1EAE3] bg-white shadow-sm">
                   <div className="border-b border-[#eee5dc] px-6 py-5">
                     <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#f7efe5] text-[#70452e]">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#F7FAF7] text-[#166534]">
                         <Building2 size={19} />
                       </div>
 
                       <div>
-                        <p className="text-xs font-black uppercase tracking-[0.12em] text-[#a16a3b]">
+                        <p className="text-xs font-black uppercase tracking-[0.12em] text-[#15803D]">
                           Business information
                         </p>
 
@@ -631,7 +631,7 @@ export function BusinessProfileManager({
                           updateField('name', event.target.value)
                         }
                         placeholder="e.g. Sbuda Kitchen"
-                        className="w-full rounded-xl border border-[#d9c9b8] bg-[#fffdfb] px-4 py-3.5 text-sm font-medium outline-none transition placeholder:text-[#b3a69b] focus:border-[#c98b4a] focus:ring-4 focus:ring-[#c98b4a]/10"
+                        className="w-full rounded-xl border border-[#D7E2DA] bg-[#fffdfb] px-4 py-3.5 text-sm font-medium outline-none transition placeholder:text-[#b3a69b] focus:border-[#c98b4a] focus:ring-4 focus:ring-[#c98b4a]/10"
                       />
                     </div>
 
@@ -661,22 +661,22 @@ export function BusinessProfileManager({
                           )
                         }
                         placeholder="Tell customers what your business offers, what makes you special, or what type of food you serve."
-                        className="w-full resize-none rounded-xl border border-[#d9c9b8] bg-[#fffdfb] px-4 py-3.5 text-sm font-medium leading-6 outline-none transition placeholder:text-[#b3a69b] focus:border-[#c98b4a] focus:ring-4 focus:ring-[#c98b4a]/10"
+                        className="w-full resize-none rounded-xl border border-[#D7E2DA] bg-[#fffdfb] px-4 py-3.5 text-sm font-medium leading-6 outline-none transition placeholder:text-[#b3a69b] focus:border-[#c98b4a] focus:ring-4 focus:ring-[#c98b4a]/10"
                       />
                     </div>
                   </div>
                 </section>
 
                 {/* CONTACT */}
-                <section className="rounded-3xl border border-[#e2d6c8] bg-white shadow-sm">
+                <section className="rounded-3xl border border-[#E1EAE3] bg-white shadow-sm">
                   <div className="border-b border-[#eee5dc] px-6 py-5">
                     <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#f7efe5] text-[#70452e]">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#F7FAF7] text-[#166534]">
                         <Phone size={19} />
                       </div>
 
                       <div>
-                        <p className="text-xs font-black uppercase tracking-[0.12em] text-[#a16a3b]">
+                        <p className="text-xs font-black uppercase tracking-[0.12em] text-[#15803D]">
                           Contact details
                         </p>
 
@@ -708,7 +708,7 @@ export function BusinessProfileManager({
                           )
                         }
                         placeholder="071 234 5678"
-                        className="w-full rounded-xl border border-[#d9c9b8] bg-[#fffdfb] px-4 py-3.5 text-sm font-medium outline-none transition placeholder:text-[#b3a69b] focus:border-[#c98b4a] focus:ring-4 focus:ring-[#c98b4a]/10"
+                        className="w-full rounded-xl border border-[#D7E2DA] bg-[#fffdfb] px-4 py-3.5 text-sm font-medium outline-none transition placeholder:text-[#b3a69b] focus:border-[#c98b4a] focus:ring-4 focus:ring-[#c98b4a]/10"
                       />
                     </div>
 
@@ -732,22 +732,22 @@ export function BusinessProfileManager({
                           )
                         }
                         placeholder="Number customers can use"
-                        className="w-full rounded-xl border border-[#d9c9b8] bg-[#fffdfb] px-4 py-3.5 text-sm font-medium outline-none transition placeholder:text-[#b3a69b] focus:border-[#c98b4a] focus:ring-4 focus:ring-[#c98b4a]/10"
+                        className="w-full rounded-xl border border-[#D7E2DA] bg-[#fffdfb] px-4 py-3.5 text-sm font-medium outline-none transition placeholder:text-[#b3a69b] focus:border-[#c98b4a] focus:ring-4 focus:ring-[#c98b4a]/10"
                       />
                     </div>
                   </div>
                 </section>
 
                 {/* LOCATION */}
-                <section className="rounded-3xl border border-[#e2d6c8] bg-white shadow-sm">
+                <section className="rounded-3xl border border-[#E1EAE3] bg-white shadow-sm">
                   <div className="border-b border-[#eee5dc] px-6 py-5">
                     <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#f7efe5] text-[#70452e]">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#F7FAF7] text-[#166534]">
                         <MapPin size={19} />
                       </div>
 
                       <div>
-                        <p className="text-xs font-black uppercase tracking-[0.12em] text-[#a16a3b]">
+                        <p className="text-xs font-black uppercase tracking-[0.12em] text-[#15803D]">
                           Location
                         </p>
 
@@ -778,10 +778,10 @@ export function BusinessProfileManager({
                         )
                       }
                       placeholder="e.g. 123 Main Street, Johannesburg"
-                      className="w-full resize-none rounded-xl border border-[#d9c9b8] bg-[#fffdfb] px-4 py-3.5 text-sm font-medium leading-6 outline-none transition placeholder:text-[#b3a69b] focus:border-[#c98b4a] focus:ring-4 focus:ring-[#c98b4a]/10"
+                      className="w-full resize-none rounded-xl border border-[#D7E2DA] bg-[#fffdfb] px-4 py-3.5 text-sm font-medium leading-6 outline-none transition placeholder:text-[#b3a69b] focus:border-[#c98b4a] focus:ring-4 focus:ring-[#c98b4a]/10"
                     />
 
-                    <p className="mt-2 text-xs leading-5 text-[#8a7b6c]">
+                    <p className="mt-2 text-xs leading-5 text-[#647067]">
                       This address may be shown to customers on your public
                       business page.
                     </p>
@@ -792,11 +792,11 @@ export function BusinessProfileManager({
                 <div className="sticky bottom-4 z-10 rounded-2xl border border-[#ded2c5] bg-white/95 p-3 shadow-xl backdrop-blur">
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div className="px-2">
-                      <p className="text-sm font-black text-[#2f160d]">
+                      <p className="text-sm font-black text-[#166534]">
                         Ready to save?
                       </p>
 
-                      <p className="text-xs text-[#8a7b6c]">
+                      <p className="text-xs text-[#647067]">
                         Your changes will update your Chowza storefront.
                       </p>
                     </div>
@@ -804,7 +804,7 @@ export function BusinessProfileManager({
                     <button
                       type="submit"
                       disabled={saving}
-                      className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#2f160d] px-6 py-3.5 text-sm font-black text-white shadow-sm transition hover:bg-[#43261b] disabled:cursor-not-allowed disabled:opacity-60"
+                      className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#166534] px-6 py-3.5 text-sm font-black text-white shadow-sm transition hover:bg-[#43261b] disabled:cursor-not-allowed disabled:opacity-60"
                     >
                       {saving ? (
                         <LoaderCircle

@@ -96,13 +96,13 @@ export function PublicCheckout({
   }
 
   return (
-    <div className="min-h-screen bg-[#f7efe5] text-[#2f160d]">
-      <header className="border-b border-[#e3d6c8] bg-white">
+    <div className="min-h-screen bg-[#F7FAF7] text-[#166534]">
+      <header className="border-b border-[#E1EAE3] bg-white">
         <div className="mx-auto flex max-w-4xl items-center gap-3 px-5 py-4">
           <button
             type="button"
             onClick={onBack}
-            className="rounded-xl border border-[#d9c9b8] p-2 hover:bg-[#f7efe5]"
+            className="rounded-xl border border-[#D7E2DA] p-2 hover:bg-[#F7FAF7]"
             aria-label="Back to cart"
           >
             <ArrowLeft size={19} />
@@ -111,7 +111,7 @@ export function PublicCheckout({
           <ShoppingBag size={23} />
 
           <div>
-            <p className="text-xs font-bold uppercase tracking-widest text-[#70452e]">
+            <p className="text-xs font-bold uppercase tracking-widest text-[#166534]">
               Checkout
             </p>
             <p className="font-black">{businessName}</p>
@@ -123,11 +123,11 @@ export function PublicCheckout({
         <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
           <form
             onSubmit={handleSubmit}
-            className="rounded-2xl border border-[#e3d6c8] bg-white p-6 shadow-sm"
+            className="rounded-2xl border border-[#E1EAE3] bg-white p-6 shadow-sm"
           >
             <h1 className="text-2xl font-black">Your details</h1>
 
-            <p className="mt-2 text-sm text-[#70452e]">
+            <p className="mt-2 text-sm text-[#166534]">
               Enter your details so the business knows where to
               deliver your order.
             </p>
@@ -159,7 +159,7 @@ export function PublicCheckout({
                   }
                   placeholder="e.g. John Mokoena"
                   autoComplete="name"
-                  className="w-full rounded-xl border border-[#d9c9b8] bg-white px-4 py-3 outline-none focus:border-[#70452e]"
+                  className="w-full rounded-xl border border-[#D7E2DA] bg-white px-4 py-3 outline-none focus:border-[#166534]"
                 />
               </div>
 
@@ -180,7 +180,7 @@ export function PublicCheckout({
                   }
                   placeholder="e.g. 082 123 4567"
                   autoComplete="tel"
-                  className="w-full rounded-xl border border-[#d9c9b8] bg-white px-4 py-3 outline-none focus:border-[#70452e]"
+                  className="w-full rounded-xl border border-[#D7E2DA] bg-white px-4 py-3 outline-none focus:border-[#166534]"
                 />
               </div>
 
@@ -201,7 +201,7 @@ export function PublicCheckout({
                   placeholder="Street, area, suburb, city"
                   rows={4}
                   autoComplete="street-address"
-                  className="w-full resize-none rounded-xl border border-[#d9c9b8] bg-white px-4 py-3 outline-none focus:border-[#70452e]"
+                  className="w-full resize-none rounded-xl border border-[#D7E2DA] bg-white px-4 py-3 outline-none focus:border-[#166534]"
                 />
               </div>
             </div>
@@ -210,7 +210,7 @@ export function PublicCheckout({
               <h2 className="text-lg font-black">Payment method</h2>
 
               <div className="mt-4 space-y-3">
-                <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-[#d9c9b8] p-4 hover:bg-[#fffaf5]">
+                <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-[#D7E2DA] p-4 hover:bg-[#fffaf5]">
                   <input
                     type="radio"
                     name="payment-method"
@@ -222,12 +222,12 @@ export function PublicCheckout({
 
                   <span>
                     <span className="block font-bold">Cash</span>
-                    <span className="mt-1 block text-sm text-[#70452e]">
+                    <span className="mt-1 block text-sm text-[#166534]">
 Pay in cash when your order is delivered or collected.</span>
                   </span>
                 </label>
 
-                <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-[#d9c9b8] p-4 hover:bg-[#fffaf5]">
+                <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-[#D7E2DA] p-4 hover:bg-[#fffaf5]">
                   <input
                     type="radio"
                     name="payment-method"
@@ -241,7 +241,7 @@ Pay in cash when your order is delivered or collected.</span>
                     <span className="block font-bold">
                       Online / Card
                     </span>
-                    <span className="mt-1 block text-sm text-[#70452e]">
+                    <span className="mt-1 block text-sm text-[#166534]">
                     Pay securely online with PayFast.
                       
                     </span>
@@ -253,7 +253,7 @@ Pay in cash when your order is delivered or collected.</span>
             <button
               type="submit"
               disabled={submitting || cart.length === 0}
-              className="mt-8 flex w-full items-center justify-center gap-2 rounded-xl bg-[#2f160d] px-5 py-4 font-black text-white disabled:cursor-not-allowed disabled:bg-[#c9bdb2]"
+              className="mt-8 flex w-full items-center justify-center gap-2 rounded-xl bg-[#166534] px-5 py-4 font-black text-white disabled:cursor-not-allowed disabled:bg-[#c9bdb2]"
             >
               {submitting && (
                 <LoaderCircle size={19} className="animate-spin" />
@@ -265,7 +265,7 @@ Pay in cash when your order is delivered or collected.</span>
             </button>
           </form>
 
-          <aside className="h-fit rounded-2xl border border-[#e3d6c8] bg-white p-6 shadow-sm">
+          <aside className="h-fit rounded-2xl border border-[#E1EAE3] bg-white p-6 shadow-sm">
             <h2 className="text-xl font-black">Order summary</h2>
 
             <div className="mt-5 space-y-4">
@@ -279,7 +279,7 @@ Pay in cash when your order is delivered or collected.</span>
                       {cartItem.item.name}
                     </p>
 
-                    <p className="text-sm text-[#70452e]">
+                    <p className="text-sm text-[#166534]">
                       {cartItem.quantity} ×{' '}
                       {money(Number(cartItem.item.price))}
                     </p>
@@ -295,7 +295,7 @@ Pay in cash when your order is delivered or collected.</span>
               ))}
             </div>
 
-            <div className="mt-6 border-t border-[#e3d6c8] pt-5">
+            <div className="mt-6 border-t border-[#E1EAE3] pt-5">
               <div className="flex items-center justify-between">
                 <span className="font-bold">Total</span>
                 <span className="text-xl font-black">

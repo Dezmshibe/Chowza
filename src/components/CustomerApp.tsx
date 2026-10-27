@@ -15,7 +15,7 @@ export const CustomerApp: React.FC = () => {
   } = useApp();
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#F3EEE4] text-[#1B1815]">
+    <div className="min-h-screen flex flex-col bg-[#F7FAF7] text-[#17201A]">
 
       {/* Flash notifications */}
       <div className="fixed top-16 right-4 z-50 max-w-md w-full space-y-2 pointer-events-none">
@@ -60,11 +60,11 @@ export const CustomerApp: React.FC = () => {
       <CartBottomSheet />
 
       {/* Customer footer */}
-      <footer className="bg-[#1B1815] text-[#8C857A] py-8 px-4 border-t border-white/10 mt-auto">
+      <footer className="bg-[#17201A] text-[#647067] py-8 px-4 border-t border-white/10 mt-auto">
         <div className="max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-xs">
 
           <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded-full bg-[#25D366] text-white flex items-center justify-center font-bold text-xs">
+            <div className="w-6 h-6 rounded-full bg-[#22C55E] text-white flex items-center justify-center font-bold text-xs">
               <MessageCircle className="w-3.5 h-3.5 fill-current" />
             </div>
 
@@ -86,7 +86,7 @@ export const CustomerApp: React.FC = () => {
             }
             className="hover:text-white flex items-center gap-1 font-semibold"
           >
-            <Search className="w-3.5 h-3.5 text-[#EDA430]" />
+            <Search className="w-3.5 h-3.5 text-[#22C55E]" />
 
             <span>
               {currentView === 'track'

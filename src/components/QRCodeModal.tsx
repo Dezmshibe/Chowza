@@ -28,10 +28,10 @@ export const QRCodeModal: React.FC = () => {
   return (
     <div className="container max-w-xl py-8 space-y-6">
       <div className="text-center">
-        <h1 className="text-2xl md:text-3xl font-extrabold text-[#1B1815] tracking-tight">
+        <h1 className="text-2xl md:text-3xl font-extrabold text-[#17201A] tracking-tight">
           Table & Counter QR Code
         </h1>
-        <p className="text-xs text-[#5A544C] mt-1">
+        <p className="text-xs text-[#647067] mt-1">
           Place this on tables, takeout counters or flyers. Customers scan to order instantly!
         </p>
       </div>
@@ -39,22 +39,22 @@ export const QRCodeModal: React.FC = () => {
       {/* Printable Poster Card */}
       <div
         id="printable-qr-card"
-        className="card p-8 bg-white border-2 border-[#1B1815] rounded-3xl shadow-xl text-center space-y-4"
+        className="card p-8 bg-white border-2 border-[#17201A] rounded-3xl shadow-xl text-center space-y-4"
       >
-        <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#E4F9EC] text-[#176B35] rounded-full text-xs font-black">
-          <Sparkles className="w-3.5 h-3.5 text-[#25D366]" />
+        <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#E4F9EC] text-[#166534] rounded-full text-xs font-black">
+          <Sparkles className="w-3.5 h-3.5 text-[#22C55E]" />
           <span>WhatsApp Food · Instant Order</span>
         </div>
 
         <div>
-          <h2 className="text-2xl font-black text-[#1B1815] tracking-tight">
+          <h2 className="text-2xl font-black text-[#17201A] tracking-tight">
             {ownerBusiness.businessName}
           </h2>
-          <p className="text-xs text-[#5A544C] mt-0.5">{ownerBusiness.category}</p>
+          <p className="text-xs text-[#647067] mt-0.5">{ownerBusiness.category}</p>
         </div>
 
         {/* QR Code Container */}
-        <div className="p-4 bg-[#F3EEE4] rounded-2xl inline-block border border-[#1B1815]/10 shadow-inner">
+        <div className="p-4 bg-[#F7FAF7] rounded-2xl inline-block border border-[#17201A]/10 shadow-inner">
           <img
             src={qrImageUrl}
             alt={`QR code for ${ownerBusiness.businessName}`}
@@ -63,22 +63,22 @@ export const QRCodeModal: React.FC = () => {
         </div>
 
         <div>
-          <div className="inline-block px-4 py-1.5 rounded-full bg-[#1B1815] text-white font-extrabold text-sm tracking-wide">
+          <div className="inline-block px-4 py-1.5 rounded-full bg-[#17201A] text-white font-extrabold text-sm tracking-wide">
             {tableNumber}
           </div>
-          <p className="text-xs text-[#8C857A] mt-2">
+          <p className="text-xs text-[#647067] mt-2">
             Scan with your phone camera or WhatsApp to open digital menu & order
           </p>
         </div>
 
-        <div className="text-[11px] text-[#8C857A] pt-2 border-t border-[#1B1815]/10 font-mono">
+        <div className="text-[11px] text-[#647067] pt-2 border-t border-[#17201A]/10 font-mono">
           {orderingUrl}?table={encodeURIComponent(tableNumber)}
         </div>
       </div>
 
       {/* Settings & Customization */}
       <div className="card p-5 space-y-4 bg-[#FDFBF7]">
-        <h3 className="text-sm font-bold text-[#1B1815]">Customize Standee</h3>
+        <h3 className="text-sm font-bold text-[#17201A]">Customize Standee</h3>
 
         <div className="field">
           <label htmlFor="table-label">Table or Counter Label</label>
@@ -96,7 +96,7 @@ export const QRCodeModal: React.FC = () => {
             onClick={handleCopyLink}
             className="btn btn-outline btn-sm font-bold flex items-center justify-center gap-1.5"
           >
-            {copied ? <Check className="w-4 h-4 text-[#176B35]" /> : <Copy className="w-4 h-4" />}
+            {copied ? <Check className="w-4 h-4 text-[#166534]" /> : <Copy className="w-4 h-4" />}
             <span>{copied ? 'Copied!' : 'Copy Link'}</span>
           </button>
 

@@ -188,11 +188,11 @@ export function BusinessPortalGate({
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#f7efe5] p-6">
+      <div className="min-h-screen bg-[#F7FAF7] p-6">
         <div className="mx-auto flex min-h-[70vh] max-w-6xl items-center justify-center">
-          <div className="rounded-2xl border border-[#d9c9b8] bg-white p-8 text-center shadow-sm">
-            <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-2 border-[#d99a4b] border-t-transparent" />
-            <p className="text-sm text-[#70452e]">
+          <div className="rounded-2xl border border-[#D7E2DA] bg-white p-8 text-center shadow-sm">
+            <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-2 border-[#22C55E] border-t-transparent" />
+            <p className="text-sm text-[#166534]">
               Loading your business dashboard...
             </p>
           </div>
@@ -203,18 +203,18 @@ export function BusinessPortalGate({
 
   if (error || !business) {
     return (
-      <div className="min-h-screen bg-[#f7efe5] p-6">
+      <div className="min-h-screen bg-[#F7FAF7] p-6">
         <div className="mx-auto flex min-h-[70vh] max-w-lg items-center justify-center">
-          <div className="w-full rounded-2xl border border-[#d9c9b8] bg-white p-8 shadow-sm">
-            <p className="mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#70452e]">
+          <div className="w-full rounded-2xl border border-[#D7E2DA] bg-white p-8 shadow-sm">
+            <p className="mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#166534]">
               Chowza for Business
             </p>
 
-            <h1 className="mb-3 text-2xl font-bold text-[#2f160d]">
+            <h1 className="mb-3 text-2xl font-bold text-[#166534]">
               We couldn't load your business
             </h1>
 
-            <p className="mb-6 text-sm leading-6 text-[#70452e]">
+            <p className="mb-6 text-sm leading-6 text-[#166534]">
               {error || 'Your business profile could not be found.'}
             </p>
 
@@ -222,7 +222,7 @@ export function BusinessPortalGate({
               <button
                 type="button"
                 onClick={onBack}
-                className="flex items-center gap-2 rounded-xl border border-[#d9c9b8] px-4 py-3 text-sm font-semibold text-[#2f160d] hover:bg-[#f7efe5]"
+                className="flex items-center gap-2 rounded-xl border border-[#D7E2DA] px-4 py-3 text-sm font-semibold text-[#166534] hover:bg-[#F7FAF7]"
               >
                 <ArrowLeft size={17} />
                 Back
@@ -231,7 +231,7 @@ export function BusinessPortalGate({
               <button
                 type="button"
                 onClick={() => void handleLogout()}
-                className="flex items-center gap-2 rounded-xl bg-[#2f160d] px-4 py-3 text-sm font-semibold text-white hover:opacity-90"
+                className="flex items-center gap-2 rounded-xl bg-[#166534] px-4 py-3 text-sm font-semibold text-white hover:opacity-90"
               >
                 <LogOut size={17} />
                 Log out
@@ -291,21 +291,21 @@ if (currentPage === 'analytics') {
   );
 }
   return (
-    <div className="min-h-screen bg-[#f7efe5] text-[#2f160d]">
-      <header className="border-b border-[#e3d6c8] bg-white">
+    <div className="min-h-screen bg-[#F7FAF7] text-[#166534]">
+      <header className="border-b border-[#E1EAE3] bg-white">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 lg:px-8">
           <div className="flex items-center gap-3">
             <button
               type="button"
               onClick={onBack}
-              className="rounded-xl border border-[#d9c9b8] p-2 hover:bg-[#f7efe5]"
+              className="rounded-xl border border-[#D7E2DA] p-2 hover:bg-[#F7FAF7]"
               aria-label="Back"
             >
               <ArrowLeft size={19} />
             </button>
 
             <div>
-              <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#70452e]">
+              <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#166534]">
                 Chowza for Business
               </p>
               <h1 className="text-xl font-black tracking-tight">
@@ -317,7 +317,7 @@ if (currentPage === 'analytics') {
           <button
             type="button"
             onClick={() => void handleLogout()}
-            className="flex items-center gap-2 rounded-full border border-[#d9c9b8] px-4 py-2 text-sm font-semibold hover:bg-[#f7efe5]"
+            className="flex items-center gap-2 rounded-full border border-[#D7E2DA] px-4 py-2 text-sm font-semibold hover:bg-[#F7FAF7]"
           >
             <LogOut size={16} />
             Log out
@@ -326,14 +326,14 @@ if (currentPage === 'analytics') {
       </header>
 
       <main className="mx-auto max-w-7xl px-5 py-7 lg:px-8">
-        <section className="mb-7 rounded-2xl bg-[#2f160d] p-6 text-white shadow-sm lg:p-8">
+        <section className="mb-7 rounded-2xl bg-[#166534] p-6 text-white shadow-sm lg:p-8">
           <div className="flex flex-col justify-between gap-6 md:flex-row md:items-center">
             <div>
               <div className="mb-3 flex items-center gap-2">
                 <span
                   className={`rounded-full px-3 py-1 text-xs font-bold ${
                     business.is_published
-                      ? 'bg-[#d99a4b] text-[#2f160d]'
+                      ? 'bg-[#22C55E] text-[#166534]'
                       : 'bg-white/10 text-white'
                   }`}
                 >
@@ -354,7 +354,7 @@ if (currentPage === 'analytics') {
               href={`/business/${business.slug}`}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#d99a4b] px-5 py-3 text-sm font-bold text-[#2f160d] hover:opacity-90"
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#22C55E] px-5 py-3 text-sm font-bold text-[#166534] hover:opacity-90"
             >
               <ExternalLink size={17} />
               View Store
@@ -390,13 +390,13 @@ if (currentPage === 'analytics') {
 
         <section className="mb-8">
           <div className="mb-4">
-            <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#70452e]">
+            <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#166534]">
               Manage your business
             </p>
             <h2 className="mt-1 text-2xl font-black">
               Business tools
             </h2>
-            <p className="mt-2 text-sm text-[#70452e]">
+            <p className="mt-2 text-sm text-[#166534]">
               Choose a tool to manage your store.
             </p>
           </div>
@@ -458,10 +458,10 @@ if (currentPage === 'analytics') {
           </div>
         </section>
 
-        <section className="rounded-2xl border border-[#d9c9b8] bg-white p-6 shadow-sm">
+        <section className="rounded-2xl border border-[#D7E2DA] bg-white p-6 shadow-sm">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#70452e]">
+              <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#166534]">
                 Store status
               </p>
 
@@ -471,7 +471,7 @@ if (currentPage === 'analytics') {
                   : 'Your store is not published yet'}
               </h2>
 
-              <p className="mt-2 max-w-2xl text-sm leading-6 text-[#70452e]">
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-[#166534]">
                 {business.is_published
                   ? 'Your store is marked as published in your business settings.'
                   : 'Your business information is saved privately. Storefront publishing controls will be added later.'}
@@ -499,8 +499,8 @@ function StatCard({
   value: string;
 }) {
   return (
-    <div className="rounded-2xl border border-[#d9c9b8] bg-white p-5 shadow-sm">
-      <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-[#f0c27c]/30 text-[#70452e]">
+    <div className="rounded-2xl border border-[#D7E2DA] bg-white p-5 shadow-sm">
+      <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-[#f0c27c]/30 text-[#166534]">
         {icon}
       </div>
 
@@ -508,7 +508,7 @@ function StatCard({
         {label}
       </p>
 
-      <p className="mt-1 text-2xl font-black text-[#2f160d]">
+      <p className="mt-1 text-2xl font-black text-[#166534]">
         {value}
       </p>
     </div>
@@ -537,25 +537,25 @@ function DashboardCard({
       type="button"
       onClick={onClick}
       disabled={isDisabled}
-      className={`group rounded-2xl border border-[#d9c9b8] bg-white p-5 text-left shadow-sm transition ${
+      className={`group rounded-2xl border border-[#D7E2DA] bg-white p-5 text-left shadow-sm transition ${
         isDisabled
           ? 'cursor-not-allowed opacity-75'
           : 'hover:-translate-y-0.5 hover:shadow-md'
       }`}
     >
       <div className="mb-5 flex items-start justify-between gap-4">
-        <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#f0c27c]/30 text-[#70452e]">
+        <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#f0c27c]/30 text-[#166534]">
           {icon}
         </div>
 
-        <span className="rounded-full bg-[#f7efe5] px-3 py-1 text-[10px] font-bold uppercase tracking-[0.08em] text-[#70452e]">
+        <span className="rounded-full bg-[#F7FAF7] px-3 py-1 text-[10px] font-bold uppercase tracking-[0.08em] text-[#166534]">
           {badge}
         </span>
       </div>
 
       <h3 className="text-lg font-black">{title}</h3>
 
-      <p className="mt-2 text-sm leading-6 text-[#70452e]">
+      <p className="mt-2 text-sm leading-6 text-[#166534]">
         {description}
       </p>
     </button>

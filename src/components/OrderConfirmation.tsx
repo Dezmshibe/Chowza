@@ -1,11 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import {
-  Check,
-  Copy,
-  MessageCircle,
-  Search,
-  ShoppingBag,
-} from 'lucide-react';
+import { Check, Copy, Printer, ArrowLeft, Truck } from 'lucide-react';
 
 type ConfirmationItem = {
   id: string;
@@ -36,17 +30,24 @@ export const OrderConfirmation: React.FC<OrderConfirmationProps> = ({
   onTrackOrder,
   onBackToStore,
 }) => {
-  const [printing, setPrinting] = useState(true);
-  const [printed, setPrinted] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const [showReceipt, setShowReceipt] = useState(false);
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
-      setPrinting(false);
-      setPrinted(true);
-    }, 2600);
+      setShowReceipt(true);
+    }, 150);
 
     return () => window.clearTimeout(timer);
   }, []);
+
+  const money = (amount: number) =>
+    new Intl.NumberFormat('en-ZA', {
+      style: 'currency',
+      currency: 'ZAR',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(Number(amount));
 
   const paymentLabel =
     paymentMethod === 'cash'
@@ -55,386 +56,465 @@ export const OrderConfirmation: React.FC<OrderConfirmationProps> = ({
         ? 'EFT'
         : 'CARD / ONLINE';
 
+  const paymentMessage =
+    paymentMethod === 'cash'
+      ? 'Payment due on collection or delivery'
+      : paymentMethod === 'eft'
+        ? 'Payment by EFT'
+        : 'Payment processed online';
+
   const copyOrderNumber = async () => {
     try {
       await navigator.clipboard.writeText(String(orderNumber));
+      setCopied(true);
+
+      window.setTimeout(() => {
+        setCopied(false);
+      }, 1800);
     } catch {
-      // Clipboard access may not be available in every browser.
+      // Clipboard may not be available.
     }
   };
 
-  const money = (amount: number) =>
-    `R${Number(amount).toFixed(2)}`;
+  const handlePrint = () => {
+    window.print();
+  };
+
+  const now = new Date();
+
+  const dateText = now.toLocaleDateString('en-ZA', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  });
+
+  const timeText = now.toLocaleTimeString('en-ZA', {
+    hour: '2-digit',
+    minute: '2-digit',
+  });
 
   return (
-    <div className="min-h-screen bg-[#E7E2D8] px-4 py-8 md:py-12 text-[#171717]">
-
+    <>
       <style>
         {`
-          @keyframes receiptPrint {
-            0% {
-              transform: translateY(-100%);
-              opacity: 0;
-            }
-            20% {
-              opacity: 1;
-            }
-            100% {
-              transform: translateY(0);
-              opacity: 1;
-            }
+          .chowza-confirmation-page {
+            min-height: 100vh;
+            background: #F7FAF7;
+            color: #17201A;
           }
 
-          @keyframes printerLight {
-            0%, 100% {
-              opacity: 0.35;
-            }
-            50% {
-              opacity: 1;
-            }
+          .chowza-receipt {
+            transition:
+              opacity 0.45s ease,
+              transform 0.45s ease;
           }
 
-          @keyframes receiptFade {
-            from {
-              opacity: 0;
+          .chowza-receipt.hidden-receipt {
+            opacity: 0;
+            transform: translateY(-18px);
+          }
+
+          .chowza-receipt.visible-receipt {
+            opacity: 1;
+            transform: translateY(0);
+          }
+
+          .receipt-paper {
+            position: relative;
+            background: #FFFFFF;
+            overflow: hidden;
+          }
+
+          .receipt-paper::after {
+            content: "";
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: -1px;
+            height: 8px;
+            background:
+              linear-gradient(
+                -45deg,
+                transparent 0 5px,
+                #FFFFFF 5px 10px
+              )
+              0 0 / 10px 10px repeat-x;
+          }
+
+          .receipt-line {
+            border-top: 1px dashed rgba(23, 32, 26, 0.22);
+          }
+
+          .receipt-item-row {
+            break-inside: avoid;
+          }
+
+          @media print {
+            @page {
+              size: auto;
+              margin: 8mm;
             }
-            to {
-              opacity: 1;
+
+            html,
+            body {
+              background: #FFFFFF !important;
             }
-          }
 
-          .receipt-printing {
-            animation: receiptPrint 2.6s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
-          }
+            body {
+              overflow: visible !important;
+            }
 
-          .receipt-finished {
-            animation: receiptFade 0.5s ease-out forwards;
-          }
+            .no-print {
+              display: none !important;
+            }
 
-          .printer-light {
-            animation: printerLight 0.8s ease-in-out infinite;
+            .chowza-confirmation-page {
+              min-height: auto !important;
+              background: #FFFFFF !important;
+              padding: 0 !important;
+            }
+
+            .chowza-receipt-wrapper {
+              max-width: 420px !important;
+              margin: 0 auto !important;
+            }
+
+            .receipt-paper {
+              box-shadow: none !important;
+              border: 1px solid #D8DED9 !important;
+            }
+
+            .receipt-header {
+              print-color-adjust: exact;
+              -webkit-print-color-adjust: exact;
+            }
+
+            .receipt-green {
+              print-color-adjust: exact;
+              -webkit-print-color-adjust: exact;
+            }
           }
         `}
       </style>
 
-      <div className="mx-auto w-full max-w-md">
+      <main className="chowza-confirmation-page px-4 py-8 md:py-12">
+        <div className="chowza-receipt-wrapper mx-auto w-full max-w-[430px]">
 
-        {/* Virtual receipt printer */}
-        <div className="relative z-20">
+          {/* Top navigation */}
+          <div className="no-print mb-5 flex items-center justify-between">
+            <button
+              type="button"
+              onClick={onBackToStore}
+              className="flex items-center gap-2 rounded-full px-3 py-2 text-sm font-semibold text-[#4F5D53] transition hover:bg-white hover:text-[#15803D]"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Back to store
+            </button>
 
-          <div className="mx-auto w-[92%] rounded-t-2xl bg-[#242424] px-6 pt-5 pb-4 shadow-xl">
-
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs font-bold uppercase tracking-[0.25em] text-white/60">
-                  Chowza
-                </p>
-
-                <p className="mt-1 text-sm font-semibold text-white">
-                    
-                </p>
-              </div>
-
-              <div
-                className={`h-3 w-3 rounded-full bg-green-400 shadow-[0_0_12px_rgba(74,222,128,0.8)] ${
-                  printing ? 'printer-light' : ''
-                }`}
-              />
-            </div>
-
-            <div className="mt-4 h-2 rounded-full bg-black/70" />
-
+            <button
+              type="button"
+              onClick={handlePrint}
+              className="flex items-center gap-2 rounded-full bg-[#15803D] px-4 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-[#166534]"
+            >
+              <Printer className="h-4 w-4" />
+              Print
+            </button>
           </div>
 
-          {/* Paper slot */}
-          <div className="relative mx-auto -mt-1 h-5 w-[96%] rounded-b-lg bg-[#111] shadow-lg">
-            <div className="absolute inset-x-8 top-1 h-1 rounded-full bg-black/70" />
-          </div>
-
-        </div>
-
-        {/* Receipt coming out of printer */}
-        <div className="relative z-10 -mt-1 overflow-hidden">
-
+          {/* Receipt */}
           <div
-            className={`origin-top bg-[#FFFDF7] px-6 py-7 shadow-[0_12px_35px_rgba(0,0,0,0.18)] ${
-              printing
-                ? 'receipt-printing'
-                : 'receipt-finished'
+            className={`chowza-receipt ${
+              showReceipt ? 'visible-receipt' : 'hidden-receipt'
             }`}
-            style={{
-              clipPath:
-                'polygon(0 0,100% 0,100% 99%,98% 100%,96% 99%,94% 100%,92% 99%,90% 100%,88% 99%,86% 100%,84% 99%,82% 100%,80% 99%,78% 100%,76% 99%,74% 100%,72% 99%,70% 100%,68% 99%,66% 100%,64% 99%,62% 100%,60% 99%,58% 100%,56% 99%,54% 100%,52% 99%,50% 100%,48% 99%,46% 100%,44% 99%,42% 100%,40% 99%,38% 100%,36% 99%,34% 100%,32% 99%,30% 100%,28% 99%,26% 100%,24% 99%,22% 100%,20% 99%,18% 100%,16% 99%,14% 100%,12% 99%,10% 100%,8% 99%,6% 100%,4% 99%,2% 100%,0 99%)',
-            }}
           >
+            <section className="receipt-paper rounded-[22px] shadow-[0_18px_50px_rgba(23,32,26,0.10)]">
 
-            {/* Header */}
-            <div className="text-center font-mono">
+              {/* Receipt header */}
+              <div className="receipt-header receipt-green bg-[#15803D] px-6 pb-7 pt-7 text-white">
+                <div className="text-center">
 
-              <div className="flex justify-center">
-                <div className="flex h-12 w-12 items-center justify-center rounded-full border-2 border-dashed border-black">
-                  <ShoppingBag size={23} strokeWidth={2.5} />
+                  <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-white text-[#15803D] shadow-sm">
+                    <span className="text-xl font-black">C</span>
+                  </div>
+
+                  <p className="mt-4 text-[11px] font-bold uppercase tracking-[0.28em] text-white/70">
+                    Chowza
+                  </p>
+
+                  <h1 className="mt-2 text-2xl font-black tracking-tight">
+                    Order Confirmed
+                  </h1>
+
+                  <p className="mt-2 text-sm text-white/80">
+                    Thank you for your order
+                  </p>
                 </div>
               </div>
 
-              <h1 className="mt-3 text-2xl font-black tracking-[0.18em]">
-                CHOWZA
-              </h1>
+              {/* Order number */}
+              <div className="px-6 py-6 text-center">
+                <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[#758178]">
+                  Order Number
+                </p>
 
-              <p className="mt-1 text-xs uppercase tracking-[0.2em]">
-                Digital Food Ordering
-              </p>
-
-              <div className="my-5 border-t border-dashed border-black" />
-
-              <h2 className="text-lg font-bold uppercase">
-                {businessName}
-              </h2>
-
-              <p className="mt-1 text-xs">
-                ORDER RECEIPT
-              </p>
-
-            </div>
-
-            {/* Order details */}
-            <div className="mt-5 font-mono text-xs">
-
-              <div className="flex items-center justify-between border-b border-dashed border-black pb-3">
-                <div>
-                  <p className="text-[10px] uppercase text-black/60">
-                    Order No.
-                  </p>
-
-                  <p className="mt-1 text-xl font-black">
+                <div className="mt-2 flex items-center justify-center gap-2">
+                  <span className="font-mono text-3xl font-black tracking-tight text-[#17201A]">
                     #{orderNumber}
-                  </p>
-                </div>
+                  </span>
 
-                <button
-                  type="button"
-                  onClick={copyOrderNumber}
-                  className="flex items-center gap-1 rounded border border-black px-2 py-1 text-[10px] font-bold uppercase"
-                >
-                  <Copy size={12} />
-                  Copy
-                </button>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4 border-b border-dashed border-black py-3">
-
-                <div>
-                  <p className="text-[10px] uppercase text-black/60">
-                    Customer
-                  </p>
-
-                  <p className="mt-1 font-bold">
-                    {customerName}
-                  </p>
-                </div>
-
-                <div className="text-right">
-                  <p className="text-[10px] uppercase text-black/60">
-                    Payment
-                  </p>
-
-                  <p className="mt-1 font-bold">
-                    {paymentLabel}
-                  </p>
-                </div>
-
-              </div>
-
-            </div>
-
-            {/* Items */}
-            <div className="mt-5 font-mono">
-
-              <div className="flex items-center justify-between border-b border-black pb-2 text-[10px] font-bold uppercase">
-                <span>Item</span>
-                <span>Total</span>
-              </div>
-
-              <div className="divide-y divide-dashed divide-black/30">
-
-                {items.map((item) => (
-                  <div
-                    key={item.id}
-                    className="py-3"
+                  <button
+                    type="button"
+                    onClick={copyOrderNumber}
+                    className="no-print rounded-lg p-2 text-[#758178] transition hover:bg-[#F0FDF4] hover:text-[#15803D]"
+                    aria-label="Copy order number"
                   >
+                    {copied ? (
+                      <Check className="h-4 w-4 text-[#15803D]" />
+                    ) : (
+                      <Copy className="h-4 w-4" />
+                    )}
+                  </button>
+                </div>
 
-                    <div className="flex items-start justify-between gap-3 text-xs">
+                {copied && (
+                  <p className="mt-1 text-xs font-semibold text-[#15803D]">
+                    Order number copied
+                  </p>
+                )}
+              </div>
 
-                      <div className="min-w-0">
-                        <p className="font-bold uppercase">
-                          {item.name}
-                        </p>
+              <div className="receipt-line mx-6" />
 
-                        <p className="mt-1 text-[10px] text-black/60">
-                          {item.quantity} x {money(item.price)}
+              {/* Store and customer information */}
+              <div className="px-6 py-5">
+                <div className="grid grid-cols-2 gap-5">
+
+                  <div>
+                    <p className="text-[9px] font-bold uppercase tracking-[0.16em] text-[#758178]">
+                      Restaurant
+                    </p>
+
+                    <p className="mt-1 text-sm font-bold text-[#17201A]">
+                      {businessName}
+                    </p>
+                  </div>
+
+                  <div className="text-right">
+                    <p className="text-[9px] font-bold uppercase tracking-[0.16em] text-[#758178]">
+                      Customer
+                    </p>
+
+                    <p className="mt-1 truncate text-sm font-bold text-[#17201A]">
+                      {customerName}
+                    </p>
+                  </div>
+
+                </div>
+
+                <div className="mt-5 grid grid-cols-2 gap-5">
+
+                  <div>
+                    <p className="text-[9px] font-bold uppercase tracking-[0.16em] text-[#758178]">
+                      Date
+                    </p>
+
+                    <p className="mt-1 font-mono text-xs font-semibold text-[#4F5D53]">
+                      {dateText}
+                    </p>
+                  </div>
+
+                  <div className="text-right">
+                    <p className="text-[9px] font-bold uppercase tracking-[0.16em] text-[#758178]">
+                      Time
+                    </p>
+
+                    <p className="mt-1 font-mono text-xs font-semibold text-[#4F5D53]">
+                      {timeText}
+                    </p>
+                  </div>
+
+                </div>
+              </div>
+
+              <div className="receipt-line mx-6" />
+
+              {/* Items */}
+              <div className="px-6 py-5">
+
+                <div className="mb-4 flex items-center justify-between">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#758178]">
+                    Order Items
+                  </p>
+
+                  <p className="font-mono text-[10px] font-bold text-[#758178]">
+                    {items.reduce(
+                      (sum, item) => sum + item.quantity,
+                      0
+                    )}{' '}
+                    item(s)
+                  </p>
+                </div>
+
+                <div className="space-y-4">
+
+                  {items.map((item) => (
+                    <div
+                      key={item.id}
+                      className="receipt-item-row flex items-start justify-between gap-4"
+                    >
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-start gap-2">
+                          <span className="min-w-[22px] rounded-md bg-[#F0FDF4] px-1.5 py-1 text-center font-mono text-[10px] font-bold text-[#15803D]">
+                            {item.quantity}x
+                          </span>
+
+                          <p className="text-sm font-bold leading-5 text-[#17201A]">
+                            {item.name}
+                          </p>
+                        </div>
+
+                        <p className="ml-[30px] mt-1 font-mono text-[10px] text-[#758178]">
+                          {money(item.price)} each
                         </p>
                       </div>
 
-                      <p className="shrink-0 font-bold">
+                      <p className="whitespace-nowrap font-mono text-sm font-bold text-[#17201A]">
                         {money(item.line_total)}
                       </p>
-
                     </div>
+                  ))}
 
+                </div>
+              </div>
+
+              <div className="receipt-line mx-6" />
+
+              {/* Total */}
+              <div className="px-6 py-5">
+
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-[#758178]">
+                    Subtotal
+                  </span>
+
+                  <span className="font-mono font-semibold text-[#4F5D53]">
+                    {money(total)}
+                  </span>
+                </div>
+
+                <div className="mt-3 flex items-center justify-between">
+                  <span className="text-base font-bold text-[#17201A]">
+                    Total
+                  </span>
+
+                  <span className="font-mono text-2xl font-black text-[#15803D]">
+                    {money(total)}
+                  </span>
+                </div>
+
+              </div>
+
+              <div className="receipt-line mx-6" />
+
+              {/* Payment */}
+              <div className="px-6 py-5">
+
+                <div className="flex items-center justify-between gap-4">
+                  <div>
+                    <p className="text-[9px] font-bold uppercase tracking-[0.18em] text-[#758178]">
+                      Payment
+                    </p>
+
+                    <p className="mt-1 text-sm font-bold text-[#17201A]">
+                      {paymentLabel}
+                    </p>
+
+                    <p className="mt-1 text-[10px] text-[#758178]">
+                      {paymentMessage}
+                    </p>
                   </div>
-                ))}
+
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#DCFCE7] text-[#15803D]">
+                    <Check className="h-5 w-5" />
+                  </div>
+                </div>
 
               </div>
 
-            </div>
+              {/* Confirmation footer */}
+              <div className="bg-[#F0FDF4] px-6 py-6 text-center">
 
-            {/* Total */}
-            <div className="mt-3 border-t-2 border-black pt-4 font-mono">
+                <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-[#15803D] text-white">
+                  <Check className="h-5 w-5" />
+                </div>
 
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-bold uppercase">
-                  Total
-                </span>
+                <p className="mt-3 text-sm font-bold text-[#17201A]">
+                  Your order has been received
+                </p>
 
-                <span className="text-2xl font-black">
-                  {money(total)}
-                </span>
-              </div>
-
-            </div>
-
-            {/* Payment message */}
-            <div className="mt-5 border-y border-dashed border-black py-4 text-center font-mono text-xs">
-
-              {paymentMethod === 'cash' ? (
-                <>
-                  <p className="font-bold uppercase">
-                    Cash Payment
-                  </p>
-
-                  <p className="mt-1 text-[10px]">
-                    Please have the exact amount ready.
-                  </p>
-                </>
-              ) : paymentMethod === 'online' ? (
-                <>
-                  <p className="font-bold uppercase">
-                    Online Payment
-                  </p>
-
-                  <p className="mt-1 text-[10px]">
-                    Payment processed securely through Yoco.
-                  </p>
-                </>
-              ) : (
-                <>
-                  <p className="font-bold uppercase">
-                    EFT Payment
-                  </p>
-
-                  <p className="mt-1 text-[10px]">
-                    Payment instructions will be provided by the business.
-                  </p>
-                </>
-              )}
-
-            </div>
-
-            {/* Success */}
-            <div className="mt-6 text-center font-mono">
-
-              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full border-2 border-black">
-                <Check size={25} strokeWidth={3} />
-              </div>
-
-              <p className="mt-3 text-lg font-black tracking-[0.12em]">
-                ORDER RECEIVED
-              </p>
-
-              <p className="mt-1 text-[10px] uppercase tracking-[0.16em]">
-                Thank you for ordering with Chowza
-              </p>
-
-            </div>
-
-            {/* Fake barcode */}
-            <div className="mt-7">
-
-              <div className="flex h-12 items-stretch justify-center gap-[2px] overflow-hidden">
-
-                {Array.from({ length: 55 }).map((_, index) => (
-                  <span
-                    key={index}
-                    className="bg-black"
-                    style={{
-                      width: index % 5 === 0 ? 3 : index % 3 === 0 ? 2 : 1,
-                    }}
-                  />
-                ))}
+                <p className="mx-auto mt-1 max-w-[290px] text-xs leading-5 text-[#4F5D53]">
+                  Keep this receipt for your records. You can track your
+                  order using the button below.
+                </p>
 
               </div>
 
-              <p className="mt-2 text-center font-mono text-[9px] tracking-[0.3em]">
-                {String(orderNumber).padStart(8, '0')}
-              </p>
+              {/* Receipt bottom */}
+              <div className="px-6 pb-8 pt-5 text-center">
+                <p className="font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-[#758178]">
+                  Thank you for choosing Chowza
+                </p>
 
-            </div>
+                <p className="mt-2 font-mono text-[9px] text-[#A0AAA3]">
+                  chowza.co.za
+                </p>
+              </div>
 
-            <div className="mt-5 text-center font-mono text-[9px] uppercase tracking-[0.15em]">
-              Keep this receipt for your order
-            </div>
+            </section>
+          </div>
+
+          {/* Action buttons */}
+          <div className="no-print mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
+
+            <button
+              type="button"
+              onClick={onTrackOrder}
+              className="flex min-h-[52px] items-center justify-center gap-2 rounded-2xl bg-[#15803D] px-5 text-sm font-bold text-white shadow-[0_8px_20px_rgba(21,128,61,0.18)] transition hover:bg-[#166534] active:scale-[0.98]"
+            >
+              <Truck className="h-4 w-4" />
+              Track My Order
+            </button>
+
+            <button
+              type="button"
+              onClick={onBackToStore}
+              className="flex min-h-[52px] items-center justify-center gap-2 rounded-2xl border border-[#D8E0DA] bg-white px-5 text-sm font-bold text-[#17201A] transition hover:border-[#15803D] hover:text-[#15803D] active:scale-[0.98]"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Back to Store
+            </button>
 
           </div>
 
-        </div>
-
-        {/* Buttons */}
-        <div
-          className={`mt-7 grid grid-cols-1 gap-3 sm:grid-cols-2 ${
-            printed ? 'receipt-finished' : 'opacity-0'
-          }`}
-        >
-
-          <button
-            type="button"
-            onClick={onTrackOrder}
-            className="flex items-center justify-center gap-2 rounded-xl bg-black px-5 py-3.5 font-semibold text-white shadow-lg transition hover:bg-gray-800"
-          >
-            <Search size={18} />
-            Track My Order
-          </button>
-
-          <button
-            type="button"
-            onClick={onBackToStore}
-            className="flex items-center justify-center gap-2 rounded-xl border border-black/20 bg-white px-5 py-3.5 font-semibold text-black shadow-sm transition hover:bg-gray-50"
-          >
-            <ShoppingBag size={18} />
-            Back to Store
-          </button>
+          {/* Print hint */}
+          <div className="no-print mt-4 text-center">
+            <p className="text-xs text-[#758178]">
+              Need a physical copy? Use the{' '}
+              <button
+                type="button"
+                onClick={handlePrint}
+                className="font-bold text-[#15803D] hover:underline"
+              >
+                Print
+              </button>{' '}
+              button above.
+            </p>
+          </div>
 
         </div>
-
-        {/* WhatsApp */}
-        <button
-          type="button"
-          onClick={() => {
-            window.open(
-              `https://wa.me/?text=${encodeURIComponent(
-                `Hi, I just placed Chowza order #${orderNumber}.`,
-              )}`,
-              '_blank',
-            );
-          }}
-          className={`mt-4 flex w-full items-center justify-center gap-2 rounded-xl border border-green-600 bg-white px-5 py-3.5 font-semibold text-green-700 shadow-sm transition hover:bg-green-50 ${
-            printed ? 'receipt-finished' : 'opacity-0'
-          }`}
-        >
-          <MessageCircle size={18} />
-          Message on WhatsApp
-        </button>
-
-      </div>
-    </div>
+      </main>
+    </>
   );
 };
+
+export default OrderConfirmation;

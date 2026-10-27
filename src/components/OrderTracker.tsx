@@ -242,14 +242,14 @@ const [phoneInput, setPhoneInput] = useState(trackingPhone);
 
       case 'completed':
         return (
-          <span className="text-[#176B35] font-semibold">
+          <span className="text-[#166534] font-semibold">
             Your order has been completed. Thank you for ordering with Chowza!
           </span>
         );
 
       case 'cancelled':
         return (
-          <span className="text-[#9E2B25]">
+          <span className="text-[#EF4444]">
             This order was cancelled.
           </span>
         );
@@ -262,11 +262,11 @@ const [phoneInput, setPhoneInput] = useState(trackingPhone);
   return (
     <div className="container py-8">
       <div className="mb-6 text-center">
-        <h1 className="text-2xl md:text-3xl font-extrabold text-[#1B1815] tracking-tight">
+        <h1 className="text-2xl md:text-3xl font-extrabold text-[#17201A] tracking-tight">
           Live Order Tracking
         </h1>
 
-        <p className="text-sm text-[#5A544C] mt-1">
+        <p className="text-sm text-[#647067] mt-1">
           Follow your meal from the kitchen right to your doorstep.
         </p>
       </div>
@@ -328,8 +328,8 @@ const [phoneInput, setPhoneInput] = useState(trackingPhone);
 
       {/* Error */}
       {searched && errorMessage && (
-        <div className="card mb-6 border border-[#9E2B25]/20 bg-[#FBE6E4]">
-          <div className="flex items-start gap-3 text-[#9E2B25]">
+        <div className="card mb-6 border border-[#EF4444]/20 bg-[#FBE6E4]">
+          <div className="flex items-start gap-3 text-[#EF4444]">
             <AlertTriangle className="w-6 h-6 shrink-0" />
 
             <div>
@@ -349,13 +349,13 @@ const [phoneInput, setPhoneInput] = useState(trackingPhone);
       {order && (
         <div className="card space-y-6 animate-in fade-in duration-300">
           {/* Order Header */}
-          <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-[#1B1815]/10">
+          <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-[#17201A]/10">
             <div>
-              <div className="text-xs font-bold text-[#8C857A] uppercase tracking-wider">
+              <div className="text-xs font-bold text-[#647067] uppercase tracking-wider">
                 Chowza Order
               </div>
 
-              <h2 className="text-2xl font-black text-[#1B1815] flex items-center gap-2">
+              <h2 className="text-2xl font-black text-[#17201A] flex items-center gap-2">
                 <span>Order #{order.orderNumber}</span>
 
                 <span
@@ -377,21 +377,21 @@ const [phoneInput, setPhoneInput] = useState(trackingPhone);
                 </span>
               </h2>
 
-              <p className="text-xs text-[#8C857A] mt-1">
+              <p className="text-xs text-[#647067] mt-1">
                 {order.customerName}
               </p>
             </div>
 
             <div className="text-right">
-              <div className="text-xs text-[#8C857A]">
+              <div className="text-xs text-[#647067]">
                 Order Total
               </div>
 
-              <div className="text-2xl font-black text-[#DD5330]">
+              <div className="text-2xl font-black text-[#15803D]">
                 R{Number(order.total).toFixed(2)}
               </div>
 
-              <div className="text-xs font-semibold text-[#176B35]">
+              <div className="text-xs font-semibold text-[#166534]">
                 Payment: {order.paymentMethod.toUpperCase()}
               </div>
             </div>
@@ -399,7 +399,7 @@ const [phoneInput, setPhoneInput] = useState(trackingPhone);
 
           {/* Cancelled */}
           {order.status === 'cancelled' ? (
-            <div className="p-4 rounded-xl bg-[#FBE6E4] border border-[#9E2B25]/20 flex items-center gap-3 text-[#9E2B25]">
+            <div className="p-4 rounded-xl bg-[#FBE6E4] border border-[#EF4444]/20 flex items-center gap-3 text-[#EF4444]">
               <XCircle className="w-6 h-6 shrink-0" />
 
               <div>
@@ -417,11 +417,11 @@ const [phoneInput, setPhoneInput] = useState(trackingPhone);
               {/* Progress */}
 <div className="relative flex items-center justify-between">
   {/* Background line */}
-  <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-1 bg-[#1B1815]/10 z-0" />
+  <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-1 bg-[#17201A]/10 z-0" />
 
   {/* Completed progress line */}
   <div
-    className="absolute left-0 top-1/2 -translate-y-1/2 h-1 bg-[#25D366] transition-all duration-500 z-0"
+    className="absolute left-0 top-1/2 -translate-y-1/2 h-1 bg-[#22C55E] transition-all duration-500 z-0"
     style={{
       width: `${Math.max(
         0,
@@ -442,10 +442,10 @@ const [phoneInput, setPhoneInput] = useState(trackingPhone);
         <div
           className={`relative z-30 w-9 h-9 rounded-full flex items-center justify-center font-bold text-xs transition-all ${
             isPast
-              ? 'bg-[#25D366] text-white shadow-sm ring-4 ring-white'
+              ? 'bg-[#22C55E] text-white shadow-sm ring-4 ring-white'
               : isCurrent
-                ? 'bg-[#1B1815] text-[#25D366] ring-4 ring-white shadow-md scale-110'
-                : 'bg-[#F3EEE4] text-[#8C857A] border border-[#1B1815]/10 ring-4 ring-white'
+                ? 'bg-[#17201A] text-[#22C55E] ring-4 ring-white shadow-md scale-110'
+                : 'bg-[#F7FAF7] text-[#647067] border border-[#17201A]/10 ring-4 ring-white'
           }`}
         >
           {step.icon}
@@ -454,8 +454,8 @@ const [phoneInput, setPhoneInput] = useState(trackingPhone);
         <span
           className={`text-xs mt-2 text-center font-bold whitespace-nowrap max-w-[80px] truncate ${
             isCurrent
-              ? 'text-[#1B1815]'
-              : 'text-[#8C857A]'
+              ? 'text-[#17201A]'
+              : 'text-[#647067]'
           }`}
         >
           {step.label}
@@ -465,10 +465,10 @@ const [phoneInput, setPhoneInput] = useState(trackingPhone);
   })}
 </div>
               {/* Status Description */}
-              <div className="p-4 rounded-xl bg-[#F3EEE4] border border-[#1B1815]/10 flex items-start gap-3">
-                <Clock className="w-5 h-5 text-[#DD5330] shrink-0 mt-0.5" />
+              <div className="p-4 rounded-xl bg-[#F7FAF7] border border-[#17201A]/10 flex items-start gap-3">
+                <Clock className="w-5 h-5 text-[#15803D] shrink-0 mt-0.5" />
 
-                <div className="text-xs text-[#5A544C] leading-relaxed">
+                <div className="text-xs text-[#647067] leading-relaxed">
                   {getStatusDescription(order.status)}
                 </div>
               </div>
@@ -477,36 +477,36 @@ const [phoneInput, setPhoneInput] = useState(trackingPhone);
 
           {/* Order Items */}
           <div className="space-y-3 pt-2">
-            <h3 className="text-sm font-extrabold uppercase tracking-wider text-[#8C857A]">
+            <h3 className="text-sm font-extrabold uppercase tracking-wider text-[#647067]">
               Order Items
             </h3>
 
-            <div className="divide-y divide-[#1B1815]/10 bg-[#FDFBF7] p-3 rounded-xl border border-[#1B1815]/10 text-sm">
+            <div className="divide-y divide-[#17201A]/10 bg-[#FDFBF7] p-3 rounded-xl border border-[#17201A]/10 text-sm">
               {order.items.map((item, idx) => (
                 <div
                   key={`${item.id}-${idx}`}
                   className="py-2 flex justify-between items-center first:pt-0 last:pb-0"
                 >
                   <div>
-                    <span className="font-bold text-[#1B1815]">
+                    <span className="font-bold text-[#17201A]">
                       {item.quantity}x {item.name}
                     </span>
 
-                    <div className="text-xs text-[#8C857A]">
+                    <div className="text-xs text-[#647067]">
                       R{Number(item.price).toFixed(2)} each
                     </div>
                   </div>
 
-                  <span className="font-bold text-[#DD5330]">
+                  <span className="font-bold text-[#15803D]">
                     R{Number(item.line_total).toFixed(2)}
                   </span>
                 </div>
               ))}
 
-              <div className="pt-2 mt-2 border-t border-dashed border-[#1B1815]/20 flex justify-between text-sm">
+              <div className="pt-2 mt-2 border-t border-dashed border-[#17201A]/20 flex justify-between text-sm">
                 <span className="font-bold">Total</span>
 
-                <span className="font-black text-[#DD5330]">
+                <span className="font-black text-[#15803D]">
                   R{Number(order.total).toFixed(2)}
                 </span>
               </div>
@@ -514,7 +514,7 @@ const [phoneInput, setPhoneInput] = useState(trackingPhone);
           </div>
 
           {/* Actions */}
-          <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-[#1B1815]/10">
+          <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-[#17201A]/10">
             <a
               href={`https://wa.me/?text=${encodeURIComponent(
                 `Hi, I am enquiring about Order #${order.orderNumber}`,

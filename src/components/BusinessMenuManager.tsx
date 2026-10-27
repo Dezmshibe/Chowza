@@ -37,10 +37,10 @@ const emptyForm: MenuForm = {
 };
 
 const inputClass =
-  'w-full rounded-xl border border-[#d9c9b8] bg-white px-4 py-3 text-sm text-[#2f160d] outline-none focus:border-[#d99a4b]';
+  'w-full rounded-xl border border-[#D7E2DA] bg-white px-4 py-3 text-sm text-[#166534] outline-none focus:border-[#22C55E]';
 
 const primaryButton =
-  'inline-flex items-center justify-center gap-2 rounded-xl bg-[#2f160d] px-4 py-3 text-sm font-bold text-white hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50';
+  'inline-flex items-center justify-center gap-2 rounded-xl bg-[#166534] px-4 py-3 text-sm font-bold text-white hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50';
 
 export function BusinessMenuManager({
   businessId,
@@ -214,23 +214,23 @@ export function BusinessMenuManager({
   }
 
   return (
-    <div className="min-h-screen bg-[#f7efe5] text-[#2f160d]">
-      <header className="border-b border-[#e3d6c8] bg-white">
+    <div className="min-h-screen bg-[#F7FAF7] text-[#166534]">
+      <header className="border-b border-[#E1EAE3] bg-white">
         <div className="mx-auto flex max-w-6xl items-center gap-3 px-5 py-4">
           <button
             type="button"
             onClick={onBack}
-            className="rounded-xl border border-[#d9c9b8] p-2 hover:bg-[#f7efe5]"
+            className="rounded-xl border border-[#D7E2DA] p-2 hover:bg-[#F7FAF7]"
             aria-label="Back to dashboard"
           >
             <ArrowLeft size={19} />
           </button>
           <div className="min-w-0 flex-1">
-            <p className="text-xs font-bold uppercase tracking-widest text-[#70452e]">
+            <p className="text-xs font-bold uppercase tracking-widest text-[#166534]">
               Chowza for Business
             </p>
             <h1 className="text-xl font-black">Menu Management</h1>
-            <p className="text-sm text-[#70452e]">{businessName}</p>
+            <p className="text-sm text-[#166534]">{businessName}</p>
           </div>
           <button type="button" onClick={openNewItem} className={primaryButton}>
             <Plus size={17} />
@@ -243,7 +243,7 @@ export function BusinessMenuManager({
         <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
           <div>
             <h2 className="text-2xl font-black">Your menu</h2>
-            <p className="mt-1 text-sm text-[#70452e]">
+            <p className="mt-1 text-sm text-[#166534]">
               Add products, set prices and control availability.
             </p>
           </div>
@@ -267,7 +267,7 @@ export function BusinessMenuManager({
         {formOpen && (
           <form
             onSubmit={saveItem}
-            className="mb-7 rounded-2xl border border-[#d9c9b8] bg-white p-5 shadow-sm sm:p-7"
+            className="mb-7 rounded-2xl border border-[#D7E2DA] bg-white p-5 shadow-sm sm:p-7"
           >
             <div className="mb-5 flex items-center justify-between gap-3">
               <h3 className="text-xl font-black">
@@ -276,7 +276,7 @@ export function BusinessMenuManager({
               <button
                 type="button"
                 onClick={() => setFormOpen(false)}
-                className="rounded-lg p-2 hover:bg-[#f7efe5]"
+                className="rounded-lg p-2 hover:bg-[#F7FAF7]"
                 aria-label="Close form"
               >
                 <X size={20} />
@@ -333,7 +333,7 @@ export function BusinessMenuManager({
                 <div className="relative mt-2">
                   <ImagePlus
                     size={18}
-                    className="absolute left-3 top-3 text-[#70452e]"
+                    className="absolute left-3 top-3 text-[#166534]"
                   />
                   <input
                     className={`${inputClass} pl-10`}
@@ -349,13 +349,13 @@ export function BusinessMenuManager({
 
               {form.image_url && (
                 <div className="sm:col-span-2">
-                  <p className="mb-2 text-xs font-semibold text-[#70452e]">
+                  <p className="mb-2 text-xs font-semibold text-[#166534]">
                     Image preview
                   </p>
                   <img
                     src={form.image_url}
                     alt="Menu item preview"
-                    className="h-36 w-36 rounded-xl border border-[#d9c9b8] object-cover"
+                    className="h-36 w-36 rounded-xl border border-[#D7E2DA] object-cover"
                     onError={(event) => {
                       event.currentTarget.style.display = 'none';
                     }}
@@ -370,7 +370,7 @@ export function BusinessMenuManager({
                   onChange={(event) =>
                     setForm({ ...form, is_available: event.target.checked })
                   }
-                  className="h-4 w-4 accent-[#70452e]"
+                  className="h-4 w-4 accent-[#166534]"
                 />
                 Available for customers to order
               </label>
@@ -384,7 +384,7 @@ export function BusinessMenuManager({
               <button
                 type="button"
                 onClick={() => setFormOpen(false)}
-                className="rounded-xl border border-[#d9c9b8] px-4 py-3 text-sm font-bold hover:bg-[#f7efe5]"
+                className="rounded-xl border border-[#D7E2DA] px-4 py-3 text-sm font-bold hover:bg-[#F7FAF7]"
               >
                 Cancel
               </button>
@@ -393,15 +393,15 @@ export function BusinessMenuManager({
         )}
 
         {loading ? (
-          <div className="flex items-center justify-center gap-3 rounded-2xl bg-white p-12 text-sm text-[#70452e]">
+          <div className="flex items-center justify-center gap-3 rounded-2xl bg-white p-12 text-sm text-[#166534]">
             <LoaderCircle size={20} className="animate-spin" />
             Loading your menu...
           </div>
         ) : items.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-[#cbb8a5] bg-white p-10 text-center">
-            <ImagePlus size={32} className="mx-auto mb-3 text-[#70452e]" />
+            <ImagePlus size={32} className="mx-auto mb-3 text-[#166534]" />
             <h3 className="text-lg font-black">Your menu is empty</h3>
-            <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-[#70452e]">
+            <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-[#166534]">
               Add your first product to start building your online menu.
             </p>
             <button type="button" onClick={openNewItem} className={`${primaryButton} mt-5`}>
@@ -414,7 +414,7 @@ export function BusinessMenuManager({
             {items.map((item) => (
               <article
                 key={item.id}
-                className="overflow-hidden rounded-2xl border border-[#d9c9b8] bg-white shadow-sm"
+                className="overflow-hidden rounded-2xl border border-[#D7E2DA] bg-white shadow-sm"
               >
                 {item.image_url ? (
                   <img
@@ -423,7 +423,7 @@ export function BusinessMenuManager({
                     className="h-44 w-full object-cover"
                   />
                 ) : (
-                  <div className="flex h-44 items-center justify-center bg-[#f0c27c]/20 text-[#70452e]">
+                  <div className="flex h-44 items-center justify-center bg-[#f0c27c]/20 text-[#166534]">
                     <ImagePlus size={32} />
                   </div>
                 )}
@@ -439,7 +439,7 @@ export function BusinessMenuManager({
                     </span>
                   </div>
 
-                  <p className="min-h-10 text-sm leading-5 text-[#70452e]">
+                  <p className="min-h-10 text-sm leading-5 text-[#166534]">
                     {item.description || 'No description added.'}
                   </p>
 
@@ -459,7 +459,7 @@ export function BusinessMenuManager({
                       <button
                         type="button"
                         onClick={() => openEditItem(item)}
-                        className="rounded-lg p-2 hover:bg-[#f7efe5]"
+                        className="rounded-lg p-2 hover:bg-[#F7FAF7]"
                         aria-label={`Edit ${item.name}`}
                       >
                         <Pencil size={17} />

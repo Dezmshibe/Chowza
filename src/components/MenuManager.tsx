@@ -125,14 +125,14 @@ export const MenuManager: React.FC = () => {
   return (
     <div className="container--wide py-8 space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-[#1B1815]/10">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-[#17201A]/10">
         <div>
-          <h1 className="text-2xl md:text-3xl font-extrabold text-[#1B1815] tracking-tight">
+          <h1 className="text-2xl md:text-3xl font-extrabold text-[#17201A] tracking-tight">
             Menu Management
           </h1>
-          <p className="text-xs text-[#5A544C] mt-1">
+          <p className="text-xs text-[#647067] mt-1">
             Manage your digital menu dishes, high-res photos, availability and popular tags for{' '}
-            <strong className="text-[#1B1815]">{ownerBusiness.businessName}</strong>.
+            <strong className="text-[#17201A]">{ownerBusiness.businessName}</strong>.
           </p>
         </div>
 
@@ -148,7 +148,7 @@ export const MenuManager: React.FC = () => {
       {/* Dishes Table / Grid */}
       {businessFoods.length === 0 ? (
         <div className="card empty-state">
-          <ShoppingBag className="w-12 h-12 mx-auto text-[#8C857A]/40 mb-3" />
+          <ShoppingBag className="w-12 h-12 mx-auto text-[#647067]/40 mb-3" />
           <strong>Your menu is empty</strong>
           <p className="text-sm">Add your signature dishes so customers can start ordering.</p>
           <button
@@ -169,7 +169,7 @@ export const MenuManager: React.FC = () => {
             >
               <div>
                 {/* Photo */}
-                <div className="relative h-40 -mx-[22px] -mt-[22px] mb-3 bg-[#F3EEE4] overflow-hidden">
+                <div className="relative h-40 -mx-[22px] -mt-[22px] mb-3 bg-[#F7FAF7] overflow-hidden">
                   {food.imageUrl ? (
                     <img
                       src={food.imageUrl}
@@ -177,14 +177,14 @@ export const MenuManager: React.FC = () => {
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-[#8C857A]">
+                    <div className="w-full h-full flex items-center justify-center text-[#647067]">
                       <ImageIcon className="w-8 h-8 opacity-30" />
                     </div>
                   )}
 
                   <div className="absolute top-2 left-2 flex gap-1">
                     {food.popular && (
-                      <span className="badge bg-[#DD5330] text-white border-0 text-[11px] font-black shadow-xs">
+                      <span className="badge bg-[#15803D] text-white border-0 text-[11px] font-black shadow-xs">
                         Popular
                       </span>
                     )}
@@ -195,7 +195,7 @@ export const MenuManager: React.FC = () => {
                     )}
                   </div>
 
-                  <div className="absolute bottom-2 right-2 bg-[#1B1815]/80 backdrop-blur-xs text-white px-2.5 py-0.5 rounded text-sm font-black">
+                  <div className="absolute bottom-2 right-2 bg-[#17201A]/80 backdrop-blur-xs text-white px-2.5 py-0.5 rounded text-sm font-black">
                     R{food.price.toFixed(2)}
                   </div>
                 </div>
@@ -203,19 +203,19 @@ export const MenuManager: React.FC = () => {
                 {/* Content */}
                 <div className="space-y-1">
                   <div className="flex items-start justify-between gap-2">
-                    <h3 className="font-extrabold text-base text-[#1B1815]">{food.name}</h3>
-                    <span className="text-[11px] px-2 py-0.5 rounded bg-[#F3EEE4] text-[#5A544C] font-semibold shrink-0">
+                    <h3 className="font-extrabold text-base text-[#17201A]">{food.name}</h3>
+                    <span className="text-[11px] px-2 py-0.5 rounded bg-[#F7FAF7] text-[#647067] font-semibold shrink-0">
                       {food.category}
                     </span>
                   </div>
-                  <p className="text-xs text-[#5A544C] line-clamp-2 leading-relaxed">
+                  <p className="text-xs text-[#647067] line-clamp-2 leading-relaxed">
                     {food.description}
                   </p>
                 </div>
               </div>
 
               {/* Controls */}
-              <div className="mt-4 pt-3 border-t border-[#1B1815]/10 space-y-2">
+              <div className="mt-4 pt-3 border-t border-[#17201A]/10 space-y-2">
                 <div className="flex items-center justify-between text-xs">
                   {/* Availability Toggle */}
                   <button
@@ -223,8 +223,8 @@ export const MenuManager: React.FC = () => {
                     onClick={() => toggleFoodAvailable(food.id)}
                     className={`px-2.5 py-1 rounded-full font-bold transition-all cursor-pointer ${
                       food.available
-                        ? 'bg-[#E4F9EC] text-[#176B35]'
-                        : 'bg-[#FBE6E4] text-[#9E2B25]'
+                        ? 'bg-[#E4F9EC] text-[#166534]'
+                        : 'bg-[#FBE6E4] text-[#EF4444]'
                     }`}
                   >
                     {food.available ? '● Available in Store' : '○ Out of Stock'}
@@ -234,8 +234,8 @@ export const MenuManager: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => toggleFoodPopular(food.id)}
-                    className={`p-1.5 rounded-md hover:bg-[#F3EEE4] cursor-pointer ${
-                      food.popular ? 'text-[#DD5330]' : 'text-[#8C857A]'
+                    className={`p-1.5 rounded-md hover:bg-[#F7FAF7] cursor-pointer ${
+                      food.popular ? 'text-[#15803D]' : 'text-[#647067]'
                     }`}
                     title="Toggle popular badge"
                   >
@@ -243,7 +243,7 @@ export const MenuManager: React.FC = () => {
                   </button>
                 </div>
 
-                <div className="flex items-center justify-end gap-2 pt-1 border-t border-[#1B1815]/5">
+                <div className="flex items-center justify-end gap-2 pt-1 border-t border-[#17201A]/5">
                   <button
                     type="button"
                     onClick={() => openEditModal(food)}
@@ -275,15 +275,15 @@ export const MenuManager: React.FC = () => {
       {/* Add / Edit Dish Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto p-6 shadow-2xl border border-[#1B1815]/10 animate-in fade-in zoom-in-95 duration-150">
-            <div className="flex items-center justify-between pb-3 border-b border-[#1B1815]/10 mb-4">
+          <div className="bg-white rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto p-6 shadow-2xl border border-[#17201A]/10 animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between pb-3 border-b border-[#17201A]/10 mb-4">
               <h2 className="text-xl font-bold">
                 {editingFood ? `Edit ${editingFood.name}` : 'Add Menu Item'}
               </h2>
               <button
                 type="button"
                 onClick={() => setIsModalOpen(false)}
-                className="w-8 h-8 rounded-full bg-[#F3EEE4] hover:bg-black/10 flex items-center justify-center cursor-pointer"
+                className="w-8 h-8 rounded-full bg-[#F7FAF7] hover:bg-black/10 flex items-center justify-center cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -357,7 +357,7 @@ export const MenuManager: React.FC = () => {
                   className="mb-2"
                 />
 
-                <div className="text-xs text-[#8C857A] mb-1 font-semibold">Or pick a photo preset:</div>
+                <div className="text-xs text-[#647067] mb-1 font-semibold">Or pick a photo preset:</div>
                 <div className="grid grid-cols-3 gap-1.5">
                   {photoPresets.map((preset, idx) => (
                     <button
@@ -366,8 +366,8 @@ export const MenuManager: React.FC = () => {
                       onClick={() => setImageUrl(preset.url)}
                       className={`text-[11px] p-1.5 rounded border text-left truncate cursor-pointer transition-colors ${
                         imageUrl === preset.url
-                          ? 'border-[#25D366] bg-[#E4F9EC] font-bold text-[#176B35]'
-                          : 'border-[#1B1815]/10 hover:bg-[#F3EEE4]'
+                          ? 'border-[#22C55E] bg-[#E4F9EC] font-bold text-[#166534]'
+                          : 'border-[#17201A]/10 hover:bg-[#F7FAF7]'
                       }`}
                     >
                       {preset.name}
@@ -377,13 +377,13 @@ export const MenuManager: React.FC = () => {
               </div>
 
               {/* Toggles */}
-              <div className="flex items-center gap-4 py-2 border-t border-[#1B1815]/10">
+              <div className="flex items-center gap-4 py-2 border-t border-[#17201A]/10">
                 <label className="flex items-center gap-2 cursor-pointer text-xs font-bold">
                   <input
                     type="checkbox"
                     checked={popular}
                     onChange={(e) => setPopular(e.target.checked)}
-                    className="w-4 h-4 rounded text-[#DD5330]"
+                    className="w-4 h-4 rounded text-[#15803D]"
                   />
                   <span>Mark as Popular Dish</span>
                 </label>
@@ -393,7 +393,7 @@ export const MenuManager: React.FC = () => {
                     type="checkbox"
                     checked={available}
                     onChange={(e) => setAvailable(e.target.checked)}
-                    className="w-4 h-4 rounded text-[#25D366]"
+                    className="w-4 h-4 rounded text-[#22C55E]"
                   />
                   <span>Available for Orders</span>
                 </label>

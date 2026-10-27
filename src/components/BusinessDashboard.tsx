@@ -61,10 +61,10 @@ export const BusinessDashboard: React.FC = () => {
   return (
     <div className="container--wide py-6 space-y-6">
       {/* Top Header & Store Control */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-[#1B1815]/10">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-[#17201A]/10">
         <div>
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl md:text-3xl font-extrabold text-[#1B1815] tracking-tight">
+            <h1 className="text-2xl md:text-3xl font-extrabold text-[#17201A] tracking-tight">
               Kitchen Live Queue
             </h1>
 
@@ -72,7 +72,7 @@ export const BusinessDashboard: React.FC = () => {
             <select
               value={ownerBusiness.id}
               onChange={(e) => setOwnerBusinessId(Number(e.target.value))}
-              className="text-xs font-bold py-1.5 px-3 rounded-lg border border-[#1B1815]/20 bg-white shadow-xs max-w-xs"
+              className="text-xs font-bold py-1.5 px-3 rounded-lg border border-[#17201A]/20 bg-white shadow-xs max-w-xs"
             >
               {businesses.map((b) => (
                 <option key={b.id} value={b.id}>
@@ -81,7 +81,7 @@ export const BusinessDashboard: React.FC = () => {
               ))}
             </select>
           </div>
-          <p className="text-xs text-[#5A544C] mt-1">
+          <p className="text-xs text-[#647067] mt-1">
             Real-time incoming orders, preparation timers and WhatsApp delivery notifications.
           </p>
         </div>
@@ -92,8 +92,8 @@ export const BusinessDashboard: React.FC = () => {
             onClick={() => toggleBusinessOpen(ownerBusiness.id)}
             className={`btn btn-sm font-bold shadow-xs flex items-center gap-2 ${
               ownerBusiness.isOpen
-                ? 'bg-[#E4F9EC] text-[#176B35] hover:bg-[#d0f2dc] border border-[#25D366]/40'
-                : 'bg-[#FBE6E4] text-[#9E2B25] hover:bg-[#f5d2cf] border border-[#9E2B25]/40'
+                ? 'bg-[#E4F9EC] text-[#166534] hover:bg-[#d0f2dc] border border-[#22C55E]/40'
+                : 'bg-[#FBE6E4] text-[#EF4444] hover:bg-[#f5d2cf] border border-[#EF4444]/40'
             }`}
           >
             <Power className="w-4 h-4" />
@@ -104,46 +104,46 @@ export const BusinessDashboard: React.FC = () => {
 
       {/* Metric Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <div className="card p-4 bg-white border-l-4 border-l-[#DD5330]">
-          <div className="text-xs font-bold uppercase tracking-wider text-[#8C857A]">
+        <div className="card p-4 bg-white border-l-4 border-l-[#15803D]">
+          <div className="text-xs font-bold uppercase tracking-wider text-[#647067]">
             Active Orders
           </div>
-          <div className="text-2xl font-black text-[#1B1815] mt-1">
+          <div className="text-2xl font-black text-[#17201A] mt-1">
             {activeCount}
           </div>
-          <div className="text-xs text-[#5A544C] mt-0.5">In kitchen / on the road</div>
+          <div className="text-xs text-[#647067] mt-0.5">In kitchen / on the road</div>
         </div>
 
-        <div className="card p-4 bg-white border-l-4 border-l-[#25D366]">
-          <div className="text-xs font-bold uppercase tracking-wider text-[#8C857A]">
+        <div className="card p-4 bg-white border-l-4 border-l-[#22C55E]">
+          <div className="text-xs font-bold uppercase tracking-wider text-[#647067]">
             Today's Revenue
           </div>
-          <div className="text-2xl font-black text-[#176B35] mt-1">
+          <div className="text-2xl font-black text-[#166534] mt-1">
             R{todaySales.toFixed(2)}
           </div>
-          <div className="text-xs text-[#5A544C] mt-0.5">{todayOrders.length} orders today</div>
+          <div className="text-xs text-[#647067] mt-0.5">{todayOrders.length} orders today</div>
         </div>
 
-        <div className="card p-4 bg-white border-l-4 border-l-[#EDA430]">
-          <div className="text-xs font-bold uppercase tracking-wider text-[#8C857A]">
+        <div className="card p-4 bg-white border-l-4 border-l-[#22C55E]">
+          <div className="text-xs font-bold uppercase tracking-wider text-[#647067]">
             Avg Prep Speed
           </div>
-          <div className="text-2xl font-black text-[#B87A1D] mt-1">
+          <div className="text-2xl font-black text-[#166534] mt-1">
             22 mins
           </div>
-          <div className="text-xs text-[#5A544C] mt-0.5">Target: under 25m</div>
+          <div className="text-xs text-[#647067] mt-0.5">Target: under 25m</div>
         </div>
 
-        <div className="card p-4 bg-white border-l-4 border-l-[#1B1815]">
-          <div className="text-xs font-bold uppercase tracking-wider text-[#8C857A]">
+        <div className="card p-4 bg-white border-l-4 border-l-[#17201A]">
+          <div className="text-xs font-bold uppercase tracking-wider text-[#647067]">
             Subscription
           </div>
-          <div className="text-xl font-black text-[#1B1815] mt-1 capitalize">
+          <div className="text-xl font-black text-[#17201A] mt-1 capitalize">
             {ownerBusiness.plan} Plan
           </div>
           <button
             onClick={() => setCurrentView('subscription')}
-            className="text-xs font-bold text-[#DD5330] hover:underline"
+            className="text-xs font-bold text-[#15803D] hover:underline"
           >
             Manage billing →
           </button>
@@ -159,13 +159,13 @@ export const BusinessDashboard: React.FC = () => {
               onClick={() => setStatusFilter(filter)}
               className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
                 statusFilter === filter
-                  ? 'bg-[#1B1815] text-white shadow-xs'
-                  : 'bg-[#F3EEE4] text-[#5A544C] hover:bg-black/10'
+                  ? 'bg-[#17201A] text-white shadow-xs'
+                  : 'bg-[#F7FAF7] text-[#647067] hover:bg-black/10'
               }`}
             >
               {filter}
               {filter === 'Active' && activeCount > 0 && (
-                <span className="ml-1.5 px-1.5 py-0.2 bg-[#DD5330] text-white rounded-full text-[10px]">
+                <span className="ml-1.5 px-1.5 py-0.2 bg-[#15803D] text-white rounded-full text-[10px]">
                   {activeCount}
                 </span>
               )}
@@ -173,7 +173,7 @@ export const BusinessDashboard: React.FC = () => {
           ))}
         </div>
 
-        <div className="text-xs text-[#8C857A] flex items-center gap-1">
+        <div className="text-xs text-[#647067] flex items-center gap-1">
           <Clock className="w-3.5 h-3.5" />
           <span>Real-time polling active (every 5s)</span>
         </div>
@@ -182,7 +182,7 @@ export const BusinessDashboard: React.FC = () => {
       {/* Orders List */}
       {filteredOrders.length === 0 ? (
         <div className="card empty-state">
-          <ChefHat className="w-12 h-12 mx-auto text-[#8C857A]/40 mb-3" />
+          <ChefHat className="w-12 h-12 mx-auto text-[#647067]/40 mb-3" />
           <strong>No {statusFilter.toLowerCase()} orders</strong>
           <p className="text-sm">
             Place an order from the Storefront or WhatsApp Bot to watch it appear here live!
@@ -198,17 +198,17 @@ export const BusinessDashboard: React.FC = () => {
                 key={order.id}
                 className={`card p-4 transition-all duration-200 border-2 ${
                   order.status === 'Pending'
-                    ? 'border-[#EDA430] bg-[#FCF0DC]/20 shadow-md ring-2 ring-[#EDA430]/20'
+                    ? 'border-[#22C55E] bg-[#F0FDF4]/20 shadow-md ring-2 ring-[#22C55E]/20'
                     : order.status === 'Preparing'
-                    ? 'border-[#DD5330]/40'
-                    : 'border-[#1B1815]/10'
+                    ? 'border-[#15803D]/40'
+                    : 'border-[#17201A]/10'
                 }`}
               >
                 {/* Order Top Line */}
-                <div className="flex items-start justify-between gap-2 pb-3 border-b border-[#1B1815]/10">
+                <div className="flex items-start justify-between gap-2 pb-3 border-b border-[#17201A]/10">
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="text-lg font-black text-[#1B1815]">
+                      <span className="text-lg font-black text-[#17201A]">
                         #{order.orderNumber}
                       </span>
                       <span
@@ -228,7 +228,7 @@ export const BusinessDashboard: React.FC = () => {
                       >
                         {order.status}
                       </span>
-                      <span className="text-xs text-[#8C857A]">
+                      <span className="text-xs text-[#647067]">
                         {new Date(order.createdAt).toLocaleTimeString([], {
                           hour: '2-digit',
                           minute: '2-digit'
@@ -236,7 +236,7 @@ export const BusinessDashboard: React.FC = () => {
                       </span>
                     </div>
 
-                    <div className="font-extrabold text-sm text-[#1B1815] mt-1">
+                    <div className="font-extrabold text-sm text-[#17201A] mt-1">
                       {order.customerName} ·{' '}
                       <a
                         href={`tel:${order.customerPhone}`}
@@ -246,15 +246,15 @@ export const BusinessDashboard: React.FC = () => {
                       </a>
                     </div>
 
-                    <div className="text-xs text-[#5A544C] flex items-center gap-1.5 mt-0.5">
+                    <div className="text-xs text-[#647067] flex items-center gap-1.5 mt-0.5">
                       {order.fulfillmentType === 'Delivery' ? (
                         <>
-                          <Truck className="w-3.5 h-3.5 text-[#25D366]" />
+                          <Truck className="w-3.5 h-3.5 text-[#22C55E]" />
                           <span>Delivery: {order.customerAddress || 'No address provided'}</span>
                         </>
                       ) : (
                         <>
-                          <ShoppingBag className="w-3.5 h-3.5 text-[#EDA430]" />
+                          <ShoppingBag className="w-3.5 h-3.5 text-[#22C55E]" />
                           <span>Pickup at counter</span>
                         </>
                       )}
@@ -262,7 +262,7 @@ export const BusinessDashboard: React.FC = () => {
                   </div>
 
                   <div className="text-right shrink-0">
-                    <div className="text-lg font-black text-[#DD5330]">
+                    <div className="text-lg font-black text-[#15803D]">
                       R{order.total.toFixed(2)}
                     </div>
                     <button
@@ -274,8 +274,8 @@ export const BusinessDashboard: React.FC = () => {
                       }
                       className={`text-[11px] font-bold px-2 py-0.5 rounded cursor-pointer ${
                         order.paymentStatus === 'Paid'
-                          ? 'bg-[#E4F9EC] text-[#176B35]'
-                          : 'bg-[#FCF0DC] text-[#B87A1D]'
+                          ? 'bg-[#E4F9EC] text-[#166534]'
+                          : 'bg-[#F0FDF4] text-[#166534]'
                       }`}
                     >
                       {order.paymentMethod} · {order.paymentStatus}
@@ -286,23 +286,23 @@ export const BusinessDashboard: React.FC = () => {
                 {/* Items in order */}
                 <div className="py-3 space-y-1 text-xs">
                   {order.items.map((item, idx) => (
-                    <div key={idx} className="flex justify-between items-center text-[#1B1815]">
+                    <div key={idx} className="flex justify-between items-center text-[#17201A]">
                       <span className="font-bold">
                         {item.quantity}x {item.name}
                       </span>
-                      <span className="text-[#5A544C]">R{item.total.toFixed(2)}</span>
+                      <span className="text-[#647067]">R{item.total.toFixed(2)}</span>
                     </div>
                   ))}
 
                   {order.customerNote && (
-                    <div className="mt-2 p-2 bg-[#F3EEE4] rounded text-[#B33F22] font-semibold text-[11px]">
+                    <div className="mt-2 p-2 bg-[#F7FAF7] rounded text-[#166534] font-semibold text-[11px]">
                       Kitchen Note: "{order.customerNote}"
                     </div>
                   )}
                 </div>
 
                 {/* Action Toolbar for Kitchen Operator */}
-                <div className="pt-3 border-t border-[#1B1815]/10 flex flex-wrap items-center justify-between gap-2">
+                <div className="pt-3 border-t border-[#17201A]/10 flex flex-wrap items-center justify-between gap-2">
                   {/* Status Transition Buttons */}
                   <div className="flex items-center gap-1.5 flex-wrap">
                     {order.status === 'Pending' && (
@@ -325,8 +325,8 @@ export const BusinessDashboard: React.FC = () => {
 
                     {order.status === 'Confirmed' && (
                       <div className="flex items-center gap-2">
-                        <div className="flex items-center gap-1 text-xs text-[#5A544C]">
-                          <Timer className="w-3.5 h-3.5 text-[#DD5330]" />
+                        <div className="flex items-center gap-1 text-xs text-[#647067]">
+                          <Timer className="w-3.5 h-3.5 text-[#15803D]" />
                           <span>Prep:</span>
                           <select
                             value={prepMinutes}
@@ -376,7 +376,7 @@ export const BusinessDashboard: React.FC = () => {
                     )}
 
                     {order.status === 'Completed' && (
-                      <span className="text-xs text-[#176B35] font-bold flex items-center gap-1">
+                      <span className="text-xs text-[#166534] font-bold flex items-center gap-1">
                         <CheckCircle2 className="w-4 h-4" />
                         <span>Order Completed</span>
                       </span>
@@ -392,10 +392,10 @@ export const BusinessDashboard: React.FC = () => {
                     }.`}
                     target="_blank"
                     rel="noreferrer"
-                    className="text-xs font-bold text-[#176B35] hover:underline flex items-center gap-1"
+                    className="text-xs font-bold text-[#166534] hover:underline flex items-center gap-1"
                     title="Send status text directly via WhatsApp"
                   >
-                    <MessageCircle className="w-3.5 h-3.5 text-[#25D366]" />
+                    <MessageCircle className="w-3.5 h-3.5 text-[#22C55E]" />
                     <span>WhatsApp Customer</span>
                   </a>
                 </div>

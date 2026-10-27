@@ -52,7 +52,7 @@ export function BusinessPasswordReset({
   }
 
   return (
-    <div className="min-h-screen bg-[#F3EEE4] flex items-center justify-center px-4 py-8">
+    <div className="min-h-screen bg-[#F7FAF7] flex items-center justify-center px-4 py-8">
       <div className="w-full max-w-md bg-white rounded-2xl shadow-sm border border-[#DDD5C8] p-8">
         <button
           type="button"

@@ -621,7 +621,7 @@ if (accessDenied) {
             <ShieldCheck size={26} />
           </div>
 
-          <div className="mx-auto mb-4 h-7 w-7 animate-spin rounded-full border-2 border-[#d99a4b] border-t-transparent" />
+          <div className="mx-auto mb-4 h-7 w-7 animate-spin rounded-full border-2 border-[#22C55E] border-t-transparent" />
 
           <p className="text-sm font-bold text-[#4a3428]">
             Loading Chowza Command Centre...
@@ -643,7 +643,7 @@ if (accessDenied) {
               </div>
 
               <div>
-                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#d99a4b]">
+                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#22C55E]">
                   Chowza
                 </p>
 
@@ -1063,7 +1063,7 @@ if (accessDenied) {
             )}
           </main>
 
-          <footer className="border-t border-[#ddd3ca] bg-white px-6 py-5 text-center text-xs text-[#8a776b]">
+          <footer className="border-t border-[#ddd3ca] bg-white px-6 py-5 text-center text-xs text-[#647067]">
             <div className="flex items-center justify-center gap-2">
               <ShieldCheck size={14} />
               Chowza Platform Administration
@@ -1266,7 +1266,7 @@ function Overview({
                             {item.business.name}
                           </p>
 
-                          <p className="text-xs text-[#8a776b]">
+                          <p className="text-xs text-[#647067]">
                             {item.orders} orders
                           </p>
                         </div>
@@ -1410,7 +1410,7 @@ function Overview({
                       {item.business.name}
                     </p>
 
-                    <p className="text-xs text-[#8a776b]">
+                    <p className="text-xs text-[#647067]">
                       {item.orders} orders ·{' '}
                       {item.menuItems} menu items
                     </p>
@@ -1456,7 +1456,7 @@ function Overview({
                     Order #{order.order_number}
                   </p>
 
-                  <p className="truncate text-xs text-[#8a776b]">
+                  <p className="truncate text-xs text-[#647067]">
                     {businessNameById.get(
                       order.business_id,
                     ) ?? 'Unknown business'}{' '}
@@ -1580,7 +1580,7 @@ function BusinessesPanel({
                       {business.name}
                     </h3>
 
-                    <p className="text-sm text-[#8a776b]">
+                    <p className="text-sm text-[#647067]">
                       /{business.slug}
                     </p>
                   </div>
@@ -1772,7 +1772,7 @@ function OrdersPanel({
                   ) ?? 'Unknown business'}
                 </p>
 
-                <p className="truncate text-xs text-[#8a776b]">
+                <p className="truncate text-xs text-[#647067]">
                   {order.customer_name} ·{' '}
                   {order.customer_phone} ·{' '}
                   {shortDate(
@@ -1790,7 +1790,7 @@ function OrdersPanel({
                   )}
                 </p>
 
-                <p className="text-xs text-[#8a776b]">
+                <p className="text-xs text-[#647067]">
                   {order.payment_method ??
                     'Payment not specified'}{' '}
                   · {order.payment_status}
@@ -1920,7 +1920,7 @@ function PaymentsPanel({
                       {business.name}
                     </p>
 
-                    <p className="text-xs text-[#8a776b]">
+                    <p className="text-xs text-[#647067]">
                       Provider:{' '}
                       {connection?.provider ??
                         'Not connected'}
@@ -2131,7 +2131,7 @@ function AnalyticsPanel({
         <div className="mt-6 overflow-x-auto">
           <table className="w-full min-w-[650px] text-left">
             <thead>
-              <tr className="border-b border-[#eee6df] text-xs uppercase tracking-wider text-[#8a776b]">
+              <tr className="border-b border-[#eee6df] text-xs uppercase tracking-wider text-[#647067]">
                 <th className="px-3 py-3">
                   Business
                 </th>
@@ -2714,7 +2714,7 @@ function SidebarItem({
           <span
             className={`rounded-full px-2 py-0.5 text-[10px] font-black ${
               active
-                ? 'bg-[#f1e7de] text-[#70452e]'
+                ? 'bg-[#f1e7de] text-[#166534]'
                 : 'bg-white/10 text-white/60'
             }`}
           >
@@ -2766,7 +2766,7 @@ function MetricCard({
     <div className="rounded-3xl border border-[#ddd3ca] bg-white p-5 shadow-sm">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="text-xs font-black uppercase tracking-wider text-[#8a776b]">
+          <p className="text-xs font-black uppercase tracking-wider text-[#647067]">
             {label}
           </p>
 
@@ -2807,7 +2807,7 @@ function MiniMetric({
           {value}
         </p>
 
-        <p className="text-xs text-[#8a776b]">
+        <p className="text-xs text-[#647067]">
           {label}
         </p>
       </div>

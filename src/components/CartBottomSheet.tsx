@@ -136,12 +136,12 @@ export const CartBottomSheet: React.FC = () => {
           <div className="sheet-header">
             <div>
               <h2 className="text-xl font-bold flex items-center gap-2">
-                <ShoppingBag className="w-5 h-5 text-[#25D366]" />
+                <ShoppingBag className="w-5 h-5 text-[#22C55E]" />
                 <span>Your Order</span>
               </h2>
               {currentBusiness && (
-                <p className="text-xs text-[#8C857A] font-medium mt-0.5">
-                  Ordering from <strong className="text-[#1B1815]">{currentBusiness.businessName}</strong>
+                <p className="text-xs text-[#647067] font-medium mt-0.5">
+                  Ordering from <strong className="text-[#17201A]">{currentBusiness.businessName}</strong>
                 </p>
               )}
             </div>
@@ -158,7 +158,7 @@ export const CartBottomSheet: React.FC = () => {
           {/* Cart Contents */}
           {cart.length === 0 ? (
             <div className="empty-state">
-              <ShoppingBag className="w-12 h-12 mx-auto text-[#8C857A]/40 mb-3" />
+              <ShoppingBag className="w-12 h-12 mx-auto text-[#647067]/40 mb-3" />
               <strong>Your cart is empty</strong>
               <p className="text-sm">Browse our menu and pick something delicious!</p>
               <button
@@ -173,13 +173,13 @@ export const CartBottomSheet: React.FC = () => {
               {/* Items List */}
               <div className="card p-3 divide-y divide-black/5 bg-[#FDFBF7]">
                 <div className="flex justify-between items-center pb-2">
-                  <span className="text-xs font-bold uppercase tracking-wider text-[#8C857A]">
+                  <span className="text-xs font-bold uppercase tracking-wider text-[#647067]">
                     Cart Items ({cart.length})
                   </span>
                   <button
                     type="button"
                     onClick={clearCart}
-                    className="text-xs text-[#9E2B25] hover:underline font-semibold"
+                    className="text-xs text-[#EF4444] hover:underline font-semibold"
                   >
                     Clear All
                   </button>
@@ -189,18 +189,18 @@ export const CartBottomSheet: React.FC = () => {
                   {cart.map(({ food, quantity }) => (
                     <div key={food.id} className="flex items-center justify-between gap-3 text-sm">
                       <div className="flex-1 min-w-0">
-                        <div className="font-bold text-[#1B1815] truncate">{food.name}</div>
-                        <div className="text-xs text-[#5A544C]">
-                          R{food.price.toFixed(2)} each · <strong className="text-[#DD5330]">R{(food.price * quantity).toFixed(2)}</strong>
+                        <div className="font-bold text-[#17201A] truncate">{food.name}</div>
+                        <div className="text-xs text-[#647067]">
+                          R{food.price.toFixed(2)} each · <strong className="text-[#15803D]">R{(food.price * quantity).toFixed(2)}</strong>
                         </div>
                       </div>
 
                       {/* Quantity Controls */}
-                      <div className="flex items-center gap-1.5 bg-white border border-[#1B1815]/10 rounded-lg p-1">
+                      <div className="flex items-center gap-1.5 bg-white border border-[#17201A]/10 rounded-lg p-1">
                         <button
                           type="button"
                           onClick={() => updateCartQuantity(food.id, quantity - 1)}
-                          className="w-7 h-7 flex items-center justify-center rounded text-[#1B1815] hover:bg-[#F3EEE4]"
+                          className="w-7 h-7 flex items-center justify-center rounded text-[#17201A] hover:bg-[#F7FAF7]"
                           aria-label="Decrease quantity"
                         >
                           <Minus className="w-3.5 h-3.5" />
@@ -209,7 +209,7 @@ export const CartBottomSheet: React.FC = () => {
                         <button
                           type="button"
                           onClick={() => updateCartQuantity(food.id, quantity + 1)}
-                          className="w-7 h-7 flex items-center justify-center rounded text-[#1B1815] hover:bg-[#F3EEE4]"
+                          className="w-7 h-7 flex items-center justify-center rounded text-[#17201A] hover:bg-[#F7FAF7]"
                           aria-label="Increase quantity"
                         >
                           <Plus className="w-3.5 h-3.5" />
@@ -219,7 +219,7 @@ export const CartBottomSheet: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => removeFromCart(food.id)}
-                        className="text-[#8C857A] hover:text-[#9E2B25] p-1"
+                        className="text-[#647067] hover:text-[#EF4444] p-1"
                         title="Remove item"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -318,15 +318,15 @@ export const CartBottomSheet: React.FC = () => {
               <div className="field">
                 <label>Promotion Code</label>
                 {appliedPromo ? (
-                  <div className="flex items-center justify-between p-2.5 rounded-lg bg-[#E4F9EC] border border-[#25D366]/40 text-sm">
-                    <div className="flex items-center gap-2 text-[#176B35] font-semibold">
+                  <div className="flex items-center justify-between p-2.5 rounded-lg bg-[#E4F9EC] border border-[#22C55E]/40 text-sm">
+                    <div className="flex items-center gap-2 text-[#166534] font-semibold">
                       <Tag className="w-4 h-4" />
                       <span>Code <strong>{appliedPromo.code}</strong> applied ({appliedPromo.description})</span>
                     </div>
                     <button
                       type="button"
                       onClick={removePromoCode}
-                      className="text-xs font-bold text-[#9E2B25] hover:underline"
+                      className="text-xs font-bold text-[#EF4444] hover:underline"
                     >
                       Remove
                     </button>
@@ -350,7 +350,7 @@ export const CartBottomSheet: React.FC = () => {
                       </button>
                     </div>
                     {promoMessage && (
-                      <p className={`text-xs mt-1 font-semibold ${promoMessage.error ? 'text-[#9E2B25]' : 'text-[#176B35]'}`}>
+                      <p className={`text-xs mt-1 font-semibold ${promoMessage.error ? 'text-[#EF4444]' : 'text-[#166534]'}`}>
                         {promoMessage.text}
                       </p>
                     )}
@@ -367,11 +367,11 @@ export const CartBottomSheet: React.FC = () => {
                     onClick={() => setPaymentMethod('Cash')}
                     className={`p-3 rounded-xl border text-left flex flex-col items-start gap-1 transition-all ${
                       paymentMethod === 'Cash'
-                        ? 'border-[#25D366] bg-[#E4F9EC]/50 font-bold'
-                        : 'border-[#1B1815]/10 bg-white hover:bg-[#F3EEE4]'
+                        ? 'border-[#22C55E] bg-[#E4F9EC]/50 font-bold'
+                        : 'border-[#17201A]/10 bg-white hover:bg-[#F7FAF7]'
                     }`}
                   >
-                    <Banknote className="w-5 h-5 text-[#25D366]" />
+                    <Banknote className="w-5 h-5 text-[#22C55E]" />
                     <span className="text-xs">Cash on {fulfillmentType === 'Delivery' ? 'Delivery' : 'Pickup'}</span>
                   </button>
 
@@ -380,8 +380,8 @@ export const CartBottomSheet: React.FC = () => {
                     onClick={() => setPaymentMethod('Yoco')}
                     className={`p-3 rounded-xl border text-left flex flex-col items-start gap-1 transition-all ${
                       paymentMethod === 'Yoco'
-                        ? 'border-[#25D366] bg-[#E4F9EC]/50 font-bold'
-                        : 'border-[#1B1815]/10 bg-white hover:bg-[#F3EEE4]'
+                        ? 'border-[#22C55E] bg-[#E4F9EC]/50 font-bold'
+                        : 'border-[#17201A]/10 bg-white hover:bg-[#F7FAF7]'
                     }`}
                   >
                     <CreditCard className="w-5 h-5 text-[#0284C7]" />
@@ -393,49 +393,49 @@ export const CartBottomSheet: React.FC = () => {
                     onClick={() => setPaymentMethod('EFT')}
                     className={`p-3 rounded-xl border text-left flex flex-col items-start gap-1 transition-all ${
                       paymentMethod === 'EFT'
-                        ? 'border-[#25D366] bg-[#E4F9EC]/50 font-bold'
-                        : 'border-[#1B1815]/10 bg-white hover:bg-[#F3EEE4]'
+                        ? 'border-[#22C55E] bg-[#E4F9EC]/50 font-bold'
+                        : 'border-[#17201A]/10 bg-white hover:bg-[#F7FAF7]'
                     }`}
                   >
-                    <Building2 className="w-5 h-5 text-[#EDA430]" />
+                    <Building2 className="w-5 h-5 text-[#22C55E]" />
                     <span className="text-xs">Bank EFT</span>
                   </button>
                 </div>
 
                 {paymentMethod === 'EFT' && currentBusiness?.bankName && (
-                  <div className="mt-3 p-3 bg-[#FCF0DC] border border-[#EDA430]/30 rounded-lg text-xs space-y-1">
-                    <p className="font-bold text-[#B87A1D]">Bank Transfer Details:</p>
+                  <div className="mt-3 p-3 bg-[#F0FDF4] border border-[#22C55E]/30 rounded-lg text-xs space-y-1">
+                    <p className="font-bold text-[#166534]">Bank Transfer Details:</p>
                     <p><strong>Bank:</strong> {currentBusiness.bankName}</p>
                     <p><strong>Account Holder:</strong> {currentBusiness.accountHolder}</p>
                     <p><strong>Account Number:</strong> {currentBusiness.accountNumber}</p>
                     <p><strong>Branch Code:</strong> {currentBusiness.branchCode}</p>
-                    <p className="text-[#5A544C] pt-1 italic">{currentBusiness.paymentInstructions}</p>
+                    <p className="text-[#647067] pt-1 italic">{currentBusiness.paymentInstructions}</p>
                   </div>
                 )}
               </div>
 
               {/* Order Totals Summary */}
-              <div className="card bg-[#FBF7EE] p-3 text-sm space-y-1.5 border-[#1B1815]/15">
-                <div className="flex justify-between text-[#5A544C]">
+              <div className="card bg-[#FBF7EE] p-3 text-sm space-y-1.5 border-[#17201A]/15">
+                <div className="flex justify-between text-[#647067]">
                   <span>Subtotal</span>
                   <span>R{cartSubtotal.toFixed(2)}</span>
                 </div>
 
                 {promoDiscount > 0 && (
-                  <div className="flex justify-between text-[#176B35] font-semibold">
+                  <div className="flex justify-between text-[#166534] font-semibold">
                     <span>Discount ({appliedPromo?.code})</span>
                     <span>-R{promoDiscount.toFixed(2)}</span>
                   </div>
                 )}
 
-                <div className="flex justify-between text-[#5A544C]">
+                <div className="flex justify-between text-[#647067]">
                   <span>{fulfillmentType} Fee</span>
                   <span>{cartDeliveryFee > 0 ? `R${cartDeliveryFee.toFixed(2)}` : 'FREE'}</span>
                 </div>
 
-                <div className="border-t border-[#1B1815]/15 pt-2 flex justify-between items-baseline text-base font-extrabold text-[#1B1815]">
+                <div className="border-t border-[#17201A]/15 pt-2 flex justify-between items-baseline text-base font-extrabold text-[#17201A]">
                   <span>Total Due</span>
-                  <span className="text-xl text-[#DD5330]">R{cartTotal.toFixed(2)}</span>
+                  <span className="text-xl text-[#15803D]">R{cartTotal.toFixed(2)}</span>
                 </div>
               </div>
 
@@ -462,7 +462,7 @@ export const CartBottomSheet: React.FC = () => {
       {/* Realistic Yoco Hosted Checkout Modal Simulation */}
       {showYocoModal && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl overflow-hidden border border-[#1B1815]/10 animate-in fade-in zoom-in-95 duration-200">
+          <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl overflow-hidden border border-[#17201A]/10 animate-in fade-in zoom-in-95 duration-200">
             {/* Yoco Header */}
             <div className="bg-[#0D1527] text-white p-5 flex items-center justify-between">
               <div>
@@ -476,8 +476,8 @@ export const CartBottomSheet: React.FC = () => {
             </div>
 
             <div className="p-6 space-y-4">
-              <div className="p-3 bg-[#E4F9EC] rounded-xl flex items-center gap-3 text-xs text-[#176B35] font-semibold border border-[#25D366]/30">
-                <Sparkles className="w-5 h-5 text-[#25D366] shrink-0" />
+              <div className="p-3 bg-[#E4F9EC] rounded-xl flex items-center gap-3 text-xs text-[#166534] font-semibold border border-[#22C55E]/30">
+                <Sparkles className="w-5 h-5 text-[#22C55E] shrink-0" />
                 <span>Simulated Secure 3D Yoco Payment Sandbox (ZAR {cartTotal.toFixed(2)})</span>
               </div>
 
@@ -488,18 +488,18 @@ export const CartBottomSheet: React.FC = () => {
                     type="text"
                     readOnly
                     value="•••• •••• •••• 4242"
-                    className="font-mono bg-[#F3EEE4]"
+                    className="font-mono bg-[#F7FAF7]"
                   />
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
                   <div className="field">
                     <label>Expiry Date</label>
-                    <input type="text" readOnly value="12 / 28" className="bg-[#F3EEE4]" />
+                    <input type="text" readOnly value="12 / 28" className="bg-[#F7FAF7]" />
                   </div>
                   <div className="field">
                     <label>CVV</label>
-                    <input type="password" readOnly value="•••" className="bg-[#F3EEE4]" />
+                    <input type="password" readOnly value="•••" className="bg-[#F7FAF7]" />
                   </div>
                 </div>
               </div>

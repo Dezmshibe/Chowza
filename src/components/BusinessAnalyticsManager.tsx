@@ -182,13 +182,13 @@ export function BusinessAnalyticsManager({
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#f7efe5] p-6">
+      <div className="min-h-screen bg-[#F7FAF7] p-6">
         <div className="flex min-h-[60vh] items-center justify-center">
           <LoaderCircle
-            className="animate-spin text-[#70452e]"
+            className="animate-spin text-[#166534]"
             size={30}
           />
-          <span className="ml-3 text-sm text-[#70452e]">
+          <span className="ml-3 text-sm text-[#166534]">
             Loading your analytics...
           </span>
         </div>
@@ -197,13 +197,13 @@ export function BusinessAnalyticsManager({
   }
 
   return (
-    <div className="min-h-screen bg-[#f7efe5] px-5 py-7 text-[#2f160d]">
+    <div className="min-h-screen bg-[#F7FAF7] px-5 py-7 text-[#166534]">
       <main className="mx-auto max-w-5xl">
         <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
           <button
             type="button"
             onClick={onBack}
-            className="flex items-center gap-2 rounded-xl border border-[#d9c9b8] bg-white px-4 py-3 text-sm font-semibold hover:bg-[#f0c27c]/20"
+            className="flex items-center gap-2 rounded-xl border border-[#D7E2DA] bg-white px-4 py-3 text-sm font-semibold hover:bg-[#f0c27c]/20"
           >
             <ArrowLeft size={17} />
             Back to business tools
@@ -213,7 +213,7 @@ export function BusinessAnalyticsManager({
             type="button"
             onClick={() => void loadAnalytics(true)}
             disabled={refreshing}
-            className="flex items-center gap-2 rounded-xl bg-[#2f160d] px-4 py-3 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-60"
+            className="flex items-center gap-2 rounded-xl bg-[#166534] px-4 py-3 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-60"
           >
             {refreshing ? (
               <LoaderCircle className="animate-spin" size={17} />
@@ -224,9 +224,9 @@ export function BusinessAnalyticsManager({
           </button>
         </div>
 
-        <section className="mb-6 rounded-2xl bg-[#2f160d] p-6 text-white sm:p-8">
+        <section className="mb-6 rounded-2xl bg-[#166534] p-6 text-white sm:p-8">
           <div className="flex items-center gap-3">
-            <BarChart3 className="text-[#d99a4b]" size={30} />
+            <BarChart3 className="text-[#22C55E]" size={30} />
             <div>
               <p className="text-xs font-bold uppercase tracking-[0.15em] text-[#f0c27c]">
                 Business analytics
@@ -274,11 +274,11 @@ export function BusinessAnalyticsManager({
           />
         </section>
 
-        <section className="mb-8 rounded-2xl border border-[#d9c9b8] bg-white p-6 shadow-sm">
+        <section className="mb-8 rounded-2xl border border-[#D7E2DA] bg-white p-6 shadow-sm">
           <h2 className="mb-4 text-xl font-black">Order statuses</h2>
 
           {orders.length === 0 ? (
-            <p className="text-sm leading-6 text-[#70452e]">
+            <p className="text-sm leading-6 text-[#166534]">
               No orders have been recorded yet. These figures will update
               when orders are saved to your database.
             </p>
@@ -294,13 +294,13 @@ export function BusinessAnalyticsManager({
                   <div key={item.status}>
                     <div className="mb-1 flex justify-between gap-3 text-sm">
                       <span className="font-medium">{item.label}</span>
-                      <span className="text-[#70452e]">
+                      <span className="text-[#166534]">
                         {item.count}
                       </span>
                     </div>
                     <div className="h-2 overflow-hidden rounded-full bg-[#f0c27c]/25">
                       <div
-                        className="h-full rounded-full bg-[#d99a4b]"
+                        className="h-full rounded-full bg-[#22C55E]"
                         style={{ width: `${percentage}%` }}
                       />
                     </div>
@@ -312,17 +312,17 @@ export function BusinessAnalyticsManager({
         </section>
 
         <section className="mb-8 grid gap-4 md:grid-cols-2">
-          <div className="rounded-2xl border border-[#d9c9b8] bg-white p-6 shadow-sm">
+          <div className="rounded-2xl border border-[#D7E2DA] bg-white p-6 shadow-sm">
             <h2 className="mb-4 text-xl font-black">Menu overview</h2>
 
             <p className="text-3xl font-black">
               {menuItems.length}
             </p>
-            <p className="mt-1 text-sm text-[#70452e]">
+            <p className="mt-1 text-sm text-[#166534]">
               Total menu items
             </p>
 
-            <div className="mt-5 border-t border-[#e3d6c8] pt-4">
+            <div className="mt-5 border-t border-[#E1EAE3] pt-4">
               <div className="flex justify-between gap-3 text-sm">
                 <span>Available items</span>
                 <strong>
@@ -338,13 +338,13 @@ export function BusinessAnalyticsManager({
             </div>
           </div>
 
-          <div className="rounded-2xl border border-[#d9c9b8] bg-white p-6 shadow-sm">
+          <div className="rounded-2xl border border-[#D7E2DA] bg-white p-6 shadow-sm">
             <h2 className="mb-4 text-xl font-black">
               Top ordered items
             </h2>
 
             {topItems.length === 0 ? (
-              <p className="text-sm leading-6 text-[#70452e]">
+              <p className="text-sm leading-6 text-[#166534]">
                 No item breakdown is available yet. This section needs
                 order records with item names and quantities.
               </p>
@@ -356,14 +356,14 @@ export function BusinessAnalyticsManager({
                     className="flex items-center justify-between gap-3"
                   >
                     <div className="flex min-w-0 items-center gap-3">
-                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#f0c27c]/30 text-sm font-black text-[#70452e]">
+                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#f0c27c]/30 text-sm font-black text-[#166534]">
                         {index + 1}
                       </span>
                       <span className="truncate text-sm font-semibold">
                         {item.name}
                       </span>
                     </div>
-                    <span className="shrink-0 text-sm text-[#70452e]">
+                    <span className="shrink-0 text-sm text-[#166534]">
                       {item.quantity} sold
                     </span>
                   </div>
@@ -373,7 +373,7 @@ export function BusinessAnalyticsManager({
           </div>
         </section>
 
-        <p className="text-xs leading-5 text-[#70452e]">
+        <p className="text-xs leading-5 text-[#166534]">
           Revenue counts completed orders only. Cancelled orders are
           excluded from the top-item ranking. These reports reflect
           records accessible to your business account; they do not yet
@@ -394,8 +394,8 @@ function MetricCard({
   value: string;
 }) {
   return (
-    <div className="rounded-2xl border border-[#d9c9b8] bg-white p-5 shadow-sm">
-      <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-[#f0c27c]/30 text-[#70452e]">
+    <div className="rounded-2xl border border-[#D7E2DA] bg-white p-5 shadow-sm">
+      <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-[#f0c27c]/30 text-[#166534]">
         {icon}
       </div>
       <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#999]">

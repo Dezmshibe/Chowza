@@ -421,15 +421,15 @@ export const WhatsAppSimulator: React.FC = () => {
   return (
     <div className="container max-w-2xl py-6">
       {/* Simulator Explainer Header */}
-      <div className="card mb-4 p-4 bg-[#FDFBF7] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-[#25D366]/40 shadow-sm">
+      <div className="card mb-4 p-4 bg-[#FDFBF7] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-[#22C55E]/40 shadow-sm">
         <div>
           <div className="flex items-center gap-2">
-            <span className="badge bg-[#25D366] text-white font-extrabold text-xs">
+            <span className="badge bg-[#22C55E] text-white font-extrabold text-xs">
               Live Interactive Bot
             </span>
-            <span className="text-xs font-bold text-[#1B1815]">Meta WhatsApp Cloud API v23.0</span>
+            <span className="text-xs font-bold text-[#17201A]">Meta WhatsApp Cloud API v23.0</span>
           </div>
-          <p className="text-xs text-[#5A544C] mt-1">
+          <p className="text-xs text-[#647067] mt-1">
             Simulates the exact Python webhook flow (`/webhook`). Orders placed here sync to the Kitchen Dashboard!
           </p>
         </div>
@@ -444,15 +444,15 @@ export const WhatsAppSimulator: React.FC = () => {
       </div>
 
       {/* WhatsApp Mobile Mockup Container */}
-      <div className="bg-[#EFEAE2] rounded-3xl overflow-hidden shadow-2xl border-4 border-[#1B1815] flex flex-col h-[650px] relative">
+      <div className="bg-[#EFEAE2] rounded-3xl overflow-hidden shadow-2xl border-4 border-[#17201A] flex flex-col h-[650px] relative">
         {/* WhatsApp App Topbar */}
         <div className="bg-[#075E54] text-white px-4 py-3 flex items-center justify-between shadow-md z-10">
           <div className="flex items-center gap-3">
             <div className="relative">
-              <div className="w-10 h-10 rounded-full bg-[#25D366] text-white flex items-center justify-center font-bold text-sm shadow">
+              <div className="w-10 h-10 rounded-full bg-[#22C55E] text-white flex items-center justify-center font-bold text-sm shadow">
                 <MessageCircle className="w-6 h-6 fill-current" />
               </div>
-              <span className="w-3 h-3 rounded-full bg-[#25D366] border-2 border-[#075E54] absolute bottom-0 right-0" />
+              <span className="w-3 h-3 rounded-full bg-[#22C55E] border-2 border-[#075E54] absolute bottom-0 right-0" />
             </div>
 
             <div>
@@ -476,7 +476,7 @@ export const WhatsAppSimulator: React.FC = () => {
           className="flex-1 p-4 overflow-y-auto space-y-3"
           style={{
             backgroundImage:
-              'radial-gradient(#1b1815 0.5px, transparent 0.5px), radial-gradient(#1b1815 0.5px, #efeae2 0.5px)',
+              'radial-gradient(#17201A 0.5px, transparent 0.5px), radial-gradient(#17201A 0.5px, #efeae2 0.5px)',
             backgroundSize: '20px 20px',
             backgroundPosition: '0 0, 10px 10px',
             backgroundColor: '#EFEAE2'
@@ -484,7 +484,7 @@ export const WhatsAppSimulator: React.FC = () => {
         >
           {/* Encryption Notice */}
           <div className="text-center">
-            <span className="text-[10px] bg-[#FCF0DC] text-[#B87A1D] px-2.5 py-1 rounded-md shadow-xs inline-block max-w-xs font-medium">
+            <span className="text-[10px] bg-[#F0FDF4] text-[#166534] px-2.5 py-1 rounded-md shadow-xs inline-block max-w-xs font-medium">
               🔒 Messages and calls are end-to-end encrypted. No one outside of this chat can read them.
             </span>
           </div>
@@ -499,8 +499,8 @@ export const WhatsAppSimulator: React.FC = () => {
                 <div
                   className={`max-w-[85%] rounded-2xl px-3.5 py-2.5 text-xs shadow-xs relative ${
                     isBot
-                      ? 'bg-white text-[#1B1815] rounded-tl-xs'
-                      : 'bg-[#DCF8C6] text-[#1B1815] rounded-tr-xs'
+                      ? 'bg-white text-[#17201A] rounded-tl-xs'
+                      : 'bg-[#DCF8C6] text-[#17201A] rounded-tr-xs'
                   }`}
                 >
                   {/* Parse basic markdown like *bold* and _italic_ */}
@@ -520,7 +520,7 @@ export const WhatsAppSimulator: React.FC = () => {
                     ))}
                   </div>
 
-                  <div className="flex items-center justify-end gap-1 mt-1 text-[9px] text-[#8C857A]">
+                  <div className="flex items-center justify-end gap-1 mt-1 text-[9px] text-[#647067]">
                     <span>{m.time}</span>
                     {!isBot && <CheckCheck className="w-3.5 h-3.5 text-[#34B7F1]" />}
                   </div>
@@ -538,14 +538,14 @@ export const WhatsAppSimulator: React.FC = () => {
               <button
                 type="button"
                 onClick={() => handleSend('1')}
-                className="px-2.5 py-1 rounded-full bg-white text-[#1B1815] text-[11px] font-bold shadow-xs hover:bg-[#F3EEE4] cursor-pointer"
+                className="px-2.5 py-1 rounded-full bg-white text-[#17201A] text-[11px] font-bold shadow-xs hover:bg-[#F7FAF7] cursor-pointer"
               >
                 1. View Businesses
               </button>
               <button
                 type="button"
                 onClick={() => handleSend('3')}
-                className="px-2.5 py-1 rounded-full bg-white text-[#1B1815] text-[11px] font-bold shadow-xs hover:bg-[#F3EEE4] cursor-pointer"
+                className="px-2.5 py-1 rounded-full bg-white text-[#17201A] text-[11px] font-bold shadow-xs hover:bg-[#F7FAF7] cursor-pointer"
               >
                 3. Track Order
               </button>
@@ -556,7 +556,7 @@ export const WhatsAppSimulator: React.FC = () => {
             <button
               type="button"
               onClick={() => handleSend('checkout')}
-              className="px-2.5 py-1 rounded-full bg-[#25D366] text-white text-[11px] font-bold shadow-xs hover:bg-[#1BA855] cursor-pointer"
+              className="px-2.5 py-1 rounded-full bg-[#22C55E] text-white text-[11px] font-bold shadow-xs hover:bg-[#1BA855] cursor-pointer"
             >
               Checkout Now
             </button>
@@ -567,14 +567,14 @@ export const WhatsAppSimulator: React.FC = () => {
               <button
                 type="button"
                 onClick={() => handleSend('1')}
-                className="px-2.5 py-1 rounded-full bg-white text-[#1B1815] text-[11px] font-bold shadow-xs hover:bg-[#F3EEE4] cursor-pointer"
+                className="px-2.5 py-1 rounded-full bg-white text-[#17201A] text-[11px] font-bold shadow-xs hover:bg-[#F7FAF7] cursor-pointer"
               >
                 1. Delivery
               </button>
               <button
                 type="button"
                 onClick={() => handleSend('2')}
-                className="px-2.5 py-1 rounded-full bg-white text-[#1B1815] text-[11px] font-bold shadow-xs hover:bg-[#F3EEE4] cursor-pointer"
+                className="px-2.5 py-1 rounded-full bg-white text-[#17201A] text-[11px] font-bold shadow-xs hover:bg-[#F7FAF7] cursor-pointer"
               >
                 2. Pickup
               </button>
@@ -586,14 +586,14 @@ export const WhatsAppSimulator: React.FC = () => {
               <button
                 type="button"
                 onClick={() => handleSend('1')}
-                className="px-2.5 py-1 rounded-full bg-white text-[#1B1815] text-[11px] font-bold shadow-xs hover:bg-[#F3EEE4] cursor-pointer"
+                className="px-2.5 py-1 rounded-full bg-white text-[#17201A] text-[11px] font-bold shadow-xs hover:bg-[#F7FAF7] cursor-pointer"
               >
                 1. Cash
               </button>
               <button
                 type="button"
                 onClick={() => handleSend('2')}
-                className="px-2.5 py-1 rounded-full bg-white text-[#1B1815] text-[11px] font-bold shadow-xs hover:bg-[#F3EEE4] cursor-pointer"
+                className="px-2.5 py-1 rounded-full bg-white text-[#17201A] text-[11px] font-bold shadow-xs hover:bg-[#F7FAF7] cursor-pointer"
               >
                 2. Yoco Card
               </button>
@@ -605,14 +605,14 @@ export const WhatsAppSimulator: React.FC = () => {
               <button
                 type="button"
                 onClick={() => handleSend('CONFIRM')}
-                className="px-3 py-1 rounded-full bg-[#25D366] text-white text-[11px] font-black shadow-xs hover:bg-[#1BA855] cursor-pointer animate-pulse"
+                className="px-3 py-1 rounded-full bg-[#22C55E] text-white text-[11px] font-black shadow-xs hover:bg-[#1BA855] cursor-pointer animate-pulse"
               >
                 CONFIRM
               </button>
               <button
                 type="button"
                 onClick={() => handleSend('CANCEL')}
-                className="px-2.5 py-1 rounded-full bg-[#FBE6E4] text-[#9E2B25] text-[11px] font-bold shadow-xs hover:bg-red-200 cursor-pointer"
+                className="px-2.5 py-1 rounded-full bg-[#FBE6E4] text-[#EF4444] text-[11px] font-bold shadow-xs hover:bg-red-200 cursor-pointer"
               >
                 CANCEL
               </button>
@@ -633,12 +633,12 @@ export const WhatsAppSimulator: React.FC = () => {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="Type a message (e.g. 1, 2, confirm)..."
-            className="flex-1 bg-white rounded-full px-4 py-2.5 text-xs text-[#1B1815] outline-none border border-black/5"
+            className="flex-1 bg-white rounded-full px-4 py-2.5 text-xs text-[#17201A] outline-none border border-black/5"
           />
 
           <button
             type="submit"
-            className="w-10 h-10 rounded-full bg-[#25D366] hover:bg-[#1BA855] text-white flex items-center justify-center shadow transition-transform active:scale-95 cursor-pointer shrink-0"
+            className="w-10 h-10 rounded-full bg-[#22C55E] hover:bg-[#1BA855] text-white flex items-center justify-center shadow transition-transform active:scale-95 cursor-pointer shrink-0"
             aria-label="Send message"
           >
             <Send className="w-4 h-4 ml-0.5" />

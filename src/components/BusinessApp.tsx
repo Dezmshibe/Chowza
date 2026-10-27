@@ -69,11 +69,11 @@ export function BusinessApp() {
 
   if (checkingSession) {
     return (
-      <div className="min-h-screen bg-[#f7efe5] flex items-center justify-center p-6">
-        <div className="rounded-2xl bg-white border border-[#d9c9b8] p-8 text-center shadow-sm">
-          <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-2 border-[#d99a4b] border-t-transparent" />
+      <div className="min-h-screen bg-[#F7FAF7] flex items-center justify-center p-6">
+        <div className="rounded-2xl bg-white border border-[#D7E2DA] p-8 text-center shadow-sm">
+          <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-2 border-[#22C55E] border-t-transparent" />
 
-          <p className="text-sm font-semibold text-[#70452e]">
+          <p className="text-sm font-semibold text-[#166534]">
             Checking your account...
           </p>
         </div>
