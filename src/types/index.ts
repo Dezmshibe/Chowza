@@ -19,7 +19,9 @@ export type SubscriptionPlanKey = 'starter' | 'growth' | 'pro';
 
 export interface FoodItem {
   id: number;
+  supabaseId?: string;
   businessId: number;
+  supabaseBusinessId?: string;
   name: string;
   description: string;
   price: number;
@@ -28,9 +30,9 @@ export interface FoodItem {
   category: string;
   imageUrl?: string;
 }
-
 export interface Business {
   id: number;
+  supabaseId?: string;
   name: string;
   businessName: string;
   ownerName: string;
@@ -63,6 +65,7 @@ export interface Business {
   yocoPublicKey?: string;
   yocoSecretKey?: string;
   bannerImage?: string;
+  promotion?: Promotion;
   rating?: number;
   reviewCount?: number;
 }

@@ -1,4 +1,3 @@
-
 import { useState, type FormEvent } from 'react';
 import { supabase } from '../lib/supabase';
 
@@ -37,6 +36,9 @@ export function BusinessAuth({
         throw new Error('Please enter your email address.');
       }
 
+      // =========================================================
+      // BUSINESS SIGNUP
+      // =========================================================
       if (mode === 'signup') {
         console.log('[Chowza] Starting business signup...');
 
@@ -59,18 +61,45 @@ export function BusinessAuth({
           throw signupError;
         }
 
+        // ---------------------------------------------------------
+        // Signup completed immediately and Supabase created a
+        // session. This is the ONLY situation where we mark the
+        // account as a brand-new business signup.
+        // ---------------------------------------------------------
         if (data.session && data.user) {
           setMessage(
             'Your account is ready. Loading your business account...'
           );
 
-          console.log('[Chowza] Signup session created.');
-          console.log('[Chowza] Opening business portal...');
+          sessionStorage.setItem(
+            'chowza_new_business_signup',
+            'true'
+          );
+
+          console.log(
+            '[Chowza] Signup session created.'
+          );
+
+          console.log(
+            '[Chowza] New business signup marked.'
+          );
+
+          console.log(
+            '[Chowza] Opening business portal...'
+          );
 
           window.setTimeout(() => {
             onAuthenticated();
           }, 100);
         } else {
+          // -------------------------------------------------------
+          // Supabase requires email confirmation.
+          // Do NOT mark this as an active new-business session.
+          // -------------------------------------------------------
+          sessionStorage.removeItem(
+            'chowza_new_business_signup'
+          );
+
           setMessage(
             'Registration received! Check your email and click the verification link before logging in.'
           );
@@ -79,6 +108,9 @@ export function BusinessAuth({
         return;
       }
 
+      // =========================================================
+      // BUSINESS LOGIN
+      // =========================================================
       if (mode === 'login') {
         console.log('[Chowza] Starting business login...', {
           email: cleanEmail,
@@ -125,6 +157,7 @@ export function BusinessAuth({
             '[Chowza] Could not verify authenticated user:',
             userError
           );
+
           throw userError;
         }
 
@@ -139,27 +172,46 @@ export function BusinessAuth({
           email: user.email,
         });
 
-        setMessage('Login successful. Loading your account...');
+        // IMPORTANT:
+        // Normal login must NEVER trigger the new-business banner.
+        sessionStorage.removeItem(
+          'chowza_new_business_signup'
+        );
+
+        setMessage(
+          'Login successful. Loading your account...'
+        );
 
         // Give React a moment to update the auth/session state,
         // then tell App.tsx to open BusinessPortalGate.
         window.setTimeout(() => {
-          console.log('[Chowza] Opening business portal...');
+          console.log(
+            '[Chowza] Opening business portal...'
+          );
+
           onAuthenticated();
         }, 100);
 
         return;
       }
 
-      // Password reset
-      console.log('[Chowza] Requesting password reset...', {
-        email: cleanEmail,
-      });
+      // =========================================================
+      // PASSWORD RESET
+      // =========================================================
+      console.log(
+        '[Chowza] Requesting password reset...',
+        {
+          email: cleanEmail,
+        }
+      );
 
       const { error: resetError } =
-        await supabase.auth.resetPasswordForEmail(cleanEmail, {
-          redirectTo: `${window.location.origin}/reset-password`,
-        });
+        await supabase.auth.resetPasswordForEmail(
+          cleanEmail,
+          {
+            redirectTo: `${window.location.origin}/reset-password`,
+          }
+        );
 
       if (resetError) {
         throw resetError;
@@ -169,7 +221,10 @@ export function BusinessAuth({
         'If the email is registered, a password-reset link will be sent.'
       );
     } catch (err) {
-      console.error('[Chowza] Business authentication error:', err);
+      console.error(
+        '[Chowza] Business authentication error:',
+        err
+      );
 
       setError(
         err instanceof Error
@@ -184,6 +239,7 @@ export function BusinessAuth({
   return (
     <main className="min-h-screen bg-[#F7FAF7] px-4 py-10 flex items-center justify-center">
       <section className="w-full max-w-md rounded-2xl border border-[#E1EAE3] bg-white p-6 shadow-sm sm:p-8">
+
         <button
           type="button"
           onClick={onBack}
@@ -214,7 +270,10 @@ export function BusinessAuth({
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form
+          onSubmit={handleSubmit}
+          className="space-y-4"
+        >
           <div>
             <label
               htmlFor="business-email"
@@ -229,7 +288,9 @@ export function BusinessAuth({
               autoComplete="email"
               required
               value={email}
-              onChange={(event) => setEmail(event.target.value)}
+              onChange={(event) =>
+                setEmail(event.target.value)
+              }
               placeholder="you@example.com"
               className="w-full rounded-xl border border-[#D7E2DA] px-4 py-3 text-sm outline-none focus:border-[#166534] focus:ring-2 focus:ring-[#166534]/15"
             />
@@ -255,7 +316,9 @@ export function BusinessAuth({
                 minLength={6}
                 required
                 value={password}
-                onChange={(event) => setPassword(event.target.value)}
+                onChange={(event) =>
+                  setPassword(event.target.value)
+                }
                 placeholder={
                   mode === 'signup'
                     ? 'At least 6 characters'
@@ -300,6 +363,7 @@ export function BusinessAuth({
         </form>
 
         <div className="mt-5 flex flex-col items-center gap-3 text-sm">
+
           {mode === 'login' && (
             <>
               <button
@@ -347,9 +411,10 @@ export function BusinessAuth({
         </div>
 
         <p className="mt-6 text-center text-xs leading-5 text-[#8A8177]">
-          Your account is separate from the Chowza demo businesses. Never
-          share your password with anyone.
+          Your account is separate from the Chowza demo businesses.
+          Never share your password with anyone.
         </p>
+
       </section>
     </main>
   );

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useApp } from '../context/AppContext';
 import {
   Store,
@@ -11,15 +11,41 @@ import {
   CheckCircle2,
   Power,
   ShieldCheck,
-  AlertCircle
+  AlertCircle,
+  Tag,
+  Percent
 } from 'lucide-react';
-import { Business } from '../types';
+import { Business, Promotion } from '../types';
 
 export const BusinessSettings: React.FC = () => {
-  const { ownerBusiness, updateBusiness, toggleBusinessOpen } = useApp();
+  const { ownerBusiness, updateBusiness, toggleBusinessOpen, addFlash } = useApp();
 
   const [formData, setFormData] = useState<Business>({ ...ownerBusiness });
   const [isSaved, setIsSaved] = useState(false);
+  const [promotionForm, setPromotionForm] = useState<Promotion>(() => ({
+    id: ownerBusiness.promotion?.id || Date.now(),
+    businessId: ownerBusiness.id,
+    code: ownerBusiness.promotion?.code || '',
+    discountPercent: ownerBusiness.promotion?.discountPercent,
+    discountAmount: ownerBusiness.promotion?.discountAmount,
+    minOrderAmount: ownerBusiness.promotion?.minOrderAmount,
+    description: ownerBusiness.promotion?.description || '',
+    active: ownerBusiness.promotion?.active ?? false
+  }));
+
+  useEffect(() => {
+    setFormData({ ...ownerBusiness });
+    setPromotionForm({
+      id: ownerBusiness.promotion?.id || Date.now(),
+      businessId: ownerBusiness.id,
+      code: ownerBusiness.promotion?.code || '',
+      discountPercent: ownerBusiness.promotion?.discountPercent,
+      discountAmount: ownerBusiness.promotion?.discountAmount,
+      minOrderAmount: ownerBusiness.promotion?.minOrderAmount,
+      description: ownerBusiness.promotion?.description || '',
+      active: ownerBusiness.promotion?.active ?? false
+    });
+  }, [ownerBusiness.id]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
@@ -37,7 +63,34 @@ export const BusinessSettings: React.FC = () => {
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
-    updateBusiness(formData);
+
+    const code = promotionForm.code.trim().toUpperCase();
+    const hasPromotionDetails = Boolean(code) || Boolean(promotionForm.description.trim());
+
+    if (promotionForm.active && (!code || ((!promotionForm.discountPercent || promotionForm.discountPercent <= 0) && (!promotionForm.discountAmount || promotionForm.discountAmount <= 0)))) {
+      addFlash('error', 'Enable a promo only after entering a code and a discount value.');
+      return;
+    }
+
+    if (promotionForm.discountPercent && (promotionForm.discountPercent < 0 || promotionForm.discountPercent > 100)) {
+      addFlash('error', 'Percentage discount must be between 0% and 100%.');
+      return;
+    }
+
+    const promotion: Promotion | undefined = hasPromotionDetails
+      ? {
+          ...promotionForm,
+          id: promotionForm.id || Date.now(),
+          businessId: ownerBusiness.id,
+          code,
+          discountPercent: promotionForm.discountPercent && promotionForm.discountPercent > 0 ? promotionForm.discountPercent : undefined,
+          discountAmount: promotionForm.discountAmount && promotionForm.discountAmount > 0 ? promotionForm.discountAmount : undefined,
+          minOrderAmount: promotionForm.minOrderAmount && promotionForm.minOrderAmount > 0 ? promotionForm.minOrderAmount : undefined,
+          description: promotionForm.description.trim() || `Use promo code ${code}`,
+        }
+      : undefined;
+
+    updateBusiness({ ...formData, promotion });
     setIsSaved(true);
     setTimeout(() => setIsSaved(false), 3000);
   };
@@ -332,6 +385,102 @@ export const BusinessSettings: React.FC = () => {
               </div>
             </div>
           )}
+        </div>
+
+        {/* Optional Promotions */}
+        <div className="card space-y-4">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <h2 className="text-base font-bold text-[#17201A] flex items-center gap-2">
+                <Tag className="w-5 h-5 text-[#15803D]" />
+                <span>Promotion / Promo Code</span>
+              </h2>
+              <p className="text-xs text-[#647067] mt-1">Create an optional promotion for this business. Nothing is shown to customers when it is switched off.</p>
+            </div>
+            <label className="flex items-center gap-2 cursor-pointer text-xs font-bold whitespace-nowrap">
+              <input
+                type="checkbox"
+                checked={promotionForm.active}
+                onChange={(e) => setPromotionForm((prev) => ({ ...prev, active: e.target.checked }))}
+                className="w-4 h-4 rounded text-[#22C55E]"
+              />
+              <span>{promotionForm.active ? 'Enabled' : 'Disabled'}</span>
+            </label>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="field">
+              <label htmlFor="promo-code">Promo Code</label>
+              <input
+                id="promo-code"
+                type="text"
+                value={promotionForm.code}
+                onChange={(e) => setPromotionForm((prev) => ({ ...prev, code: e.target.value.toUpperCase().replace(/\s/g, '') }))}
+                placeholder="e.g. KASI10"
+                maxLength={30}
+                className="uppercase"
+              />
+            </div>
+
+            <div className="field">
+              <label htmlFor="promo-description">Customer-facing message</label>
+              <input
+                id="promo-description"
+                type="text"
+                value={promotionForm.description}
+                onChange={(e) => setPromotionForm((prev) => ({ ...prev, description: e.target.value }))}
+                placeholder="Use promo code KASI10 for 10% off"
+              />
+            </div>
+
+            <div className="field">
+              <label htmlFor="promo-percent">Percentage discount (%)</label>
+              <div className="relative">
+                <Percent className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-[#647067]" />
+                <input
+                  id="promo-percent"
+                  type="number"
+                  min="0"
+                  max="100"
+                  step="0.01"
+                  value={promotionForm.discountPercent ?? ''}
+                  onChange={(e) => setPromotionForm((prev) => ({ ...prev, discountPercent: e.target.value ? Number(e.target.value) : undefined, discountAmount: undefined }))}
+                  placeholder="10"
+                  className="pl-9"
+                />
+              </div>
+            </div>
+
+            <div className="field">
+              <label htmlFor="promo-amount">Fixed discount (R)</label>
+              <input
+                id="promo-amount"
+                type="number"
+                min="0"
+                step="0.01"
+                value={promotionForm.discountAmount ?? ''}
+                onChange={(e) => setPromotionForm((prev) => ({ ...prev, discountAmount: e.target.value ? Number(e.target.value) : undefined, discountPercent: undefined }))}
+                placeholder="20"
+              />
+            </div>
+
+            <div className="field">
+              <label htmlFor="promo-min-order">Minimum order (R) — optional</label>
+              <input
+                id="promo-min-order"
+                type="number"
+                min="0"
+                step="0.01"
+                value={promotionForm.minOrderAmount ?? ''}
+                onChange={(e) => setPromotionForm((prev) => ({ ...prev, minOrderAmount: e.target.value ? Number(e.target.value) : undefined }))}
+                placeholder="80"
+              />
+            </div>
+          </div>
+
+          <div className="p-3 rounded-xl bg-[#F0FDF4] border border-[#22C55E]/20 text-xs text-[#166534]">
+            <strong>Example:</strong> Code <strong>KASI10</strong> + percentage <strong>10%</strong> will give a R150 cart a R15 discount. Each business can have its own code, value, and rules.
+          </div>
         </div>
 
         {/* Save Bar */}

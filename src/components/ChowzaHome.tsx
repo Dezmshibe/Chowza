@@ -356,8 +356,7 @@ export const ChowzaHome: React.FC = () => {
           {/* Search */}
           <div className="mt-7 flex max-w-3xl items-center rounded-2xl bg-white p-2 shadow-xl">
             <Search
-              className="ml-3 shrink-0 text-black/40"
-              size={20}
+              className="pointer-events-none absolute left-4 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-[#4B5A50]"
             />
 
             <input

@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import {
+
   Business,
   FoodItem,
   Order,
@@ -15,9 +16,9 @@ import {
 import {
   INITIAL_BUSINESSES,
   INITIAL_FOODS,
-  INITIAL_ORDERS,
-  INITIAL_PROMOTIONS
+  INITIAL_ORDERS
 } from '../data/mockData';
+import { supabase } from '../lib/supabase';
 
 export type AppView =
   | 'store'
@@ -50,10 +51,11 @@ interface AppContextType {
   currentView: AppView;
   setCurrentView: (view: AppView) => void;
   // Businesses
-  businesses: Business[];
-  selectedStoreBusiness: Business | null;
-  setSelectedStoreBusiness: (b: Business | null) => void;
-  ownerBusiness: Business;
+businesses: Business[];
+businessesLoading: boolean;
+selectedStoreBusiness: Business | null;
+setSelectedStoreBusiness: (b: Business | null) => void;
+ownerBusiness: Business;
   setOwnerBusinessId: (id: number) => void;
   updateBusiness: (updated: Business) => void;
   toggleBusinessOpen: (id: number) => void;
@@ -152,37 +154,169 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
-  // Persistence helpers
-  const [businesses, setBusinesses] = useState<Business[]>(() => {
-    const saved = localStorage.getItem('wf_businesses');
-    return saved ? JSON.parse(saved) : INITIAL_BUSINESSES;
-  });
+  // Supabase is the source of truth for customer-facing businesses.
+  const [businesses, setBusinesses] = useState<Business[]>([]);
+  const [businessesLoading, setBusinessesLoading] = useState(true);
 
-  const [foods, setFoods] = useState<FoodItem[]>(() => {
-    const saved = localStorage.getItem('wf_foods');
-    if (!saved) return INITIAL_FOODS;
-    try {
-      const parsed: FoodItem[] = JSON.parse(saved);
-      return parsed.map((item) =>
-        item.id === 106
-          ? {
-              ...item,
-              imageUrl:
-                'https://images.unsplash.com/photo-1581006852262-e4307cf6283a?auto=format&fit=crop&w=600&q=80'
-            }
-          : item
-      );
-    } catch {
-      return INITIAL_FOODS;
+  // Supabase IDs are UUIDs, while the existing app types use numbers.
+  // This creates a stable numeric ID so existing cart/order/UI flows continue to work.
+  const toLocalId = (value: string | number): number => {
+    const text = String(value);
+    if (/^\\d+$/.test(text)) return Number(text);
+
+    let hash = 0;
+    for (let i = 0; i < text.length; i += 1) {
+      hash = (hash * 31 + text.charCodeAt(i)) | 0;
     }
-  });
+
+    return Math.abs(hash) || 1;
+  };
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadBusinessesFromSupabase() {
+      setBusinessesLoading(true);
+
+      const { data, error } = await supabase
+        .from('businesses')
+        .select(
+          'id, name, slug, description, logo_url, public_address, is_published'
+        )
+        .eq('is_published', true)
+        .order('created_at', { ascending: false });
+
+      if (cancelled) return;
+
+      if (error) {
+        console.error(
+          'Chowza: failed to load businesses from Supabase:',
+          error
+        );
+        setBusinesses([]);
+        setBusinessesLoading(false);
+        return;
+      }
+
+      const realBusinesses: Business[] = (data ?? []).map((business) => ({
+  id: toLocalId(business.id),
+  supabaseId: business.id,
+  name: business.name ?? '',
+        businessName: business.name ?? '',
+        ownerName: '',
+        phone: '',
+        whatsappNumber: '',
+        email: '',
+        address: business.public_address ?? '',
+        category: 'Food',
+        slug: business.slug ?? '',
+        active: true,
+        isOpen: true,
+        suspended: false,
+        verificationStatus: 'verified',
+        plan: 'starter',
+        subscriptionStatus: 'active',
+        trialEndsAt: '',
+        deliveryAvailable: true,
+        deliveryRadiusKm: 0,
+        deliveryFee: 0,
+        yocoEnabled: false,
+        bannerImage: business.logo_url ?? undefined,
+        promotion: (() => {
+          try {
+            const saved = JSON.parse(localStorage.getItem('wf_promotions') || '{}');
+            return saved[String(toLocalId(business.id))] || undefined;
+          } catch {
+            return undefined;
+          }
+        })()
+      }));
+
+      console.log(
+        'Chowza: Supabase businesses loaded:',
+        realBusinesses
+      );
+
+      setBusinesses(realBusinesses);
+      setBusinessesLoading(false);
+
+      localStorage.setItem(
+        'wf_businesses',
+        JSON.stringify(realBusinesses)
+      );
+    }
+
+    loadBusinessesFromSupabase();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // Published menu items also come directly from Supabase.
+  const [foods, setFoods] = useState<FoodItem[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadFoodsFromSupabase() {
+      const { data: menuData, error: menuError } = await supabase
+        .from('menu_items')
+        .select(
+          'id, business_id, name, description, price, image_url, is_available, sort_order'
+        )
+        .eq('is_available', true)
+        .order('sort_order', { ascending: true });
+
+      if (cancelled) return;
+
+      if (menuError) {
+        console.error(
+          'Chowza: failed to load menu items:',
+          menuError
+        );
+        setFoods([]);
+        return;
+      }
+
+      const realFoods: FoodItem[] = (menuData ?? [])
+  .map((item) => ({
+    id: toLocalId(item.id),
+    supabaseId: item.id,
+    businessId: toLocalId(item.business_id),
+    supabaseBusinessId: item.business_id,
+          name: item.name ?? '',
+          description: item.description ?? '',
+          price: Number(item.price ?? 0),
+          available: Boolean(item.is_available),
+          popular: false,
+          category: 'Other',
+          imageUrl: item.image_url ?? undefined
+        }))
+        .filter((food) =>
+          businesses.some((business) => business.id === food.businessId)
+        );
+
+      console.log(
+        'Chowza: Supabase menu items loaded:',
+        realFoods
+      );
+
+      setFoods(realFoods);
+    }
+
+    loadFoodsFromSupabase();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [businesses]);
 
   const [orders, setOrders] = useState<Order[]>(() => {
     const saved = localStorage.getItem('wf_orders');
     return saved ? JSON.parse(saved) : INITIAL_ORDERS;
   });
 
-  const [promotions] = useState<Promotion[]>(INITIAL_PROMOTIONS);
 
   const [analyticsEvents, setAnalyticsEvents] = useState<AnalyticsEvent[]>(() => {
     const saved = localStorage.getItem('wf_analytics');
@@ -193,6 +327,25 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [selectedStoreBusiness, setSelectedStoreBusiness] = useState<Business | null>(() => {
     return businesses[0] || null;
   });
+
+  useEffect(() => {
+    if (businesses.length === 0) {
+      setSelectedStoreBusiness(null);
+      return;
+    }
+
+    setSelectedStoreBusiness((current) => {
+      if (!current) {
+        return businesses[0];
+      }
+
+      const matchingBusiness = businesses.find(
+        (business) => business.id === current.id
+      );
+
+      return matchingBusiness ?? businesses[0];
+    });
+  }, [businesses]);
 
   // Owner active business for dashboard
   const [ownerBusinessId, setOwnerBusinessIdState] = useState<number>(() => {
@@ -212,23 +365,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [trackingPhone, setTrackingPhone] = useState<string>('27712345678');
 
   // Flash messages
-  const [flashMessages, setFlashMessages] = useState<FlashMessage[]>([
-    {
-      id: 'welcome',
-      type: 'notice',
-      text: 'Welcome to WhatsApp Food! Seamless digital food ordering and WhatsApp kitchen automation.'
-    }
-  ]);
+  const [flashMessages, setFlashMessages] = useState<FlashMessage[]>([]);
 
-  // Save to localStorage
-  useEffect(() => {
-    localStorage.setItem('wf_businesses', JSON.stringify(businesses));
-  }, [businesses]);
-
-  useEffect(() => {
-    localStorage.setItem('wf_foods', JSON.stringify(foods));
-  }, [foods]);
-
+  // Orders and analytics remain locally persisted for the existing app flow.
   useEffect(() => {
     localStorage.setItem('wf_orders', JSON.stringify(orders));
   }, [orders]);
@@ -294,6 +433,23 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const updateBusiness = (updated: Business) => {
     setBusinesses((prev) => prev.map((b) => (b.id === updated.id ? updated : b)));
+    if (updated.promotion) {
+      try {
+        const saved = JSON.parse(localStorage.getItem('wf_promotions') || '{}');
+        saved[String(updated.id)] = updated.promotion;
+        localStorage.setItem('wf_promotions', JSON.stringify(saved));
+      } catch (error) {
+        console.error('Chowza: failed to save promotion:', error);
+      }
+    } else {
+      try {
+        const saved = JSON.parse(localStorage.getItem('wf_promotions') || '{}');
+        delete saved[String(updated.id)];
+        localStorage.setItem('wf_promotions', JSON.stringify(saved));
+      } catch (error) {
+        console.error('Chowza: failed to remove promotion:', error);
+      }
+    }
     if (selectedStoreBusiness?.id === updated.id) {
       setSelectedStoreBusiness(updated);
     }
@@ -474,33 +630,51 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const cartBusiness = businesses.find((b) => b.id === cartBusinessId);
   const cartDeliveryFee = cartBusiness?.deliveryAvailable ? cartBusiness.deliveryFee : 0;
 
-  const promoDiscount = appliedPromo
+  const rawPromoDiscount = appliedPromo
     ? appliedPromo.discountPercent
-      ? Math.round(((cartSubtotal * appliedPromo.discountPercent) / 100) * 100) / 100
+      ? (cartSubtotal * appliedPromo.discountPercent) / 100
       : appliedPromo.discountAmount || 0
     : 0;
+
+  const promoDiscount = Math.min(
+    cartSubtotal,
+    Math.max(0, Math.round(rawPromoDiscount * 100) / 100)
+  );
+
+  useEffect(() => {
+    if (
+      appliedPromo &&
+      cartBusiness?.promotion &&
+      (!cartBusiness.promotion.active ||
+        cartBusiness.promotion.code.toUpperCase() !== appliedPromo.code.toUpperCase() ||
+        (cartBusiness.promotion.minOrderAmount && cartSubtotal < cartBusiness.promotion.minOrderAmount))
+    ) {
+      setAppliedPromo(null);
+    }
+  }, [cartSubtotal, cartBusiness?.id, cartBusiness?.promotion, appliedPromo]);
 
   const cartTotal = Math.max(0, Math.round((cartSubtotal - promoDiscount + cartDeliveryFee) * 100) / 100);
 
   const applyPromoCode = (code: string) => {
     const cleanCode = code.trim().toUpperCase();
-    const promo = promotions.find(
-      (p) => p.code.toUpperCase() === cleanCode && p.active && (p.businessId === cartBusinessId || p.businessId === 1)
-    );
+    const promo = cartBusiness?.promotion;
 
-    if (!promo) {
-      return { success: false, message: `Promo code "${code}" is invalid or expired.` };
+    if (!promo || !promo.active || promo.code.toUpperCase() !== cleanCode) {
+      return { success: false, message: `Promo code "${code}" is invalid or unavailable for this business.` };
     }
 
     if (promo.minOrderAmount && cartSubtotal < promo.minOrderAmount) {
       return {
         success: false,
-        message: `Order subtotal must be at least R${promo.minOrderAmount} to use code ${promo.code}.`
+        message: `Order subtotal must be at least R${promo.minOrderAmount.toFixed(2)} to use code ${promo.code}.`
       };
     }
 
     setAppliedPromo(promo);
-    return { success: true, message: `Promo code ${promo.code} applied! Saved R${promo.discountPercent ? `${promo.discountPercent}%` : promo.discountAmount}` };
+    const discountText = promo.discountPercent
+      ? `${promo.discountPercent}% off`
+      : `R${(promo.discountAmount || 0).toFixed(2)} off`;
+    return { success: true, message: `Promo code ${promo.code} applied — ${discountText}.` };
   };
 
   const removePromoCode = () => {
@@ -671,7 +845,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         currentView,
         setCurrentView,
         businesses,
-        selectedStoreBusiness,
+businessesLoading,
+selectedStoreBusiness,
         setSelectedStoreBusiness,
         ownerBusiness,
         setOwnerBusinessId,

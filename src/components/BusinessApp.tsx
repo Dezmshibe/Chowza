@@ -1,18 +1,23 @@
 import { useEffect, useState } from 'react';
-import { ShieldCheck } from 'lucide-react';
 import { BusinessAuth } from './BusinessAuth';
 import { BusinessPortalGate } from './BusinessPortalGate';
-import { AdminApp } from './AdminApp';
 import { supabase } from '../lib/supabase';
-
-type AppUserRole = 'admin' | 'business' | 'customer';
+import { useInactivityLogout } from '../hooks/useInactivityLogout';
 
 export function BusinessApp() {
   const [authenticated, setAuthenticated] = useState(false);
-  const [role, setRole] = useState<AppUserRole>('customer');
   const [checkingSession, setCheckingSession] = useState(true);
 
-  const isAdminPath = window.location.pathname === '/admin';
+  // This is ONLY true immediately after a successful new
+  // business signup.
+  const [isNewBusinessSignup, setIsNewBusinessSignup] =
+    useState(false);
+
+  useInactivityLogout(() => {
+    setAuthenticated(false);
+    setIsNewBusinessSignup(false);
+    window.location.href = '/';
+  });
 
   useEffect(() => {
     let mounted = true;
@@ -26,18 +31,53 @@ export function BusinessApp() {
 
       if (!session) {
         setAuthenticated(false);
-        setRole('customer');
+        setIsNewBusinessSignup(false);
         setCheckingSession(false);
         return;
       }
 
-      const userRole =
-        session.user.app_metadata?.role === 'admin'
-          ? 'admin'
-          : 'business';
+      /*
+       * Business app only.
+       *
+       * Admin users are handled by the separate AdminApp.
+       */
+      const userRole = session.user.app_metadata?.role;
+
+      if (userRole === 'admin') {
+        setAuthenticated(false);
+        setIsNewBusinessSignup(false);
+        setCheckingSession(false);
+        window.location.href = '/admin';
+        return;
+      }
 
       setAuthenticated(true);
-      setRole(userRole);
+
+      /*
+       * Check whether this session came from a brand-new
+       * business signup.
+       *
+       * BusinessAuth sets this flag ONLY after signup succeeds.
+       */
+      const newSignup =
+        sessionStorage.getItem(
+          'chowza_new_business_signup'
+        ) === 'true';
+
+      if (newSignup) {
+        setIsNewBusinessSignup(true);
+
+        /*
+         * Remove it immediately so refreshing the page or
+         * logging in later does not show the banner again.
+         */
+        sessionStorage.removeItem(
+          'chowza_new_business_signup'
+        );
+      } else {
+        setIsNewBusinessSignup(false);
+      }
+
       setCheckingSession(false);
     }
 
@@ -45,21 +85,47 @@ export function BusinessApp() {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!session) {
-        setAuthenticated(false);
-        setRole('customer');
-        return;
+    } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        if (!session) {
+          setAuthenticated(false);
+          setIsNewBusinessSignup(false);
+          return;
+        }
+
+        const userRole = session.user.app_metadata?.role;
+
+        if (userRole === 'admin') {
+          setAuthenticated(false);
+          setIsNewBusinessSignup(false);
+          window.location.href = '/admin';
+          return;
+        }
+
+        setAuthenticated(true);
+
+        /*
+         * IMPORTANT:
+         *
+         * Do NOT automatically mark normal logins as new
+         * business signups.
+         *
+         * The signup flag is created by BusinessAuth only.
+         */
+        const newSignup =
+          sessionStorage.getItem(
+            'chowza_new_business_signup'
+          ) === 'true';
+
+        if (newSignup) {
+          setIsNewBusinessSignup(true);
+
+          sessionStorage.removeItem(
+            'chowza_new_business_signup'
+          );
+        }
       }
-
-      const userRole =
-        session.user.app_metadata?.role === 'admin'
-          ? 'admin'
-          : 'business';
-
-      setAuthenticated(true);
-      setRole(userRole);
-    });
+    );
 
     return () => {
       mounted = false;
@@ -74,7 +140,7 @@ export function BusinessApp() {
           <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-2 border-[#22C55E] border-t-transparent" />
 
           <p className="text-sm font-semibold text-[#166534]">
-            Checking your account...
+            Checking your business account...
           </p>
         </div>
       </div>
@@ -88,79 +154,22 @@ export function BusinessApp() {
           window.location.href = '/';
         }}
         onAuthenticated={() => {
+          /*
+           * BusinessAuth has already marked this as a
+           * new-business signup when appropriate.
+           */
           setAuthenticated(true);
         }}
       />
     );
   }
 
-  /*
-   * ADMIN
-   *
-   * Only users with app_metadata.role === "admin"
-   * can access the admin area.
-   */
-  if (isAdminPath && role !== 'admin') {
-    return (
-      <div className="min-h-screen bg-[#f4f0eb] flex items-center justify-center p-6">
-        <div className="w-full max-w-md rounded-3xl border border-[#ddd3ca] bg-white p-8 text-center shadow-xl">
-          <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-red-100 text-red-600">
-            <ShieldCheck size={26} />
-          </div>
-
-          <h1 className="text-2xl font-black text-[#2d211c]">
-            Admin access required
-          </h1>
-
-          <p className="mt-3 text-sm leading-6 text-[#75645a]">
-            This area is restricted to Chowza platform administrators.
-            Your account does not have administrator permissions.
-          </p>
-
-          <button
-            type="button"
-            onClick={() => {
-              window.location.href = '/';
-            }}
-            className="mt-6 w-full rounded-xl bg-[#2d211c] px-4 py-3 text-sm font-black text-white hover:bg-[#3d2c24]"
-          >
-            Return to Chowza
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  /*
-   * ADMIN
-   *
-   * Admin users do NOT need to own a business.
-   * They go directly to the platform administration area.
-   */
-  if (role === 'admin') {
-    return (
-      <AdminApp
-        onBack={() => {
-          setAuthenticated(false);
-          window.location.href = '/';
-        }}
-      />
-    );
-  }
-
-  /*
-   * BUSINESS OWNER
-   *
-   * Normal authenticated users continue to the
-   * business dashboard, where BusinessPortalGate
-   * restricts them to their own business.
-   */
   return (
     <BusinessPortalGate
-      onBack={() => {
-        setAuthenticated(false);
-        window.location.href = '/';
-      }}
-    />
+  onBack={() => {
+    setAuthenticated(false);
+    window.location.href = '/';
+  }}
+/>
   );
 }

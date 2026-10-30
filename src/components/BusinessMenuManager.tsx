@@ -1,4 +1,3 @@
-
 import { useCallback, useEffect, useState } from 'react';
 import { ArrowLeft, ImagePlus, LoaderCircle, Pencil, Plus, Trash2, X } from 'lucide-react';
 import { supabase } from '../lib/supabase';
@@ -42,6 +41,10 @@ const inputClass =
 const primaryButton =
   'inline-flex items-center justify-center gap-2 rounded-xl bg-[#166534] px-4 py-3 text-sm font-bold text-white hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50';
 
+const IMAGE_BUCKET = 'menu-images';
+const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
+const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+
 export function BusinessMenuManager({
   businessId,
   businessName,
@@ -50,24 +53,19 @@ export function BusinessMenuManager({
   const [items, setItems] = useState<MenuItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<MenuForm>(emptyForm);
   const [formOpen, setFormOpen] = useState(false);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState('');
 
   const loadItems = useCallback(async () => {
     setLoading(true);
     setError('');
 
-    const { data: testKitchenItems, error: testKitchenItemsError } =
-      await supabase
-        .from('menu_items')
-        .select('id, business_id, name')
-        .neq('business_id', businessId)
-        .limit(1);
-
-    
     const { data, error: loadError } = await supabase
       .from('menu_items')
       .select(
@@ -91,9 +89,27 @@ export function BusinessMenuManager({
     void loadItems();
   }, [loadItems]);
 
+  useEffect(() => {
+    return () => {
+      if (imagePreview.startsWith('blob:')) {
+        URL.revokeObjectURL(imagePreview);
+      }
+    };
+  }, [imagePreview]);
+
+  function resetImageSelection() {
+    if (imagePreview.startsWith('blob:')) {
+      URL.revokeObjectURL(imagePreview);
+    }
+
+    setImageFile(null);
+    setImagePreview('');
+  }
+
   function openNewItem() {
     setEditingId(null);
     setForm(emptyForm);
+    resetImageSelection();
     setNotice('');
     setError('');
     setFormOpen(true);
@@ -108,9 +124,89 @@ export function BusinessMenuManager({
       image_url: item.image_url ?? '',
       is_available: item.is_available,
     });
+    resetImageSelection();
     setNotice('');
     setError('');
     setFormOpen(true);
+  }
+
+  function handleImageChange(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0] ?? null;
+
+    setError('');
+    setNotice('');
+
+    if (!file) {
+      resetImageSelection();
+      return;
+    }
+
+    if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+      setError('Please choose a JPG, PNG, WEBP or GIF image.');
+      event.target.value = '';
+      resetImageSelection();
+      return;
+    }
+
+    if (file.size > MAX_IMAGE_SIZE) {
+      setError('Image must be 5 MB or smaller.');
+      event.target.value = '';
+      resetImageSelection();
+      return;
+    }
+
+    if (imagePreview.startsWith('blob:')) {
+      URL.revokeObjectURL(imagePreview);
+    }
+
+    setImageFile(file);
+    setImagePreview(URL.createObjectURL(file));
+  }
+
+  async function uploadImage(file: File): Promise<string | null> {
+    setUploadingImage(true);
+
+    try {
+      const extension =
+        file.name.split('.').pop()?.toLowerCase() ||
+        (file.type === 'image/png'
+          ? 'png'
+          : file.type === 'image/webp'
+            ? 'webp'
+            : file.type === 'image/gif'
+              ? 'gif'
+              : 'jpg');
+
+      const filePath = `${businessId}/${crypto.randomUUID()}.${extension}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from(IMAGE_BUCKET)
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: false,
+          contentType: file.type,
+        });
+
+      if (uploadError) {
+        setError(
+          `Photo upload failed: ${uploadError.message}. Make sure the "${IMAGE_BUCKET}" Supabase Storage bucket exists and its upload policy allows this business to upload images.`
+        );
+        return null;
+      }
+
+      const { data } = supabase.storage
+        .from(IMAGE_BUCKET)
+        .getPublicUrl(filePath);
+
+      if (!data.publicUrl) {
+        setError('The photo uploaded, but Chowza could not create its public URL.');
+        return null;
+      }
+
+      return data.publicUrl;
+    } finally {
+      setUploadingImage(false);
+    }
   }
 
   async function saveItem(event: React.FormEvent<HTMLFormElement>) {
@@ -133,12 +229,25 @@ export function BusinessMenuManager({
       return;
     }
 
+    let imageUrl = form.image_url.trim() || null;
+
+    if (imageFile) {
+      const uploadedUrl = await uploadImage(imageFile);
+
+      if (!uploadedUrl) {
+        setSaving(false);
+        return;
+      }
+
+      imageUrl = uploadedUrl;
+    }
+
     const payload = {
       business_id: businessId,
       name: form.name.trim(),
       description: form.description.trim() || null,
       price,
-      image_url: form.image_url.trim() || null,
+      image_url: imageUrl,
       is_available: form.is_available,
     };
 
@@ -159,6 +268,7 @@ export function BusinessMenuManager({
     setFormOpen(false);
     setForm(emptyForm);
     setEditingId(null);
+    resetImageSelection();
     setNotice(editingId ? 'Menu item updated.' : 'Menu item added.');
     setSaving(false);
     await loadItems();
@@ -207,15 +317,17 @@ export function BusinessMenuManager({
     setItems((current) =>
       current.map((entry) =>
         entry.id === item.id
-          ? { ...entry, is_available: !entry.is_available }
+          ? { ...entry, is_available: !item.is_available }
           : entry
       )
     );
   }
 
+  const currentImage = imagePreview || form.image_url;
+
   return (
     <div className="min-h-screen bg-[#F7FAF7] text-[#166534]">
-      <header className="border-b border-[#E1EAE3] bg-white">
+      <header className="border-b border-[#D7E2DA] bg-white">
         <div className="mx-auto flex max-w-6xl items-center gap-3 px-5 py-4">
           <button
             type="button"
@@ -225,6 +337,7 @@ export function BusinessMenuManager({
           >
             <ArrowLeft size={19} />
           </button>
+
           <div className="min-w-0 flex-1">
             <p className="text-xs font-bold uppercase tracking-widest text-[#166534]">
               Chowza for Business
@@ -232,7 +345,12 @@ export function BusinessMenuManager({
             <h1 className="text-xl font-black">Menu Management</h1>
             <p className="text-sm text-[#166534]">{businessName}</p>
           </div>
-          <button type="button" onClick={openNewItem} className={primaryButton}>
+
+          <button
+            type="button"
+            onClick={openNewItem}
+            className={primaryButton}
+          >
             <Plus size={17} />
             Add item
           </button>
@@ -244,22 +362,29 @@ export function BusinessMenuManager({
           <div>
             <h2 className="text-2xl font-black">Your menu</h2>
             <p className="mt-1 text-sm text-[#166534]">
-              Add products, set prices and control availability.
+              Add products, set prices, upload photos and control availability.
             </p>
           </div>
+
           <span className="rounded-full bg-white px-4 py-2 text-sm font-bold">
             {items.length} {items.length === 1 ? 'item' : 'items'}
           </span>
         </div>
 
         {error && (
-          <div role="alert" className="mb-4 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800">
+          <div
+            role="alert"
+            className="mb-4 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800"
+          >
             {error}
           </div>
         )}
 
         {notice && (
-          <div role="status" className="mb-4 rounded-xl border border-green-200 bg-green-50 p-4 text-sm text-green-800">
+          <div
+            role="status"
+            className="mb-4 rounded-xl border border-green-200 bg-green-50 p-4 text-sm text-green-800"
+          >
             {notice}
           </div>
         )}
@@ -273,9 +398,13 @@ export function BusinessMenuManager({
               <h3 className="text-xl font-black">
                 {editingId ? 'Edit menu item' : 'New menu item'}
               </h3>
+
               <button
                 type="button"
-                onClick={() => setFormOpen(false)}
+                onClick={() => {
+                  setFormOpen(false);
+                  resetImageSelection();
+                }}
                 className="rounded-lg p-2 hover:bg-[#F7FAF7]"
                 aria-label="Close form"
               >
@@ -328,40 +457,50 @@ export function BusinessMenuManager({
                 />
               </label>
 
-              <label className="text-sm font-semibold sm:col-span-2">
-                Image URL (optional)
-                <div className="relative mt-2">
-                  <ImagePlus
-                    size={18}
-                    className="absolute left-3 top-3 text-[#166534]"
-                  />
-                  <input
-                    className={`${inputClass} pl-10`}
-                    type="url"
-                    value={form.image_url}
-                    onChange={(event) =>
-                      setForm({ ...form, image_url: event.target.value })
-                    }
-                    placeholder="https://example.com/product.jpg"
-                  />
-                </div>
-              </label>
+              <div className="sm:col-span-2">
+                <p className="text-sm font-semibold">Product photo</p>
 
-              {form.image_url && (
-                <div className="sm:col-span-2">
-                  <p className="mb-2 text-xs font-semibold text-[#166534]">
-                    Image preview
-                  </p>
-                  <img
-                    src={form.image_url}
-                    alt="Menu item preview"
-                    className="h-36 w-36 rounded-xl border border-[#D7E2DA] object-cover"
-                    onError={(event) => {
-                      event.currentTarget.style.display = 'none';
-                    }}
+                <label className="mt-2 flex cursor-pointer items-center gap-3 rounded-xl border border-dashed border-[#B8C9BC] bg-[#F7FAF7] p-4 hover:bg-[#F7FAF7]">
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#22C55E]/30 text-[#166534]">
+                    <ImagePlus size={21} />
+                  </div>
+
+                  <div className="min-w-0">
+                    <p className="text-sm font-bold">
+                      {imageFile ? imageFile.name : 'Choose a photo'}
+                    </p>
+                    <p className="mt-1 text-xs text-[#166534]">
+                      JPG, PNG, WEBP or GIF · maximum 5 MB
+                    </p>
+                  </div>
+
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp,image/gif"
+                    onChange={handleImageChange}
+                    className="sr-only"
                   />
-                </div>
-              )}
+                </label>
+
+                {currentImage && (
+                  <div className="mt-4">
+                    <p className="mb-2 text-xs font-semibold text-[#166534]">
+                      Image preview
+                    </p>
+
+                    <div className="relative h-44 w-44 overflow-hidden rounded-xl border border-[#D7E2DA] bg-[#F7FAF7]">
+                      <img
+                        src={currentImage}
+                        alt="Menu item preview"
+                        className="h-full w-full object-cover"
+                        onError={(event) => {
+                          event.currentTarget.style.display = 'none';
+                        }}
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
 
               <label className="flex items-center gap-3 text-sm font-semibold sm:col-span-2">
                 <input
@@ -377,13 +516,30 @@ export function BusinessMenuManager({
             </div>
 
             <div className="mt-6 flex flex-wrap gap-3">
-              <button type="submit" disabled={saving} className={primaryButton}>
-                {saving && <LoaderCircle size={17} className="animate-spin" />}
-                {saving ? 'Saving...' : editingId ? 'Save changes' : 'Add to menu'}
+              <button
+                type="submit"
+                disabled={saving || uploadingImage}
+                className={primaryButton}
+              >
+                {(saving || uploadingImage) && (
+                  <LoaderCircle size={17} className="animate-spin" />
+                )}
+
+                {uploadingImage
+                  ? 'Uploading photo...'
+                  : saving
+                    ? 'Saving...'
+                    : editingId
+                      ? 'Save changes'
+                      : 'Add to menu'}
               </button>
+
               <button
                 type="button"
-                onClick={() => setFormOpen(false)}
+                onClick={() => {
+                  setFormOpen(false);
+                  resetImageSelection();
+                }}
                 className="rounded-xl border border-[#D7E2DA] px-4 py-3 text-sm font-bold hover:bg-[#F7FAF7]"
               >
                 Cancel
@@ -398,13 +554,19 @@ export function BusinessMenuManager({
             Loading your menu...
           </div>
         ) : items.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-[#cbb8a5] bg-white p-10 text-center">
+          <div className="rounded-2xl border border-dashed border-[#B8C9BC] bg-white p-10 text-center">
             <ImagePlus size={32} className="mx-auto mb-3 text-[#166534]" />
             <h3 className="text-lg font-black">Your menu is empty</h3>
             <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-[#166534]">
-              Add your first product to start building your online menu.
+              Add your first product, price, description and photo to start
+              building your online menu.
             </p>
-            <button type="button" onClick={openNewItem} className={`${primaryButton} mt-5`}>
+
+            <button
+              type="button"
+              onClick={openNewItem}
+              className={`${primaryButton} mt-5`}
+            >
               <Plus size={17} />
               Add your first item
             </button>
@@ -423,7 +585,7 @@ export function BusinessMenuManager({
                     className="h-44 w-full object-cover"
                   />
                 ) : (
-                  <div className="flex h-44 items-center justify-center bg-[#f0c27c]/20 text-[#166534]">
+                  <div className="flex h-44 items-center justify-center bg-[#22C55E]/20 text-[#166534]">
                     <ImagePlus size={32} />
                   </div>
                 )}
@@ -431,6 +593,7 @@ export function BusinessMenuManager({
                 <div className="p-5">
                   <div className="mb-2 flex items-start justify-between gap-3">
                     <h3 className="font-black">{item.name}</h3>
+
                     <span className="shrink-0 font-black">
                       {new Intl.NumberFormat('en-ZA', {
                         style: 'currency',
@@ -455,6 +618,7 @@ export function BusinessMenuManager({
                     >
                       {item.is_available ? 'Available' : 'Unavailable'}
                     </button>
+
                     <div className="flex gap-1">
                       <button
                         type="button"
@@ -464,6 +628,7 @@ export function BusinessMenuManager({
                       >
                         <Pencil size={17} />
                       </button>
+
                       <button
                         type="button"
                         onClick={() => void deleteItem(item)}

@@ -24,6 +24,7 @@ import {
   XCircle,
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import { useInactivityLogout } from '../hooks/useInactivityLogout';
 
 type AdminAppProps = {
   onBack: () => void;
@@ -129,6 +130,9 @@ function getStartOfWeek() {
 }
 
 export function AdminApp({ onBack }: AdminAppProps) {
+    useInactivityLogout(() => {
+    onBack();
+  });
   const [businesses, setBusinesses] = useState<Business[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
