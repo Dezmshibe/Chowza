@@ -105,16 +105,35 @@ function getCategory(name: string) {
   return 'Other';
 }
 
-export const ChowzaHome: React.FC = () => {
-  const [businesses, setBusinesses] = useState<Business[]>([]);
-  const [foods, setFoods] = useState<FoodWithBusiness[]>([]);
-  const [loading, setLoading] = useState(true);
+type ChowzaHomeProps = {
+  initialBusinesses?: Business[];
+  initialFoods?: FoodWithBusiness[];
+};
+
+export const ChowzaHome: React.FC<ChowzaHomeProps> = ({
+  initialBusinesses = [],
+  initialFoods = [],
+}) => {
+  const hasInitialData =
+    initialBusinesses.length > 0 || initialFoods.length > 0;
+
+  const [businesses, setBusinesses] =
+    useState<Business[]>(initialBusinesses);
+
+  const [foods, setFoods] =
+    useState<FoodWithBusiness[]>(initialFoods);
+
+  const [loading, setLoading] = useState(!hasInitialData);
   const [error, setError] = useState('');
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
 
-  useEffect(() => {
+    useEffect(() => {
+    if (hasInitialData) {
+      return;
+    }
+
     let cancelled = false;
 
     async function loadHome() {
@@ -191,7 +210,7 @@ export const ChowzaHome: React.FC = () => {
     return () => {
       cancelled = true;
     };
-  }, []);
+ }, [hasInitialData]);
 
   const categories = useMemo(() => {
     const availableCategories = Array.from(
@@ -341,15 +360,16 @@ export const ChowzaHome: React.FC = () => {
             </div>
 
             <h1 className="text-4xl font-black leading-tight tracking-tight sm:text-6xl">
-              Your next meal
-              <br />
-              is on Chowza.
-            </h1>
+  Order food online
+  <br />
+  with Chowza.
+</h1>
 
             <p className="mt-4 max-w-xl text-sm leading-6 text-white/65 sm:text-base">
-              Discover food from local restaurants and food businesses,
-              order what you love, and track your order from your phone.
-            </p>
+  Discover local restaurants and food businesses in South Africa,
+  browse digital menus, order your favourite meals online, and track
+  your order from your phone.
+</p>
 
           </div>
 
@@ -439,12 +459,12 @@ export const ChowzaHome: React.FC = () => {
           <div className="mb-4 flex items-end justify-between gap-4">
             <div>
               <p className="text-xs font-black uppercase tracking-[0.18em] text-[#22C55E]">
-                Food spots
-              </p>
+  Local Food
+</p>
 
               <h2 className="mt-1 text-2xl font-black">
-                Restaurants & businesses
-              </h2>
+  Local Restaurants & Food Businesses
+</h2>
             </div>
 
             <span className="text-xs font-semibold text-black/40">
@@ -568,8 +588,8 @@ export const ChowzaHome: React.FC = () => {
               </p>
 
               <h2 className="mt-1 text-2xl font-black">
-                Popular on Chowza
-              </h2>
+  Popular Food to Order Online
+</h2>
             </div>
 
             {filteredFoods.length > 0 && (
@@ -702,13 +722,13 @@ export const ChowzaHome: React.FC = () => {
               </p>
 
               <h2 className="mt-2 text-2xl font-black sm:text-3xl">
-                Put your food on Chowza.
-              </h2>
+  Digital Menus & Online Ordering for Food Businesses
+</h2>
 
-              <p className="mt-2 max-w-xl text-sm leading-6 text-white/60">
-                Add your menu, manage your orders and let customers
-                discover your business online.
-              </p>
+<p className="mt-2 max-w-xl text-sm leading-6 text-white/60">
+  Create a digital menu, manage your orders and give customers
+  an easy way to discover your food business and order online.
+</p>
             </div>
 
             <button

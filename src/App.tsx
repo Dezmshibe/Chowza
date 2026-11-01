@@ -5,7 +5,7 @@ import { CustomerApp } from './components/CustomerApp';
 import { BusinessApp } from './components/BusinessApp';
 import { AdminApp } from './components/AdminApp';
 import { ChowzaPageSkeleton } from './components/Skeleton';
-
+import { ChowzaHome } from './components/ChowzaHome';
 import { PublicBusinessStore } from './components/PublicBusinessStore';
 import { BusinessPasswordReset } from './components/BusinessPasswordReset';
 
@@ -28,6 +28,25 @@ const AppContent: React.FC = () => {
    *
    * /privacy
    */
+  if (pathname === '/') {
+  const ssrData = (
+    window as Window & {
+      __CHOWZA_HOME_DATA__?: {
+        businesses?: any[];
+        foods?: any[];
+      };
+    }
+  ).__CHOWZA_HOME_DATA__;
+
+  if (ssrData) {
+    return (
+      <ChowzaHome
+        initialBusinesses={ssrData.businesses || []}
+        initialFoods={ssrData.foods || []}
+      />
+    );
+  }
+}
   if (pathname === '/privacy') {
     return <PrivacyPolicy />;
   }

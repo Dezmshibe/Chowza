@@ -7,7 +7,10 @@ import path from "path";
 import fs from "fs";
 import { fileURLToPath } from "url";
 import { createClient } from "@supabase/supabase-js";
-import { renderBusinessPage } from "./dist/server/entry-server.js";
+import {
+  renderBusinessPage,
+  renderHomePage,
+} from "./dist/server/entry-server.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -36,7 +39,11 @@ const supabase = createClient(
 |--------------------------------------------------------------------------
 */
 
-app.use(express.static(DIST_DIR));
+app.use(
+  express.static(DIST_DIR, {
+    index: false,
+  }),
+);
 
 /*
 |--------------------------------------------------------------------------
@@ -354,9 +361,9 @@ app.get("/business/:slug", async (req, res) => {
 
   <!-- Tell the client that this page was server-rendered -->
 
-  <script>
-    window.__CHOWZA_SSR__ = true;
-  </script>
+ <script>
+  window.__CHOWZA_SSR__ = true;
+</script>
 
   <!-- Generated React application -->
 
@@ -381,20 +388,6 @@ app.get("/business/:slug", async (req, res) => {
   }
 });
 
-/*
-|--------------------------------------------------------------------------
-| Client-side application fallback
-|--------------------------------------------------------------------------
-|
-| Everything else continues to use the normal React application.
-|
-*/
-
-app.get("*", (req, res) => {
-  res.sendFile(
-    path.join(DIST_DIR, "index.html"),
-  );
-});
 
 /*
 |--------------------------------------------------------------------------
@@ -416,6 +409,328 @@ app.get("/google0f9a3b5ae4cf7087.html", (req, res) => {
 | Everything else continues to use the normal React application.
 |
 */
+/*
+|--------------------------------------------------------------------------
+| Homepage server-side rendering
+|--------------------------------------------------------------------------
+*/
+
+app.get("/", async (req, res) => {
+  try {
+    /*
+    |--------------------------------------------------------------------------
+    | Load published businesses
+    |--------------------------------------------------------------------------
+    */
+
+    const { data: businesses, error: businessError } = await supabase
+      .from("businesses")
+      .select(
+        "id, name, slug, description, logo_url, public_address, is_published",
+      )
+      .eq("is_published", true)
+      .order("created_at", { ascending: false });
+
+    if (businessError) {
+      console.error("Homepage business lookup failed:", businessError);
+
+      return res
+        .status(500)
+        .send("Unable to load homepage.");
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Load available menu items
+    |--------------------------------------------------------------------------
+    */
+
+    const { data: menuItems, error: menuError } = await supabase
+      .from("menu_items")
+      .select(
+        "id, business_id, name, description, price, image_url, is_available, sort_order",
+      )
+      .eq("is_available", true)
+      .order("sort_order", { ascending: true });
+
+    if (menuError) {
+      console.error("Homepage menu lookup failed:", menuError);
+
+      return res
+        .status(500)
+        .send("Unable to load homepage.");
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Attach business information to menu items
+    |--------------------------------------------------------------------------
+    */
+
+    const businessMap = new Map(
+      (businesses || []).map((business) => [
+        business.id,
+        business,
+      ]),
+    );
+
+    const foods = (menuItems || [])
+      .map((item) => {
+        const business = businessMap.get(item.business_id);
+
+        if (!business) {
+          return null;
+        }
+
+        return {
+          ...item,
+          businessName: business.name,
+          businessSlug: business.slug,
+          businessLogo: business.logo_url || null,
+        };
+      })
+      .filter(Boolean);
+
+    /*
+    |--------------------------------------------------------------------------
+    | Render homepage React content
+    |--------------------------------------------------------------------------
+    */
+
+    const html = renderHomePage(
+      businesses || [],
+      foods,
+    );
+
+    /*
+    |--------------------------------------------------------------------------
+    | Homepage SEO metadata
+    |--------------------------------------------------------------------------
+    */
+
+    const title =
+      "Chowza | Food Ordering & Digital Menus in South Africa";
+
+    const description =
+      "Discover restaurants, browse digital menus and order food online with Chowza. A simple food ordering platform connecting customers with local food businesses in South Africa.";
+
+    const canonicalUrl =
+      "https://chowza-jku1.onrender.com/";
+
+    const previewImage =
+      "https://chowza-jku1.onrender.com/og-image.jpg";
+
+    /*
+    |--------------------------------------------------------------------------
+    | Homepage structured data
+    |--------------------------------------------------------------------------
+    */
+
+    const structuredData = {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      name: "Chowza",
+      url: canonicalUrl,
+      description,
+      inLanguage: "en-ZA",
+
+      publisher: {
+        "@type": "Organization",
+        name: "Chowza",
+        url: canonicalUrl,
+      },
+    };
+
+    const jsonLd = JSON.stringify(structuredData)
+      .replace(/</g, "\\u003c")
+      .replace(/>/g, "\\u003e")
+      .replace(/&/g, "\\u0026");
+
+    /*
+    |--------------------------------------------------------------------------
+    | Complete homepage HTML document
+    |--------------------------------------------------------------------------
+    */
+
+    const fullHtml = `<!doctype html>
+<html lang="en">
+
+<head>
+
+  <meta charset="UTF-8" />
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  />
+
+  <title>${escapeXml(title)}</title>
+
+  <meta
+    name="description"
+    content="${escapeXml(description)}"
+  />
+
+  <meta
+    name="robots"
+    content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+  />
+
+  <link
+    rel="canonical"
+    href="${escapeXml(canonicalUrl)}"
+  />
+
+  <!-- Open Graph -->
+
+  <meta
+    property="og:type"
+    content="website"
+  />
+
+  <meta
+    property="og:site_name"
+    content="Chowza"
+  />
+
+  <meta
+    property="og:locale"
+    content="en_ZA"
+  />
+
+  <meta
+    property="og:url"
+    content="${escapeXml(canonicalUrl)}"
+  />
+
+  <meta
+    property="og:title"
+    content="${escapeXml(title)}"
+  />
+
+  <meta
+    property="og:description"
+    content="${escapeXml(description)}"
+  />
+
+  <meta
+    property="og:image"
+    content="${escapeXml(previewImage)}"
+  />
+
+  <meta
+    property="og:image:secure_url"
+    content="${escapeXml(previewImage)}"
+  />
+
+  <meta
+    property="og:image:type"
+    content="image/jpeg"
+  />
+
+  <meta
+    property="og:image:width"
+    content="1200"
+  />
+
+  <meta
+    property="og:image:height"
+    content="630"
+  />
+
+  <meta
+    property="og:image:alt"
+    content="Chowza food ordering and digital menu platform"
+  />
+
+  <!-- Twitter / X -->
+
+  <meta
+    name="twitter:card"
+    content="summary_large_image"
+  />
+
+  <meta
+    name="twitter:url"
+    content="${escapeXml(canonicalUrl)}"
+  />
+
+  <meta
+    name="twitter:title"
+    content="${escapeXml(title)}"
+  />
+
+  <meta
+    name="twitter:description"
+    content="${escapeXml(description)}"
+  />
+
+  <meta
+    name="twitter:image"
+    content="${escapeXml(previewImage)}"
+  />
+
+  <meta
+    name="twitter:image:alt"
+    content="Chowza food ordering and digital menu platform"
+  />
+
+  <!-- Structured Data -->
+
+  <script type="application/ld+json">${jsonLd}</script>
+
+  <!-- Favicon -->
+
+  <link
+    rel="icon"
+    type="image/svg+xml"
+    href="/icon.svg"
+  />
+
+  <!-- Generated CSS -->
+
+  <link
+    rel="stylesheet"
+    href="${getCssAsset()}"
+  />
+
+</head>
+
+<body>
+
+  <div id="root">${html}</div>
+
+  <!-- Server-rendered homepage data -->
+
+  <script>
+  window.__CHOWZA_SSR__ = true;
+  window.__CHOWZA_HOME_DATA__ = ${JSON.stringify({
+    businesses: businesses || [],
+    foods,
+  }).replace(/</g, "\\u003c")};
+</script>
+
+  <!-- Generated React application -->
+
+  <script
+    type="module"
+    src="${getJsAsset()}"
+  ></script>
+
+</body>
+
+</html>`;
+
+    return res.send(fullHtml);
+
+  } catch (error) {
+    console.error("Homepage SSR error:", error);
+
+    return res
+      .status(500)
+      .send("Server error.");
+  }
+});
 
 app.get("*", (req, res) => {
   res.sendFile(
