@@ -1,0 +1,6 @@
+{
+  "name": "WhatsApp Food — Digital Ordering & Vendor Platform",
+  "description": "Complete WhatsApp-first food ordering platform, digital menus, automated WhatsApp bot ordering, live kitchen order management, QR codes, and vendor analytics.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

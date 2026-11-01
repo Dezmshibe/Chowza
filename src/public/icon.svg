@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1B1815"/>
+      <stop offset="100%" stop-color="#2D2721"/>
+    </linearGradient>
+    <linearGradient id="greenGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#25D366"/>
+      <stop offset="100%" stop-color="#128C7E"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background rounded squircle -->
+  <rect width="512" height="512" rx="128" fill="url(#bg)"/>
+
+  <!-- WhatsApp Chat Bubble Base -->
+  <circle cx="256" cy="230" r="140" fill="url(#greenGlow)"/>
+  <path d="M 180 340 L 220 310 L 160 300 Z" fill="url(#greenGlow)"/>
+
+  <!-- Fork and Knife / Chef Plate Motif inside bubble -->
+  <g fill="#FFFFFF" transform="translate(180, 150) scale(3.2)">
+    <path d="M11 2v9c0 1.1-.9 2-2 2H8v8a1 1 0 0 1-2 0v-8H5c-1.1 0-2-.9-2-2V2a1 1 0 0 1 2 0v5h1V2a1 1 0 0 1 2 0v5h1V2a1 1 0 0 1 2 0z"/>
+    <path d="M19 2c-2.8 0-5 2.2-5 5v5h2v9a1 1 0 0 0 2 0v-9h1a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1z"/>
+  </g>
+
+  <!-- Chowza Brand Text -->
+  <text x="256" y="445" font-family="'Unbounded', -apple-system, sans-serif" font-size="56" font-weight="900" fill="#FFFFFF" text-anchor="middle" letter-spacing="2">
+    CHOWZA
+  </text>
+  <circle cx="400" cy="435" r="10" fill="#25D366"/>
+</svg>
