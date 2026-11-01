@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 
 import { supabase } from '../lib/supabase';
+import { clearCsrfToken, getCsrfToken } from '../lib/csrf';
 
 import { PublicCheckout } from './PublicCheckout';
 
@@ -103,12 +104,18 @@ type ConfirmationItem = {
 
 
 type ConfirmationOrder = {
-  orderNumber: number;
-  customerName: string;
-  total: number;
-  paymentMethod: 'cash' | 'online';
-  items: ConfirmationItem[];
-};;
+
+  orderNumber: number;
+
+  customerName: string;
+
+  total: number;
+
+  paymentMethod: 'cash' | 'eft' | 'online';
+
+  items: ConfirmationItem[];
+
+};
 
 
 
@@ -404,151 +411,312 @@ export function PublicBusinessStore({ slug }: { slug: string }) {
 
 
 
-   if (checkoutOpen && business) {
-    return (
-      <PublicCheckout
-        businessName={business.name}
-        cart={cart}
-        onBack={() => setCheckoutOpen(false)}
-        onPlaceOrder={async (details) => {
-          const { data, error } = await supabase.functions.invoke(
-            'create-order',
-            {
-              body: {
-                businessId: business.id,
-                customerName: details.customerName,
-                customerPhone: details.customerPhone,
-                deliveryAddress: details.deliveryAddress,
-                paymentMethod: details.paymentMethod,
-                cart: cart.map((cartItem) => ({
-                  itemId: cartItem.item.id,
-                  quantity: cartItem.quantity,
-                })),
-              },
-            }
-          );
+  if (checkoutOpen && business) {
 
-          if (error) {
-            console.error('Create order failed:', error);
+    return (
 
-            throw new Error(
-              error.message || 'Could not place your order.'
-            );
-          }
+      <PublicCheckout
 
-          if (!data?.success || !data?.order?.orderNumber) {
-            throw new Error(
-              data?.error || 'Could not place your order.'
-            );
-          }
+        businessName={business.name}
 
-          const orderNumber = Number(data.order.orderNumber);
-          const orderTotal = Number(data.order.total);
+        cart={cart}
 
-          /*
-           * PAYFAST
-           *
-           * The Chowza order is created first.
-           * PayFast is then created using that order number.
-           */
-          if (details.paymentMethod === 'online') {
-            const {
-              data: paymentData,
-              error: paymentError,
-            } = await supabase.functions.invoke(
-              'create-payfast-payment',
-              {
-                body: {
-                  orderNumber,
-                },
-              }
-            );
+        onBack={() => setCheckoutOpen(false)}
 
-            if (paymentError) {
-              console.error(
-                'Create PayFast payment failed:',
-                paymentError
-              );
 
-              throw new Error(
-                paymentError.message ||
-                  'Could not start the PayFast payment.'
-              );
-            }
 
-            if (!paymentData?.success) {
-              throw new Error(
-                paymentData?.error ||
-                  'Could not start the PayFast payment.'
-              );
-            }
+       onPlaceOrder={async (details) => {
 
-            if (
-              !paymentData?.processUrl ||
-              !paymentData?.fields
-            ) {
-              throw new Error(
-                'PayFast did not return the payment information.'
-              );
-            }
+  let csrfToken = await getCsrfToken();
 
-            /*
-             * Build the PayFast POST form.
-             */
-            const form = document.createElement('form');
+  let { data, error } = await supabase.functions.invoke(
+    'create-order',
+    {
+      headers: { 'x-csrf-token': csrfToken },
+      body: {
 
-            form.method = 'POST';
-            form.action = paymentData.processUrl;
-            form.style.display = 'none';
+        businessId: business.id,
 
-            Object.entries(
-              paymentData.fields as Record<string, string>
-            ).forEach(([name, value]) => {
-              const input = document.createElement('input');
+        customerName: details.customerName,
 
-              input.type = 'hidden';
-              input.name = name;
-              input.value = String(value);
+        customerPhone: details.customerPhone,
 
-              form.appendChild(input);
-            });
+        deliveryAddress: details.deliveryAddress,
 
-            document.body.appendChild(form);
+        paymentMethod: details.paymentMethod,
 
-            form.submit();
+        cart: cart.map((cartItem) => ({
 
-            return;
-          }
+          itemId: cartItem.item.id,
 
-          /*
-           * CASH PAYMENT
-           *
-           * The order has already been created.
-           * Show the Chowza confirmation page.
-           */
-          setConfirmationOrder({
-            orderNumber,
-            customerName: details.customerName,
-            total: orderTotal,
-            paymentMethod: 'cash',
-            items: cart.map((cartItem) => ({
-              id: cartItem.item.id,
-              name: cartItem.item.name,
-              price: Number(cartItem.item.price),
-              quantity: cartItem.quantity,
-              line_total:
-                Number(cartItem.item.price) *
-                cartItem.quantity,
-            })),
-          });
+          quantity: cartItem.quantity,
 
-          setCart([]);
-          setCheckoutOpen(false);
-          setCartOpen(false);
-        }}
-      />
+        })),
+
+      },
+
+    }
+
+  );
+
+  if (error?.status === 403) {
+    clearCsrfToken();
+    csrfToken = await getCsrfToken(true);
+
+    ({ data, error } = await supabase.functions.invoke(
+      'create-order',
+      {
+        headers: { 'x-csrf-token': csrfToken },
+        body: {
+          businessId: business.id,
+          customerName: details.customerName,
+          customerPhone: details.customerPhone,
+          deliveryAddress: details.deliveryAddress,
+          paymentMethod: details.paymentMethod,
+          cart: cart.map((cartItem) => ({
+            itemId: cartItem.item.id,
+            quantity: cartItem.quantity,
+          })),
+        },
+      },
+    ));
+  }
+
+  if (error) {
+    throw new Error(
+      error.message || 'Could not place your order.'
     );
   }
+
+  if (!data?.success) {
+
+    throw new Error(
+
+      data?.error || 'Could not place your order.'
+
+    );
+
+  }
+
+
+
+  const orderNumber = Number(data.order.orderNumber);
+
+  const orderTotal = Number(data.order.total);
+
+
+
+  /*
+
+   * ONLINE PAYMENT
+
+   *
+
+   * Create the PayFast payment after the Chowza
+
+   * order has successfully been created.
+
+   */
+
+  if (details.paymentMethod === 'online') {
+
+    const {
+
+      data: paymentData,
+
+      error: paymentError,
+
+    } = await supabase.functions.invoke(
+
+      'create-payfast-payment',
+
+      {
+
+        headers: { 'x-csrf-token': csrfToken },
+        body: {
+
+          orderNumber,
+
+        },
+
+      }
+
+    );
+
+
+
+    if (paymentError) {
+
+      console.error(
+
+        'Create PayFast payment failed:',
+
+        paymentError
+
+      );
+
+
+
+      throw new Error(
+
+        paymentError.message ||
+
+          'Could not start the PayFast payment.'
+
+      );
+
+    }
+
+
+
+    if (!paymentData?.success) {
+
+      throw new Error(
+
+        paymentData?.error ||
+
+          'Could not start the PayFast payment.'
+
+      );
+
+    }
+
+
+
+    if (
+
+      !paymentData?.processUrl ||
+
+      !paymentData?.fields
+
+    ) {
+
+      throw new Error(
+
+        'PayFast did not return the payment information.'
+
+      );
+
+    }
+
+
+
+    /*
+
+     * Build and submit the PayFast form.
+
+     *
+
+     * The customer is now redirected to PayFast.
+
+     */
+
+    const form = document.createElement('form');
+
+
+
+    form.method = 'POST';
+
+    form.action = paymentData.processUrl;
+
+    form.style.display = 'none';
+
+
+
+    Object.entries(
+
+      paymentData.fields as Record<string, string>
+
+    ).forEach(([name, value]) => {
+
+      const input = document.createElement('input');
+
+
+
+      input.type = 'hidden';
+
+      input.name = name;
+
+      input.value = String(value);
+
+
+
+      form.appendChild(input);
+
+    });
+
+
+
+    document.body.appendChild(form);
+
+
+
+    form.submit();
+
+
+
+    return;
+
+  }
+
+
+
+  /*
+
+   * CASH PAYMENT
+
+   *
+
+   * Keep the existing Chowza confirmation flow.
+
+   */
+
+  setConfirmationOrder({
+
+    orderNumber,
+
+    customerName: details.customerName,
+
+    total: orderTotal,
+
+    paymentMethod: details.paymentMethod,
+
+    items: cart.map((cartItem) => ({
+
+      id: cartItem.item.id,
+
+      name: cartItem.item.name,
+
+      price: Number(cartItem.item.price),
+
+      quantity: cartItem.quantity,
+
+      line_total:
+
+        Number(cartItem.item.price) *
+
+        cartItem.quantity,
+
+    })),
+
+  });
+
+
+
+  setCart([]);
+
+  setCheckoutOpen(false);
+
+  setCartOpen(false);
+
+        }}
+
+      />
+
+  );
+
+  }
+
   return (
 
     <div className="min-h-screen bg-[#F7FAF7] text-[#166534]">

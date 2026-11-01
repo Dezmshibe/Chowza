@@ -1,5 +1,6 @@
 import "@supabase/functions-js/edge-runtime.d.ts";
 import { withSupabase } from "@supabase/server";
+import { getCorsHeaders, requireCsrf } from "../_shared/csrf.ts";
 
 type CartItem = {
   itemId: string;
@@ -20,6 +21,21 @@ export default {
     { auth: ["publishable"] },
     async (req, ctx) => {
       try {
+        const corsHeaders = getCorsHeaders(req);
+        
+        if (req.method === "OPTIONS") {
+          return new Response("ok", {
+            status: 200,
+            headers: corsHeaders,
+          });
+        }
+        
+        const csrfError = await requireCsrf(req);
+        
+        if (csrfError) {
+          return csrfError;
+        }
+        
         if (req.method !== "POST") {
           return Response.json(
             { error: "Method not allowed." },
