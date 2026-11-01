@@ -199,7 +199,7 @@ app.get("/business/:slug", async (req, res) => {
       "https://chowza-jku1.onrender.com/icon.svg";
 
     const canonicalUrl =
-      `https://chowza.onrender.com/business/${encodeURIComponent(slug)}`;
+      `https://chowza-jku1.onrender.com/business/${encodeURIComponent(slug)}`;
 
     /*
     |--------------------------------------------------------------------------
@@ -228,7 +228,7 @@ app.get("/business/:slug", async (req, res) => {
       provider: {
         "@type": "Organization",
         name: "Chowza",
-        url: "https://chowza.onrender.com/",
+        url: "https://chowza-jku1.onrender.com/",
       },
     };
 
