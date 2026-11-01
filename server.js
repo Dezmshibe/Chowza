@@ -43,7 +43,78 @@ app.use(express.static(DIST_DIR));
 | Public Business SSR
 |--------------------------------------------------------------------------
 */
+/*
+|--------------------------------------------------------------------------
+| XML Sitemap
+|--------------------------------------------------------------------------
+*/
 
+app.get("/sitemap.xml", async (req, res) => {
+  try {
+    const { data: businesses, error } = await supabase
+      .from("businesses")
+      .select("slug")
+      .eq("is_published", true)
+      .order("slug", { ascending: true });
+
+    if (error) {
+      console.error("Sitemap business lookup failed:", error);
+      return res.status(500).type("text/plain").send("Unable to generate sitemap.");
+    }
+
+    const baseUrl = "https://chowza-jku1.onrender.com";
+
+    const urls = [
+      `${baseUrl}/`,
+      `${baseUrl}/privacy`,
+      `${baseUrl}/terms`,
+      `${baseUrl}/refunds`,
+      ...(businesses || []).map(
+        (business) =>
+          `${baseUrl}/business/${encodeURIComponent(business.slug)}`,
+      ),
+    ];
+
+    const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${urls
+  .map(
+    (url) => `  <url>
+    <loc>${escapeXml(url)}</loc>
+  </url>`,
+  )
+  .join("\n")}
+</urlset>`;
+
+    return res
+      .status(200)
+      .type("application/xml")
+      .set("Cache-Control", "public, max-age=3600")
+      .send(xml);
+  } catch (error) {
+    console.error("Sitemap error:", error);
+    return res.status(500).type("text/plain").send("Server error.");
+  }
+});
+/*
+|--------------------------------------------------------------------------
+| Robots.txt
+|--------------------------------------------------------------------------
+*/
+
+app.get("/robots.txt", (req, res) => {
+  const robots = `User-agent: *
+Allow: /
+
+Sitemap: https://chowza-jku1.onrender.com/sitemap.xml
+`;
+
+  return res
+    .status(200)
+    .type("text/plain")
+    .set("Cache-Control", "public, max-age=3600")
+    .send(robots);
+});
 app.get("/business/:slug", async (req, res) => {
   try {
     const slug = req.params.slug;
@@ -125,7 +196,7 @@ app.get("/business/:slug", async (req, res) => {
 
     const previewImage =
       business.logo_url ||
-      "https://chowza.onrender.com/icon.svg";
+      "https://chowza-jku1.onrender.com/icon.svg";
 
     const canonicalUrl =
       `https://chowza.onrender.com/business/${encodeURIComponent(slug)}`;
@@ -190,28 +261,28 @@ app.get("/business/:slug", async (req, res) => {
     content="width=device-width, initial-scale=1.0"
   />
 
-  <title>${escapeHtml(title)}</title>
+  <title>${escapeXml(title)}</title>
 
   <meta
     name="description"
-    content="${escapeHtml(description)}"
+    content="${escapeXml(description)}"
   />
 
   <link
     rel="canonical"
-    href="${escapeHtml(canonicalUrl)}"
+    href="${escapeXml(canonicalUrl)}"
   />
 
   <!-- Open Graph -->
 
   <meta
     property="og:title"
-    content="${escapeHtml(title)}"
+    content="${escapeXml(title)}"
   />
 
   <meta
     property="og:description"
-    content="${escapeHtml(description)}"
+    content="${escapeXml(description)}"
   />
 
   <meta
@@ -221,17 +292,17 @@ app.get("/business/:slug", async (req, res) => {
 
   <meta
     property="og:url"
-    content="${escapeHtml(canonicalUrl)}"
+    content="${escapeXml(canonicalUrl)}"
   />
 
   <meta
     property="og:image"
-    content="${escapeHtml(previewImage)}"
+    content="${escapeXml(previewImage)}"
   />
 
   <meta
     property="og:image:alt"
-    content="${escapeHtml(business.name)} on Chowza"
+    content="${escapeXml(business.name)} on Chowza"
   />
 
   <!-- Twitter -->
@@ -243,17 +314,17 @@ app.get("/business/:slug", async (req, res) => {
 
   <meta
     name="twitter:title"
-    content="${escapeHtml(title)}"
+    content="${escapeXml(title)}"
   />
 
   <meta
     name="twitter:description"
-    content="${escapeHtml(description)}"
+    content="${escapeXml(description)}"
   />
 
   <meta
     name="twitter:image"
-    content="${escapeHtml(previewImage)}"
+    content="${escapeXml(previewImage)}"
   />
 
   <!-- Structured Data -->
@@ -343,13 +414,13 @@ app.listen(PORT, "0.0.0.0", () => {
 |--------------------------------------------------------------------------
 */
 
-function escapeHtml(value) {
+function escapeXml(value) {
   return String(value)
     .replaceAll("&", "&amp;")
     .replaceAll("<", "&lt;")
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
+    .replaceAll("'", "&apos;");
 }
 
 /*
