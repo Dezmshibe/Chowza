@@ -398,6 +398,33 @@ app.get("*", (req, res) => {
 
 /*
 |--------------------------------------------------------------------------
+| Google Search Console verification
+|--------------------------------------------------------------------------
+*/
+
+app.get("/google0f9a3b5ae4cf7087.html", (req, res) => {
+  res.sendFile(
+    path.join(__dirname, "public", "google0f9a3b5ae4cf7087.html"),
+  );
+});
+
+/*
+|--------------------------------------------------------------------------
+| Client-side application fallback
+|--------------------------------------------------------------------------
+|
+| Everything else continues to use the normal React application.
+|
+*/
+
+app.get("*", (req, res) => {
+  res.sendFile(
+    path.join(DIST_DIR, "index.html"),
+  );
+});
+
+/*
+|--------------------------------------------------------------------------
 | Start server
 |--------------------------------------------------------------------------
 */
