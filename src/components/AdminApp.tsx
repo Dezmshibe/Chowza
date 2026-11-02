@@ -246,15 +246,28 @@ const [activeTab, setActiveTab] = useState<AdminTab>('overview');
 
     try {
       const {
+        data: { session },
+        error: sessionError,
+      } = await supabase.auth.getSession();
+
+      if (sessionError) {
+        throw sessionError;
+      }
+
+      if (!session?.user) {
+        if (!mounted) return;
+
+        setAccessDenied(true);
+        setLoading(false);
+        return;
+      }
+
+      const {
         data: { user },
         error: userError,
       } = await supabase.auth.getUser();
 
-      if (userError) {
-        throw userError;
-      }
-
-      if (!user) {
+      if (userError || !user) {
         if (!mounted) return;
 
         setAccessDenied(true);
