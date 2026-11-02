@@ -350,7 +350,7 @@ export function BusinessAuth({
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-xl bg-[#166534] px-4 py-3 font-bold text-white transition hover:bg-[#4B2919] disabled:cursor-not-allowed disabled:opacity-60"
+           className="w-full rounded-xl bg-[#166534] px-4 py-3 font-bold text-white transition hover:bg-[#14532D] disabled:cursor-not-allowed disabled:opacity-60"
           >
             {loading
               ? 'Please wait…'
