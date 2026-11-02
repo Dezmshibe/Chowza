@@ -31,12 +31,6 @@ type PayFastConfig = {
   mode: string;
 };
 
-/**
- * PayFast's ITN signature uses PHP-style urlencode:
- * - spaces become +
- * - percent encoding is uppercase
- * - the values are signed in the order PayFast posted them
- */
 function payfastUrlEncode(value: string): string {
   return encodeURIComponent(value)
     .replace(/%20/g, "+")
@@ -47,13 +41,6 @@ function payfastUrlEncode(value: string): string {
     .replace(/~/g, "%7E");
 }
 
-/**
- * Build the PayFast ITN parameter string.
- *
- * PayFast's ITN documentation builds this from the posted
- * variables in their received order, stopping at signature.
- * The signature itself is not included.
- */
 function buildItnParameterString(
   entries: Array<[string, string]>,
 ): string {
@@ -81,10 +68,11 @@ function generateItnSignature(
       `&passphrase=${payfastUrlEncode(passphrase)}`;
   }
 
- return createHash("md5")
-  .update(parameterString, "utf8")
-  .digest("hex")
-  .toLowerCase();
+  return createHash("md5")
+    .update(parameterString, "utf8")
+    .digest("hex")
+    .toLowerCase();
+}
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -117,14 +105,6 @@ Deno.serve(async (req) => {
       });
     }
 
-    /*
-     * PayFast has been observed sending both:
-     * - multipart/form-data
-     * - application/x-www-form-urlencoded
-     *
-     * We support both while preserving the received
-     * field order for signature verification.
-     */
     const entries: Array<[string, string]> = [];
 
     if (
@@ -191,9 +171,6 @@ Deno.serve(async (req) => {
       data.amount_gross ?? null,
     );
 
-    /*
-     * m_payment_id is the Chowza order UUID.
-     */
     const paymentId = data.m_payment_id;
 
     if (!paymentId) {
@@ -205,16 +182,13 @@ Deno.serve(async (req) => {
       });
     }
 
-    /*
-     * Find the Chowza order.
-     */
     const {
       data: order,
       error: orderError,
     } = await supabaseAdmin
       .from("orders")
       .select(
-        "id, business_id, order_number, total, payment_method, payment_status, status",
+        "id, business_id, order_number, total, payment_method, payment_status, status, payment_gross, payment_commission, payment_restaurant_amount, payment_commission_percent",
       )
       .eq("id", paymentId)
       .maybeSingle();
@@ -243,9 +217,6 @@ Deno.serve(async (req) => {
       });
     }
 
-    /*
-     * Only online orders use PayFast.
-     */
     if (order.payment_method !== "online") {
       console.error(
         "Order is not an online payment:",
@@ -258,9 +229,6 @@ Deno.serve(async (req) => {
       });
     }
 
-    /*
-     * Retrieve PayFast configuration from Vault-backed RPC.
-     */
     const {
       data: config,
       error: configError,
@@ -310,9 +278,6 @@ Deno.serve(async (req) => {
     const mode =
       String(payfast.mode ?? "test");
 
-    /*
-     * Verify Merchant ID.
-     */
     if (
       data.merchant_id &&
       data.merchant_id !== merchantId
@@ -334,9 +299,6 @@ Deno.serve(async (req) => {
       );
     }
 
-    /*
-     * Verify that PayFast sent a signature.
-     */
     const receivedSignature =
       data.signature ?? "";
 
@@ -354,12 +316,6 @@ Deno.serve(async (req) => {
       );
     }
 
-    /*
-     * Calculate the expected ITN signature.
-     *
-     * IMPORTANT:
-     * We use the exact order received from PayFast.
-     */
     const expectedSignature =
       generateItnSignature(
         entries,
@@ -393,9 +349,6 @@ Deno.serve(async (req) => {
       );
     }
 
-    /*
-     * Verify payment amount.
-     */
     const expectedAmount =
       Number(order.total);
 
@@ -441,15 +394,6 @@ Deno.serve(async (req) => {
       );
     }
 
-    /*
-     * PayFast server validation.
-     *
-     * PayFast expects the ITN variables as a normal
-     * application/x-www-form-urlencoded POST.
-     *
-     * The signature itself is NOT sent in this validation
-     * parameter string.
-     */
     const validationBody =
       buildItnParameterString(entries);
 
@@ -504,24 +448,12 @@ Deno.serve(async (req) => {
       );
     }
 
-    /*
-     * All security checks passed:
-     * 1. Order lookup
-     * 2. Online payment check
-     * 3. Merchant ID check
-     * 4. Signature check
-     * 5. Amount check
-     * 6. PayFast server validation
-     */
     const paymentStatus =
       data.payment_status ?? "";
 
     const payfastPaymentId =
       data.pf_payment_id ?? null;
 
-    /*
-     * Prevent duplicate processing.
-     */
     if (order.payment_status === "paid") {
       console.log(
         "Order already marked as paid:",
@@ -534,20 +466,38 @@ Deno.serve(async (req) => {
       });
     }
 
-    /*
-     * Successful payment.
-     */
     if (paymentStatus === "COMPLETE") {
+      const paymentGross =
+        Number(order.payment_gross ?? receivedAmount);
+
+      const paymentCommission =
+        Number(order.payment_commission ?? 0);
+
+      const paymentRestaurantAmount =
+        Number(
+          order.payment_restaurant_amount ??
+          (
+            paymentGross -
+            paymentCommission
+          ).toFixed(2),
+        );
+
       const {
         error: updateError,
       } = await supabaseAdmin
         .from("orders")
         .update({
           payment_status: "paid",
+          payment_gross: paymentGross,
+          payment_commission: paymentCommission,
+          payment_restaurant_amount:
+            paymentRestaurantAmount,
           payfast_payment_id:
             payfastPaymentId,
           payfast_event_id:
             payfastPaymentId,
+          payment_completed_at:
+            new Date().toISOString(),
           updated_at:
             new Date().toISOString(),
         })
@@ -579,9 +529,6 @@ Deno.serve(async (req) => {
       });
     }
 
-    /*
-     * Valid ITN but payment did not complete.
-     */
     console.log(
       "PayFast payment not complete:",
       {
@@ -644,4 +591,3 @@ Deno.serve(async (req) => {
     );
   }
 });
-}

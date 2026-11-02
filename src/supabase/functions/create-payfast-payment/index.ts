@@ -43,7 +43,7 @@ function generateSignature(
   const parts: string[] = [];
 
   for (const [key, rawValue] of Object.entries(data)) {
-    if (rawValue === "" || rawValue === undefined) continue;
+    if (key === "setup" || rawValue === "" || rawValue === undefined) continue;
     parts.push(`${key}=${payfastUrlEncode(String(rawValue))}`);
   }
 
@@ -65,7 +65,9 @@ function jsonResponse(
   });
 }
 
-async function loadPayFastConfig(businessId: string): Promise<PayFastConfig> {
+async function loadPayFastConfig(
+  businessId: string,
+): Promise<PayFastConfig> {
   const { data, error } = await supabaseAdmin.rpc(
     "get_business_payfast_config",
     { p_business_id: businessId },
@@ -73,13 +75,17 @@ async function loadPayFastConfig(businessId: string): Promise<PayFastConfig> {
 
   if (error || !data) {
     console.error("PayFast config lookup failed:", error);
-    throw new Error("Online payments are not configured for this business.");
+    throw new Error(
+      "Online payments are not configured for this business.",
+    );
   }
 
   const row = Array.isArray(data) ? data[0] : data;
 
   if (!row) {
-    throw new Error("Online payments are not configured for this business.");
+    throw new Error(
+      "Online payments are not configured for this business.",
+    );
   }
 
   const config: PayFastConfig = {
@@ -89,7 +95,11 @@ async function loadPayFastConfig(businessId: string): Promise<PayFastConfig> {
     mode: row.mode === "live" ? "live" : "test",
   };
 
-  if (!config.merchantId || !config.merchantKey || !config.passphrase) {
+  if (
+    !config.merchantId ||
+    !config.merchantKey ||
+    !config.passphrase
+  ) {
     throw new Error("The business payment account is incomplete.");
   }
 
@@ -134,7 +144,9 @@ Deno.serve(async (req: Request) => {
 
     const { data: order, error: orderError } = await supabaseAdmin
       .from("orders")
-      .select("id, business_id, order_number, total, payment_method, payment_status")
+      .select(
+        "id, business_id, order_number, total, payment_method, payment_status",
+      )
       .eq("order_number", orderNumber)
       .maybeSingle();
 
@@ -171,35 +183,26 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    const { data: business, error: businessError } = await supabaseAdmin
-      .from("businesses")
-      .select("id, name, payment_enabled, payment_provider, commission_percent")
-      .eq("id", order.business_id)
-      .eq("is_published", true)
-      .maybeSingle();
+    const { data: business, error: businessError } =
+      await supabaseAdmin
+        .from("businesses")
+        .select("id, name")
+        .eq("id", order.business_id)
+        .eq("is_published", true)
+        .maybeSingle();
 
     if (businessError || !business) {
-      console.error("Business payment lookup failed:", businessError);
+      console.error(
+        "Business payment lookup failed:",
+        businessError,
+      );
+
       return jsonResponse(
-        { error: "Could not verify this business for online payments." },
+        {
+          error:
+            "Could not verify this business for online payments.",
+        },
         500,
-        corsHeaders,
-      );
-    }
-
-    if (business.payment_enabled === false) {
-      return jsonResponse(
-        { error: "Online payments are not enabled for this business." },
-        400,
-        corsHeaders,
-      );
-    }
-
-    const provider = String(business.payment_provider ?? "payfast").toLowerCase();
-    if (provider !== "payfast") {
-      return jsonResponse(
-        { error: `Payment provider '${provider}' is not enabled yet.` },
-        400,
         corsHeaders,
       );
     }
@@ -210,17 +213,22 @@ Deno.serve(async (req: Request) => {
       Deno.env.get("CHOWZA_PAYFAST_MERCHANT_ID") ?? "";
 
     if (!platformMerchantId) {
-      console.error("CHOWZA_PAYFAST_MERCHANT_ID is not configured.");
+      console.error(
+        "CHOWZA_PAYFAST_MERCHANT_ID is not configured.",
+      );
+
       return jsonResponse(
-        { error: "Chowza online payments are not fully configured." },
+        {
+          error:
+            "Chowza online payments are not fully configured.",
+        },
         500,
         corsHeaders,
       );
     }
 
-    const commissionPercent = getConfiguredCommissionPercent(
-      business.commission_percent,
-    );
+    const commissionPercent =
+      getConfiguredCommissionPercent(null);
 
     const split = calculatePaymentSplit(
       Number(order.total),
@@ -250,10 +258,8 @@ Deno.serve(async (req: Request) => {
      * - Chowza is the secondary split merchant
      * - the configured percentage is sent to Chowza
      * - the remaining amount stays with the restaurant
-     *
-     * This keeps the actual movement/settlement of funds with the
-     * regulated payment partner rather than with Chowza's database.
      */
+
     const splitSetup = JSON.stringify({
       split_payment: {
         merchant_id: Number(platformMerchantId),
@@ -268,7 +274,8 @@ Deno.serve(async (req: Request) => {
         `${siteUrl}/payment/success?orderNumber=${order.order_number}`,
       cancel_url:
         `${siteUrl}/payment/cancelled?orderNumber=${order.order_number}`,
-      notify_url: `${SUPABASE_URL}/functions/v1/payfast-itn`,
+      notify_url:
+        `${SUPABASE_URL}/functions/v1/payfast-itn`,
       name_first: "Chowza",
       name_last: "Customer",
       email_address: "payments@chowza.co.za",
@@ -280,23 +287,28 @@ Deno.serve(async (req: Request) => {
       setup: splitSetup,
     };
 
-    const signature = generateSignature(data, config.passphrase);
+    const signature = generateSignature(
+      data,
+      config.passphrase,
+    );
 
     const { error: updateError } = await supabaseAdmin
       .from("orders")
       .update({
-        payment_provider: "payfast",
-        payment_amount: split.grossAmount,
-        platform_fee: split.platformFee,
-        business_amount: split.businessAmount,
-        payment_reference: String(order.id),
-        payment_started_at: new Date().toISOString(),
+        payment_gross: split.grossAmount,
+        payment_commission: split.platformFee,
+        payment_restaurant_amount: split.businessAmount,
+        payment_commission_percent: split.commissionPercent,
         payment_status: "pending",
       })
       .eq("id", order.id);
 
     if (updateError) {
-      console.error("Could not save payment engine state:", updateError);
+      console.error(
+        "Could not save payment engine state:",
+        updateError,
+      );
+
       return jsonResponse(
         { error: "Could not initialise the payment." },
         500,
@@ -324,7 +336,10 @@ Deno.serve(async (req: Request) => {
       corsHeaders,
     );
   } catch (error) {
-    console.error("Chowza payment engine error:", error);
+    console.error(
+      "Chowza payment engine error:",
+      error,
+    );
 
     return jsonResponse(
       {

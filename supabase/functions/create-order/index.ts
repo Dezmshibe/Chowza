@@ -1,222 +1,235 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
+﻿import "@supabase/functions-js/edge-runtime.d.ts";
+import { withSupabase } from "@supabase/server";
+import { getCorsHeaders, requireCsrf } from "../_shared/csrf.ts";
 
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0"
-    />
+type CartItem = {
+  itemId: string;
+  quantity: number;
+};
 
-    <!-- Primary SEO -->
-    <title>Order Food Online in South Africa | Chowza</title>
+type OrderRequest = {
+  businessId: string;
+  customerName: string;
+  customerPhone: string;
+  deliveryAddress: string;
+  paymentMethod: "cash" | "eft" | "online";
+  cart: CartItem[];
+};
 
-    <meta
-      name="description"
-      content="Order food online in South Africa with Chowza. Discover local restaurants, browse digital menus and order directly from food businesses."
-    />
+export default {
+fetch: withSupabase(
+    {
+      auth: ["publishable"],
+      cors: {
+        headers: {
+          "Access-Control-Allow-Origin": "*",
+          "Access-Control-Allow-Headers":
+            "authorization, x-client-info, apikey, content-type, x-csrf-token",
+          "Access-Control-Allow-Methods":
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS",
+        },
+      },
+    },
+    async (req, ctx) => {
+      try {
+        const corsHeaders = getCorsHeaders(req);
 
-    <meta
-      name="robots"
-      content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
-    />
-
-    <meta
-      name="author"
-      content="Chowza"
-    />
-
-    <meta
-      name="referrer"
-      content="strict-origin-when-cross-origin"
-    />
-
-    <link
-      rel="canonical"
-      href="https://chowza-jku1.onrender.com/"
-    />
-
-    <!-- Open Graph -->
-    <meta
-      property="og:type"
-      content="website"
-    />
-
-    <meta
-      property="og:site_name"
-      content="Chowza"
-    />
-
-    <meta
-      property="og:locale"
-      content="en_ZA"
-    />
-
-    <meta
-      property="og:url"
-      content="https://chowza-jku1.onrender.com/"
-    />
-
-    <meta
-      property="og:title"
-      content="Order Food Online in South Africa | Chowza"
-    />
-
-    <meta
-      property="og:description"
-      content="Discover local restaurants, browse digital menus and order food online with Chowza."
-    />
-
-    <meta
-      property="og:image"
-      content="https://chowza-jku1.onrender.com/og-image.jpg"
-    />
-
-    <meta
-      property="og:image:secure_url"
-      content="https://chowza-jku1.onrender.com/og-image.jpg"
-    />
-
-    <meta
-      property="og:image:type"
-      content="image/jpeg"
-    />
-
-    <meta
-      property="og:image:width"
-      content="1200"
-    />
-
-    <meta
-      property="og:image:height"
-      content="630"
-    />
-
-    <meta
-      property="og:image:alt"
-      content="Chowza food ordering platform in South Africa"
-    />
-
-    <!-- Twitter / X -->
-    <meta
-      name="twitter:card"
-      content="summary_large_image"
-    />
-
-    <meta
-      name="twitter:url"
-      content="https://chowza-jku1.onrender.com/"
-    />
-
-    <meta
-      name="twitter:title"
-      content="Order Food Online in South Africa | Chowza"
-    />
-
-    <meta
-      name="twitter:description"
-      content="Discover local restaurants, browse digital menus and order food online with Chowza."
-    />
-
-    <meta
-      name="twitter:image"
-      content="https://chowza-jku1.onrender.com/og-image.jpg"
-    />
-
-    <meta
-      name="twitter:image:alt"
-      content="Chowza food ordering platform in South Africa"
-    />
-
-    <!-- Web application -->
-    <meta
-      name="application-name"
-      content="Chowza"
-    />
-
-    <meta
-      name="theme-color"
-      content="#15803D"
-    />
-
-    <link
-      rel="manifest"
-      href="/manifest.json"
-    />
-
-    <meta
-      name="mobile-web-app-capable"
-      content="yes"
-    />
-
-    <meta
-      name="apple-mobile-web-app-capable"
-      content="yes"
-    />
-
-    <meta
-      name="apple-mobile-web-app-status-bar-style"
-      content="default"
-    />
-
-    <meta
-      name="apple-mobile-web-app-title"
-      content="Chowza"
-    />
-
-    <!-- Icons -->
-    <link
-      rel="apple-touch-icon"
-      href="/icon.svg"
-    />
-
-    <link
-      rel="icon"
-      type="image/svg+xml"
-      href="/icon.svg"
-    />
-
-    <!-- Fonts -->
-    <link
-      rel="preconnect"
-      href="https://fonts.googleapis.com"
-    />
-
-    <link
-      rel="preconnect"
-      href="https://fonts.gstatic.com"
-      crossorigin
-    />
-
-    <link
-      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=Unbounded:wght@400;600;700;800;900&display=swap"
-      rel="stylesheet"
-    />
-
-    <!-- Structured data -->
-    <script type="application/ld+json">
-      {
-        "@context": "https://schema.org",
-        "@type": "WebSite",
-        "name": "Chowza",
-        "url": "https://chowza-jku1.onrender.com/",
-        "description": "Order food online in South Africa, discover local food businesses and browse digital menus with Chowza.",
-        "inLanguage": "en-ZA",
-        "publisher": {
-          "@type": "Organization",
-          "name": "Chowza",
-          "url": "https://chowza-jku1.onrender.com/"
+        if (req.method === "OPTIONS") {
+          return new Response("ok", {
+            status: 200,
+            headers: corsHeaders,
+          });
         }
+
+        const csrfError = await requireCsrf(req);
+
+        if (csrfError) {
+          return csrfError;
+        }
+
+        if (req.method !== "POST") {
+          return Response.json(
+            { error: "Method not allowed." },
+            { status: 405 },
+          );
+        }
+
+        const body = (await req.json()) as OrderRequest;
+
+        if (
+          !body.businessId ||
+          !body.customerName?.trim() ||
+          !body.customerPhone?.trim() ||
+          !body.deliveryAddress?.trim() ||
+          !body.paymentMethod ||
+          !Array.isArray(body.cart) ||
+          body.cart.length === 0
+        ) {
+          return Response.json(
+            { error: "Missing required order information." },
+            { status: 400 },
+          );
+        }
+
+        const validPaymentMethods = ["cash", "eft", "online"];
+
+        if (!validPaymentMethods.includes(body.paymentMethod)) {
+          return Response.json(
+            { error: "Invalid payment method." },
+            { status: 400 },
+          );
+        }
+
+        const cleanCart = body.cart.filter(
+          (cartItem) =>
+            typeof cartItem.itemId === "string" &&
+            Number.isInteger(cartItem.quantity) &&
+            cartItem.quantity > 0,
+        );
+
+        if (cleanCart.length === 0) {
+          return Response.json(
+            { error: "Your cart is empty." },
+            { status: 400 },
+          );
+        }
+
+        const { data: business, error: businessError } =
+          await ctx.supabaseAdmin
+            .from("businesses")
+            .select("id, name, is_published")
+            .eq("id", body.businessId)
+            .eq("is_published", true)
+            .maybeSingle();
+
+        if (businessError) {
+          console.error("Business lookup error:", businessError);
+
+          return Response.json(
+            { error: "Could not verify the business." },
+            { status: 500 },
+          );
+        }
+
+        if (!business) {
+          return Response.json(
+            { error: "This business is not available." },
+            { status: 404 },
+          );
+        }
+
+        const itemIds = [
+          ...new Set(cleanCart.map((cartItem) => cartItem.itemId)),
+        ];
+
+        const { data: menuItems, error: menuError } =
+          await ctx.supabaseAdmin
+            .from("menu_items")
+            .select("id, name, price, is_available")
+            .eq("business_id", body.businessId)
+            .in("id", itemIds);
+
+        if (menuError) {
+          console.error("Menu lookup error:", menuError);
+
+          return Response.json(
+            { error: "Could not verify the menu items." },
+            { status: 500 },
+          );
+        }
+
+        if (!menuItems || menuItems.length !== itemIds.length) {
+          return Response.json(
+            { error: "One or more items are no longer available." },
+            { status: 400 },
+          );
+        }
+
+        const unavailableItem = menuItems.find(
+          (menuItem) => !menuItem.is_available,
+        );
+
+        if (unavailableItem) {
+          return Response.json(
+            {
+              error: `${unavailableItem.name} is currently unavailable.`,
+            },
+            { status: 400 },
+          );
+        }
+
+        let total = 0;
+
+        const orderItems = cleanCart.map((cartItem) => {
+          const menuItem = menuItems.find(
+            (item) => item.id === cartItem.itemId,
+          );
+
+          if (!menuItem) {
+            throw new Error("Menu item verification failed.");
+          }
+
+          const price = Number(menuItem.price);
+          const quantity = cartItem.quantity;
+          const lineTotal = price * quantity;
+
+          total += lineTotal;
+
+          return {
+            id: menuItem.id,
+            name: menuItem.name,
+            price,
+            quantity,
+            line_total: lineTotal,
+          };
+        });
+
+        total = Number(total.toFixed(2));
+
+        const { data: order, error: orderError } =
+          await ctx.supabaseAdmin
+            .from("orders")
+            .insert({
+              business_id: business.id,
+              customer_name: body.customerName.trim(),
+              customer_phone: body.customerPhone.trim(),
+              delivery_address: body.deliveryAddress.trim(),
+              items: orderItems,
+              total,
+              status: "pending",
+              payment_method: body.paymentMethod,
+            })
+            .select("id, order_number, total, status, payment_method")
+            .single();
+
+        if (orderError) {
+          console.error("Order creation error:", orderError);
+
+          return Response.json(
+            { error: "Could not create your order." },
+            { status: 500 },
+          );
+        }
+
+        return Response.json({
+          success: true,
+          businessName: business.name,
+          order: {
+            id: order.id,
+            orderNumber: order.order_number,
+            total: order.total,
+            status: order.status,
+            paymentMethod: order.payment_method,
+          },
+        });
+      } catch (error) {
+        console.error("Create order error:", error);
+
+        return Response.json(
+          { error: "Something went wrong while creating your order." },
+          { status: 500 },
+        );
       }
-    </script>
-  </head>
-
-  <body>
-    <div id="root"></div>
-
-    <script
-      type="module"
-      src="/src/main.tsx"
-    ></script>
-  </body>
-</html>
+    },
+  ),
+};
