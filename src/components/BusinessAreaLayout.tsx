@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useApp } from '../context/AppContext';
 import { BusinessDashboard } from './BusinessDashboard';
 import { MenuManager } from './MenuManager';
@@ -21,9 +21,6 @@ import {
   Settings,
   CreditCard,
   ShieldCheck,
-  ArrowLeft,
-  Power,
-  ChevronRight
 } from 'lucide-react';
 import { AppView } from '../context/AppContext';
 
@@ -116,7 +113,7 @@ export const BusinessAreaLayout: React.FC = () => {
   return (
     <div className="min-h-screen bg-[#F7FAF7] flex flex-col md:flex-row">
       {/* Sidebar on Desktop / Top Bar with Horizontal Tabs on Mobile */}
-      <aside className="w-full md:w-64 bg-[#17201A] text-white shrink-0 md:min-h-screen flex flex-col justify-between border-b md:border-b-0 md:border-r border-white/10 z-30">
+      <div className="business-sidebar w-full md:w-64 bg-[#17201A] text-white shrink-0 md:min-h-screen flex flex-col justify-between border-b md:border-b-0 md:border-r border-white/10 z-30">
         <div>
           {/* Top Brand & Status */}
           <div className="p-4 sm:p-5 flex items-center justify-between border-b border-white/10">
@@ -145,7 +142,7 @@ export const BusinessAreaLayout: React.FC = () => {
           {/* Multi-Business Selector */}
           <div className="p-3 bg-white/5 border-b border-white/10">
             <div className="flex items-center justify-between text-xs mb-1.5 font-bold">
-              <span className="text-[#647067]">Select Business:</span>
+              <span className="text-[#B7C1BA]">Select Business:</span>
               <button
                 onClick={() => toggleBusinessOpen(ownerBusiness.id)}
                 className={`text-[10px] font-black px-2 py-0.5 rounded cursor-pointer transition-colors ${
@@ -207,7 +204,7 @@ export const BusinessAreaLayout: React.FC = () => {
 
         {/* Bottom Desktop Help Banner */}
         <div className="p-4 border-t border-white/10 hidden md:block">
-          <div className="p-3 bg-white/5 rounded-xl text-[11px] text-[#647067] space-y-1">
+          <div className="p-3 bg-white/5 rounded-xl text-[11px] text-[#B7C1BA] space-y-1">
             <div className="text-white font-bold flex items-center gap-1">
               <span>{ownerBusiness.businessName}</span>
             </div>
@@ -217,7 +214,7 @@ export const BusinessAreaLayout: React.FC = () => {
             </p>
           </div>
         </div>
-      </aside>
+      </div>
 
       {/* Main Content Area */}
       <main className="flex-1 overflow-x-hidden min-h-screen">

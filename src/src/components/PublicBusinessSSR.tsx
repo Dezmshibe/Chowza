@@ -145,7 +145,7 @@ export default function PublicBusinessSSR({ business, items }: Props) {
                     loading="lazy"
                   />
                 ) : (
-                  <div className="flex h-32 items-center justify-center bg-[#efe3d5]">
+                  <div className="flex h-32 items-center justify-center bg-[#F0FDF4]">
                     <Store
                       size={32}
                       className="text-[#166534]"

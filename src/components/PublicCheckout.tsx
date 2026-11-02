@@ -96,7 +96,7 @@ export function PublicCheckout({
   }
 
   return (
-    <div className="min-h-screen bg-[#F7FAF7] text-[#166534]">
+    <div className="min-h-screen bg-[#F7FAF7] text-[#17201A]">
       <header className="border-b border-[#E1EAE3] bg-white">
         <div className="mx-auto flex max-w-4xl items-center gap-3 px-5 py-4">
           <button
@@ -210,7 +210,7 @@ export function PublicCheckout({
               <h2 className="text-lg font-black">Payment method</h2>
 
               <div className="mt-4 space-y-3">
-                <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-[#D7E2DA] p-4 hover:bg-[#fffaf5]">
+                <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-[#D7E2DA] p-4 hover:bg-[#F7FAF7]">
                   <input
                     type="radio"
                     name="payment-method"
@@ -227,7 +227,7 @@ Pay in cash when your order is delivered or collected.</span>
                   </span>
                 </label>
 
-                <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-[#D7E2DA] p-4 hover:bg-[#fffaf5]">
+                <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-[#D7E2DA] p-4 hover:bg-[#F7FAF7]">
                   <input
                     type="radio"
                     name="payment-method"

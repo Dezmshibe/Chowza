@@ -1,18 +1,15 @@
-import { hydrateRoot, createRoot } from 'react-dom/client';
+import { createRoot } from 'react-dom/client';
 import App from './App.tsx';
 import './index.css';
 
 const rootElement = document.getElementById('root')!;
 
-const isServerRendered = Boolean(
-  (window as Window & { __CHOWZA_SSR__?: boolean }).__CHOWZA_SSR__
-);
-
-if (isServerRendered) {
-  hydrateRoot(rootElement, <App />);
-} else {
-  createRoot(rootElement).render(<App />);
-}
+// The SSR shell intentionally contains different markup from the
+// interactive client application. Mount the client instead of hydrating
+// that shell so React does not produce hydration-mismatch errors.
+// The server-rendered HTML is still present for SEO and is replaced by
+// the interactive app immediately on the client.
+createRoot(rootElement).render(<App />);
 
 console.log(
   "VITE SUPABASE URL PRESENT:",

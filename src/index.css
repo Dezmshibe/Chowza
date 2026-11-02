@@ -1015,7 +1015,7 @@ main .grid > article:focus-within {
    BUSINESS PORTAL
    ========================================================= */
 
-aside {
+.business-sidebar {
   background:
     var(--accent-dark) !important;
 
@@ -1023,17 +1023,17 @@ aside {
     rgba(255, 255, 255, .10) !important;
 }
 
-aside h1 {
+.business-sidebar h1 {
   font-size: 1.5rem !important;
 }
 
-aside select {
+.business-sidebar select {
   background: #124F2A !important;
   border-color:
     rgba(255, 255, 255, .16) !important;
 }
 
-aside nav button {
+.business-sidebar nav button {
   border-radius: 9px !important;
 
   transition:
@@ -1042,11 +1042,11 @@ aside nav button {
     transform .25s var(--ease) !important;
 }
 
-aside nav button:hover {
+.business-sidebar nav button:hover {
   transform: translateX(2px);
 }
 
-aside nav button.bg-white {
+.business-sidebar nav button.bg-white {
   box-shadow:
     0 8px 18px rgba(0, 0, 0, .18) !important;
 }

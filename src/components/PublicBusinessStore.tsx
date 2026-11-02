@@ -719,7 +719,7 @@ export function PublicBusinessStore({ slug }: { slug: string }) {
 
   return (
 
-    <div className="min-h-screen bg-[#F7FAF7] text-[#166534]">
+    <div className="min-h-screen bg-[#F7FAF7] text-[#17201A]">
 
       <header className="sticky top-0 z-40 border-b border-[#E1EAE3] bg-white">
 
@@ -1003,7 +1003,7 @@ export function PublicBusinessStore({ slug }: { slug: string }) {
 
                       ) : (
 
-                        <div className="flex h-32 items-center justify-center bg-[#efe3d5]">
+                        <div className="flex h-32 items-center justify-center bg-[#F0FDF4]">
 
                           <Store size={32} className="text-[#166534]" />
 
@@ -1049,7 +1049,7 @@ export function PublicBusinessStore({ slug }: { slug: string }) {
 
                           onClick={() => addToCart(item)}
 
-                          className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-[#166534] px-4 py-3 font-bold text-white hover:bg-[#166534]"
+                          className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-[#166534] px-4 py-3 font-bold text-white hover:bg-[#15803D]"
 
                         >
 
@@ -1355,7 +1355,7 @@ export function PublicBusinessStore({ slug }: { slug: string }) {
 
                     }}
 
-                    className="mt-4 w-full rounded-xl bg-[#166534] px-5 py-3 font-black text-white hover:bg-[#166534]"
+                    className="mt-4 w-full rounded-xl bg-[#166534] px-5 py-3 font-black text-white hover:bg-[#15803D]"
 
                   >
 

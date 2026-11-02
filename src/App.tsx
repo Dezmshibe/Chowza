@@ -118,32 +118,68 @@ const AppContent: React.FC = () => {
 
   /*
    * ============================================================
-   * PAYMENT SUCCESS
+   * PAYMENT RETURN PAGES
    * ============================================================
    *
-   * This remains available from the PayFast redirect.
+   * PayFast redirects the browser here, but the redirect itself is
+   * not proof that the payment is complete. The PayFast ITN/webhook
+   * is the source of truth for the order's payment status.
    */
-  if (pathname === '/payment/success') {
+  const paymentPath =
+    pathname === '/payment/success' ||
+    pathname === '/payment/failed' ||
+    pathname === '/payment/cancelled';
+
+  if (paymentPath) {
     const params = new URLSearchParams(window.location.search);
     const orderNumber = params.get('orderNumber');
+
+    const isSuccess = pathname === '/payment/success';
+    const isCancelled = pathname === '/payment/cancelled';
+
+    const title = isSuccess
+      ? 'Payment return received'
+      : isCancelled
+        ? 'Payment cancelled'
+        : 'Payment not completed';
+
+    const message = isSuccess
+      ? 'PayFast returned you to Chowza. We are confirming the payment with the payment provider before marking your order as paid.'
+      : isCancelled
+        ? 'The online payment was cancelled. Your order has not been confirmed as paid.'
+        : 'The online payment was not completed. You can return to Chowza and try again.';
 
     return (
       <div className="min-h-screen bg-[#F7FAF7] flex items-center justify-center p-6">
         <div className="w-full max-w-md rounded-3xl bg-white border border-[#D7E2DA] p-8 shadow-xl text-center">
-
-          <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-[#DCFCE7]">
-            <span className="text-3xl font-black text-[#15803D]">
-              ✓
+          <div
+            className={`mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full ${
+              isSuccess
+                ? 'bg-[#DCFCE7]'
+                : isCancelled
+                  ? 'bg-[#FEF3C7]'
+                  : 'bg-[#FEE2E2]'
+            }`}
+          >
+            <span
+              className={`text-2xl font-black ${
+                isSuccess
+                  ? 'text-[#15803D]'
+                  : isCancelled
+                    ? 'text-[#B45309]'
+                    : 'text-[#DC2626]'
+              }`}
+            >
+              {isSuccess ? '✓' : isCancelled ? '!' : '×'}
             </span>
           </div>
 
           <h1 className="text-2xl font-black text-[#17201A]">
-            Payment Successful
+            {title}
           </h1>
 
           <p className="mt-3 text-sm leading-6 text-[#647067]">
-            Your payment was received by PayFast. Chowza is confirming
-            the payment and updating your order.
+            {message}
           </p>
 
           {orderNumber && (
@@ -157,10 +193,6 @@ const AppContent: React.FC = () => {
               </p>
             </div>
           )}
-
-          <p className="mt-5 text-sm text-[#647067]">
-            Your order is now being processed by the business.
-          </p>
 
           <button
             type="button"

@@ -1,56 +1,47 @@
 -- Chowza Payment Engine
--- Adds payment breakdown metadata to orders.
--- Existing PayFast/Yoco fields and RLS policies are preserved.
+-- Marketplace payment metadata for online orders.
+-- Safe to run repeatedly: columns are added only when missing.
 
-ALTER TABLE public.orders
-  ADD COLUMN IF NOT EXISTS payment_gross numeric,
-  ADD COLUMN IF NOT EXISTS payment_commission numeric,
-  ADD COLUMN IF NOT EXISTS payment_restaurant_amount numeric,
-  ADD COLUMN IF NOT EXISTS payment_commission_percent numeric,
-  ADD COLUMN IF NOT EXISTS payment_completed_at timestamptz;
+alter table public.orders
+  add column if not exists payment_gross numeric(12,2),
+  add column if not exists payment_commission numeric(12,2),
+  add column if not exists payment_restaurant_amount numeric(12,2),
+  add column if not exists payment_commission_percent numeric(5,2),
+  add column if not exists payment_completed_at timestamptz;
 
-DO $$
-BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_constraint
-    WHERE conname = 'orders_payment_gross_check'
-  ) THEN
-    ALTER TABLE public.orders
-      ADD CONSTRAINT orders_payment_gross_check
-      CHECK (payment_gross IS NULL OR payment_gross >= 0);
-  END IF;
+-- Keep payment amounts mathematically safe.
+alter table public.orders
+  drop constraint if exists orders_payment_gross_nonnegative,
+  drop constraint if exists orders_payment_commission_nonnegative,
+  drop constraint if exists orders_payment_restaurant_amount_nonnegative,
+  drop constraint if exists orders_payment_commission_percent_valid;
 
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_constraint
-    WHERE conname = 'orders_payment_commission_check'
-  ) THEN
-    ALTER TABLE public.orders
-      ADD CONSTRAINT orders_payment_commission_check
-      CHECK (payment_commission IS NULL OR payment_commission >= 0);
-  END IF;
+alter table public.orders
+  add constraint orders_payment_gross_nonnegative
+    check (payment_gross is null or payment_gross >= 0),
+  add constraint orders_payment_commission_nonnegative
+    check (payment_commission is null or payment_commission >= 0),
+  add constraint orders_payment_restaurant_amount_nonnegative
+    check (payment_restaurant_amount is null or payment_restaurant_amount >= 0),
+  add constraint orders_payment_commission_percent_valid
+    check (
+      payment_commission_percent is null
+      or (
+        payment_commission_percent >= 0
+        and payment_commission_percent <= 100
+      )
+    );
 
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_constraint
-    WHERE conname = 'orders_payment_restaurant_amount_check'
-  ) THEN
-    ALTER TABLE public.orders
-      ADD CONSTRAINT orders_payment_restaurant_amount_check
-      CHECK (payment_restaurant_amount IS NULL OR payment_restaurant_amount >= 0);
-  END IF;
+create index if not exists orders_payment_status_idx
+  on public.orders(payment_status);
 
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_constraint
-    WHERE conname = 'orders_payment_commission_percent_check'
-  ) THEN
-    ALTER TABLE public.orders
-      ADD CONSTRAINT orders_payment_commission_percent_check
-      CHECK (
-        payment_commission_percent IS NULL
-        OR (
-          payment_commission_percent >= 0
-          AND payment_commission_percent <= 100
-        )
-      );
-  END IF;
-END
-$$;
+comment on column public.orders.payment_gross is
+  'Gross amount charged to the customer for an online payment.';
+comment on column public.orders.payment_commission is
+  'Chowza marketplace commission amount for the online payment.';
+comment on column public.orders.payment_restaurant_amount is
+  'Business share of the online payment after the Chowza commission.';
+comment on column public.orders.payment_commission_percent is
+  'Chowza marketplace commission percentage used for this payment.';
+comment on column public.orders.payment_completed_at is
+  'Timestamp when the verified payment was completed.';

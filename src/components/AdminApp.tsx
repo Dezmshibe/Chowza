@@ -24,7 +24,6 @@ import {
   XCircle,
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
-import { useInactivityLogout } from '../hooks/useInactivityLogout';
 
 type AdminAppProps = {
   onBack: () => void;
@@ -130,9 +129,6 @@ function getStartOfWeek() {
 }
 
 export function AdminApp({ onBack }: AdminAppProps) {
-    useInactivityLogout(() => {
-    onBack();
-  });
   const [businesses, setBusinesses] = useState<Business[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
@@ -592,24 +588,24 @@ const [activeTab, setActiveTab] = useState<AdminTab>('overview');
   }
 if (accessDenied) {
   return (
-    <div className="min-h-screen bg-[#f4f0eb] flex items-center justify-center p-6">
-      <div className="w-full max-w-md rounded-3xl border border-[#ddd3ca] bg-white p-8 text-center shadow-xl">
+    <div className="min-h-screen bg-[#F7FAF7] flex items-center justify-center p-6">
+      <div className="w-full max-w-md rounded-3xl border border-[#E1EAE3] bg-white p-8 text-center shadow-xl">
         <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-red-100 text-red-600">
           <ShieldCheck size={26} />
         </div>
 
-        <h1 className="text-2xl font-black text-[#2d211c]">
+        <h1 className="text-2xl font-black text-[#17201A]">
           Admin access required
         </h1>
 
-        <p className="mt-3 text-sm leading-6 text-[#75645a]">
+        <p className="mt-3 text-sm leading-6 text-[#647067]">
           This area is restricted to Chowza platform administrators.
           Your account does not have administrator permissions.
         </p>
 
         <button
           onClick={onBack}
-          className="mt-6 w-full rounded-xl bg-[#2d211c] px-4 py-3 text-sm font-black text-white hover:bg-[#3d2c24]"
+          className="mt-6 w-full rounded-xl bg-[#17201A] px-4 py-3 text-sm font-black text-white hover:bg-[#1F2D24]"
         >
           Return to Chowza
         </button>
@@ -619,8 +615,8 @@ if (accessDenied) {
 }
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#f4f0eb] flex items-center justify-center p-6">
-        <div className="w-full max-w-sm rounded-3xl border border-[#ddd3ca] bg-white p-8 text-center shadow-xl">
+      <div className="min-h-screen bg-[#F7FAF7] flex items-center justify-center p-6">
+        <div className="w-full max-w-sm rounded-3xl border border-[#E1EAE3] bg-white p-8 text-center shadow-xl">
           <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#2f211b] text-white">
             <ShieldCheck size={26} />
           </div>
@@ -636,13 +632,13 @@ if (accessDenied) {
   }
 
   return (
-    <div className="min-h-screen bg-[#f4f0eb] text-[#2d211c]">
+    <div className="min-h-screen bg-[#F7FAF7] text-[#17201A]">
       <div className="flex min-h-screen">
         {/* DESKTOP SIDEBAR */}
-        <aside className="hidden w-64 shrink-0 border-r border-[#ddd3ca] bg-[#211813] text-white lg:flex lg:flex-col">
+        <aside className="hidden w-64 shrink-0 border-r border-[#26352B] bg-[#17201A] text-white lg:flex lg:flex-col">
           <div className="border-b border-white/10 p-6">
             <div className="flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-white text-[#211813]">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-white text-[#17201A]">
                 <ShieldCheck size={23} />
               </div>
 
@@ -740,7 +736,7 @@ if (accessDenied) {
 
         <div className="flex min-w-0 flex-1 flex-col">
           {/* MOBILE HEADER */}
-          <header className="sticky top-0 z-30 border-b border-[#ddd3ca] bg-white/95 backdrop-blur lg:hidden">
+          <header className="sticky top-0 z-30 border-b border-[#E1EAE3] bg-white/95 backdrop-blur lg:hidden">
             <div className="flex items-center justify-between px-4 py-4">
               <div className="flex items-center gap-3">
                 <button
@@ -749,7 +745,7 @@ if (accessDenied) {
                       !mobileNavOpen,
                     )
                   }
-                  className="rounded-xl border border-[#ddd3ca] p-2"
+                  className="rounded-xl border border-[#E1EAE3] p-2"
                 >
                   {mobileNavOpen ? (
                     <X size={19} />
@@ -759,7 +755,7 @@ if (accessDenied) {
                 </button>
 
                 <div>
-                  <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#a46b32]">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#22C55E]">
                     Chowza
                   </p>
 
@@ -773,7 +769,7 @@ if (accessDenied) {
                 onClick={() =>
                   void loadAdminData(true)
                 }
-                className="rounded-xl border border-[#ddd3ca] p-2"
+                className="rounded-xl border border-[#E1EAE3] p-2"
               >
                 <RefreshCw
                   size={18}
@@ -918,52 +914,43 @@ if (accessDenied) {
               </div>
             )}
 
-            {/* TOP BAR */}
-            <div className="mb-8 flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
-              <div>
-                <p className="text-xs font-black uppercase tracking-[0.2em] text-[#a46b32]">
-                  Platform administration
+            {/* COMPACT CONTENT TOOLBAR */}
+            <div className="mb-6 flex items-center justify-between gap-4 rounded-2xl border border-[#E1EAE3] bg-white px-4 py-3 shadow-sm sm:px-5">
+              <div className="min-w-0">
+                <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[#22C55E]">
+                  Chowza Admin
                 </p>
-
-                <h1 className="mt-1 text-3xl font-black tracking-tight sm:text-4xl">
+                <h1 className="truncate text-lg font-black tracking-tight text-[#17201A] sm:text-xl">
                   {activeTab === 'overview'
-                    ? 'Good evening.'
+                    ? 'Overview'
                     : activeTab === 'businesses'
-                      ? 'Business command centre'
+                      ? 'Businesses'
                       : activeTab === 'orders'
-                        ? 'Order command centre'
+                        ? 'Orders'
                         : activeTab === 'payments'
-                          ? 'Payment centre'
+                          ? 'Payments'
                           : activeTab === 'analytics'
-                            ? 'Platform analytics'
-                            : activeTab ===
-                                'activity'
-                              ? 'Platform activity'
-                              : 'Admin settings'}
+                            ? 'Analytics'
+                            : activeTab === 'activity'
+                              ? 'Activity'
+                              : 'Settings'}
                 </h1>
-
-                <p className="mt-2 max-w-2xl text-sm text-[#75645a]">
-                  Control and monitor the Chowza
-                  platform from one secure place.
-                </p>
               </div>
 
               <button
-                onClick={() =>
-                  void loadAdminData(true)
-                }
+                onClick={() => void loadAdminData(true)}
                 disabled={refreshing}
-                className="hidden items-center gap-2 rounded-xl bg-[#2d211c] px-4 py-3 text-sm font-black text-white shadow-sm hover:bg-[#3d2c24] disabled:opacity-60 xl:inline-flex"
+                aria-label="Refresh admin data"
+                title="Refresh data"
+                className="flex shrink-0 items-center gap-2 rounded-xl bg-[#17201A] px-3 py-2.5 text-sm font-black text-white shadow-sm transition hover:bg-[#1F2D24] disabled:opacity-60"
               >
                 <RefreshCw
-                  size={17}
-                  className={
-                    refreshing
-                      ? 'animate-spin'
-                      : ''
-                  }
+                  size={16}
+                  className={refreshing ? 'animate-spin' : ''}
                 />
-                Refresh data
+                <span className="hidden sm:inline">
+                  Refresh
+                </span>
               </button>
             </div>
 
@@ -1067,7 +1054,7 @@ if (accessDenied) {
             )}
           </main>
 
-          <footer className="border-t border-[#ddd3ca] bg-white px-6 py-5 text-center text-xs text-[#647067]">
+          <footer className="border-t border-[#E1EAE3] bg-white px-6 py-5 text-center text-xs text-[#647067]">
             <div className="flex items-center justify-center gap-2">
               <ShieldCheck size={14} />
               Chowza Platform Administration
@@ -1236,7 +1223,7 @@ function Overview({
       </div>
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
-        <section className="rounded-3xl border border-[#ddd3ca] bg-white p-6 shadow-sm xl:col-span-2">
+        <section className="rounded-3xl border border-[#E1EAE3] bg-white p-6 shadow-sm xl:col-span-2">
           <SectionHeader
             title="Revenue by business"
             subtitle="Which businesses are driving the platform?"
@@ -1261,7 +1248,7 @@ function Overview({
                   >
                     <div className="mb-2 flex items-center justify-between gap-4">
                       <div className="flex min-w-0 items-center gap-3">
-                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#f5eee7] text-[#a46b32]">
+                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#f5eee7] text-[#22C55E]">
                           <Store size={17} />
                         </div>
 
@@ -1304,7 +1291,7 @@ function Overview({
           )}
         </section>
 
-        <section className="rounded-3xl border border-[#ddd3ca] bg-[#2d211c] p-6 text-white shadow-sm">
+        <section className="rounded-3xl border border-[#E1EAE3] bg-[#17201A] p-6 text-white shadow-sm">
           <SectionHeader
             title="Platform health"
             subtitle="Live operational snapshot"
@@ -1385,7 +1372,7 @@ function Overview({
       </div>
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
-        <section className="rounded-3xl border border-[#ddd3ca] bg-white p-6 shadow-sm">
+        <section className="rounded-3xl border border-[#E1EAE3] bg-white p-6 shadow-sm">
           <SectionHeader
             title="Top businesses"
             subtitle="Ranked by revenue"
@@ -1405,7 +1392,7 @@ function Overview({
                   }
                   className="flex w-full items-center gap-4 rounded-2xl p-3 text-left hover:bg-[#faf7f4]"
                 >
-                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#2d211c] text-sm font-black text-white">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#17201A] text-sm font-black text-white">
                     {index + 1}
                   </div>
 
@@ -1435,7 +1422,7 @@ function Overview({
           </div>
         </section>
 
-        <section className="rounded-3xl border border-[#ddd3ca] bg-white p-6 shadow-sm">
+        <section className="rounded-3xl border border-[#E1EAE3] bg-white p-6 shadow-sm">
           <SectionHeader
             title="Recent orders"
             subtitle="Latest platform activity"
@@ -1451,7 +1438,7 @@ function Overview({
                 }
                 className="flex w-full items-center gap-4 rounded-2xl p-3 text-left hover:bg-[#faf7f4]"
               >
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#f5eee7] text-[#a46b32]">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#f5eee7] text-[#22C55E]">
                   <ClipboardList size={17} />
                 </div>
 
@@ -1517,14 +1504,14 @@ function BusinessesPanel({
 }) {
   return (
     <div className="space-y-6">
-      <section className="rounded-3xl border border-[#ddd3ca] bg-white p-5 shadow-sm">
+      <section className="rounded-3xl border border-[#E1EAE3] bg-white p-5 shadow-sm">
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
             <h2 className="text-xl font-black">
               Business network
             </h2>
 
-            <p className="text-sm text-[#75645a]">
+            <p className="text-sm text-[#647067]">
               Manage every business on Chowza.
             </p>
           </div>
@@ -1541,7 +1528,7 @@ function BusinessesPanel({
                 setSearch(event.target.value)
               }
               placeholder="Search businesses..."
-              className="w-full rounded-xl border border-[#ddd3ca] bg-[#faf8f6] py-2.5 pl-10 pr-4 text-sm outline-none focus:border-[#a46b32]"
+              className="w-full rounded-xl border border-[#E1EAE3] bg-[#faf8f6] py-2.5 pl-10 pr-4 text-sm outline-none focus:border-[#a46b32]"
             />
           </div>
         </div>
@@ -1558,7 +1545,7 @@ function BusinessesPanel({
           return (
             <div
               key={business.id}
-              className="rounded-3xl border border-[#ddd3ca] bg-white p-5 shadow-sm"
+              className="rounded-3xl border border-[#E1EAE3] bg-white p-5 shadow-sm"
             >
               <div className="flex items-start justify-between gap-4">
                 <button
@@ -1574,7 +1561,7 @@ function BusinessesPanel({
                       className="h-14 w-14 rounded-2xl border border-[#eee6df] object-cover"
                     />
                   ) : (
-                    <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#f5eee7] text-[#a46b32]">
+                    <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#f5eee7] text-[#22C55E]">
                       <Store size={23} />
                     </div>
                   )}
@@ -1627,7 +1614,7 @@ function BusinessesPanel({
                   onClick={() =>
                     onSelect(business)
                   }
-                  className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-[#2d211c] px-4 py-2.5 text-sm font-black text-white"
+                  className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-[#17201A] px-4 py-2.5 text-sm font-black text-white"
                 >
                   <Eye size={16} />
                   View details
@@ -1639,7 +1626,7 @@ function BusinessesPanel({
                       business,
                     )
                   }
-                  className="inline-flex items-center justify-center gap-2 rounded-xl border border-[#ddd3ca] px-4 py-2.5 text-sm font-black hover:bg-[#faf7f4]"
+                  className="inline-flex items-center justify-center gap-2 rounded-xl border border-[#E1EAE3] px-4 py-2.5 text-sm font-black hover:bg-[#faf7f4]"
                 >
                   {business.is_published ? (
                     <>
@@ -1689,14 +1676,14 @@ function OrdersPanel({
 }) {
   return (
     <div className="space-y-5">
-      <section className="rounded-3xl border border-[#ddd3ca] bg-white p-5 shadow-sm">
+      <section className="rounded-3xl border border-[#E1EAE3] bg-white p-5 shadow-sm">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <h2 className="text-xl font-black">
               Platform orders
             </h2>
 
-            <p className="text-sm text-[#75645a]">
+            <p className="text-sm text-[#647067]">
               Search and monitor orders across Chowza.
             </p>
           </div>
@@ -1714,7 +1701,7 @@ function OrdersPanel({
                   setSearch(event.target.value)
                 }
                 placeholder="Order, customer, phone..."
-                className="w-full rounded-xl border border-[#ddd3ca] bg-[#faf8f6] py-2.5 pl-10 pr-4 text-sm outline-none focus:border-[#a46b32] sm:w-64"
+                className="w-full rounded-xl border border-[#E1EAE3] bg-[#faf8f6] py-2.5 pl-10 pr-4 text-sm outline-none focus:border-[#a46b32] sm:w-64"
               />
             </div>
 
@@ -1723,7 +1710,7 @@ function OrdersPanel({
               onChange={(event) =>
                 setFilter(event.target.value)
               }
-              className="rounded-xl border border-[#ddd3ca] bg-white px-4 py-2.5 text-sm font-bold outline-none"
+              className="rounded-xl border border-[#E1EAE3] bg-white px-4 py-2.5 text-sm font-bold outline-none"
             >
               <option value="all">
                 All statuses
@@ -1747,7 +1734,7 @@ function OrdersPanel({
         </div>
       </section>
 
-      <div className="overflow-hidden rounded-3xl border border-[#ddd3ca] bg-white shadow-sm">
+      <div className="overflow-hidden rounded-3xl border border-[#E1EAE3] bg-white shadow-sm">
         {orders.map((order) => (
           <button
             key={order.id}
@@ -1755,7 +1742,7 @@ function OrdersPanel({
             className="flex w-full flex-col gap-4 border-b border-[#eee6df] p-5 text-left transition hover:bg-[#fcfaf8] last:border-0 md:flex-row md:items-center"
           >
             <div className="flex min-w-0 flex-1 items-center gap-4">
-              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#f5eee7] text-[#a46b32]">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#f5eee7] text-[#22C55E]">
                 <ClipboardList size={19} />
               </div>
 
@@ -1889,13 +1876,13 @@ function PaymentsPanel({
         />
       </div>
 
-      <section className="rounded-3xl border border-[#ddd3ca] bg-white shadow-sm">
+      <section className="rounded-3xl border border-[#E1EAE3] bg-white shadow-sm">
         <div className="border-b border-[#eee6df] p-6">
           <h2 className="text-xl font-black">
             Payment connections
           </h2>
 
-          <p className="mt-1 text-sm text-[#75645a]">
+          <p className="mt-1 text-sm text-[#647067]">
             Payment provider status by business.
           </p>
         </div>
@@ -1915,7 +1902,7 @@ function PaymentsPanel({
                 className="flex flex-col gap-4 p-5 md:flex-row md:items-center md:justify-between"
               >
                 <div className="flex items-center gap-4">
-                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#f5eee7] text-[#a46b32]">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#f5eee7] text-[#22C55E]">
                     <CreditCard size={19} />
                   </div>
 
@@ -1959,7 +1946,7 @@ function PaymentsPanel({
         <div className="flex gap-3">
           <ShieldCheck
             size={19}
-            className="shrink-0 text-[#a46b32]"
+            className="shrink-0 text-[#22C55E]"
           />
 
           <p>
@@ -2050,7 +2037,7 @@ function AnalyticsPanel({
       </div>
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
-        <section className="rounded-3xl border border-[#ddd3ca] bg-white p-6 shadow-sm">
+        <section className="rounded-3xl border border-[#E1EAE3] bg-white p-6 shadow-sm">
           <SectionHeader
             title="Order pipeline"
             subtitle="Current order distribution"
@@ -2076,7 +2063,7 @@ function AnalyticsPanel({
 
                   <div className="h-2 rounded-full bg-[#eee7e1]">
                     <div
-                      className="h-full rounded-full bg-[#2d211c]"
+                      className="h-full rounded-full bg-[#17201A]"
                       style={{
                         width: `${(item.count / maxStatus) * 100}%`,
                       }}
@@ -2088,7 +2075,7 @@ function AnalyticsPanel({
           </div>
         </section>
 
-        <section className="rounded-3xl border border-[#ddd3ca] bg-white p-6 shadow-sm">
+        <section className="rounded-3xl border border-[#E1EAE3] bg-white p-6 shadow-sm">
           <SectionHeader
             title="Payment methods"
             subtitle="How customers are paying"
@@ -2125,7 +2112,7 @@ function AnalyticsPanel({
         </section>
       </div>
 
-      <section className="rounded-3xl border border-[#ddd3ca] bg-white p-6 shadow-sm">
+      <section className="rounded-3xl border border-[#E1EAE3] bg-white p-6 shadow-sm">
         <SectionHeader
           title="Business performance"
           subtitle="Revenue and order performance"
@@ -2238,7 +2225,7 @@ function ActivityPanel({
     .slice(0, 20);
 
   return (
-    <section className="rounded-3xl border border-[#ddd3ca] bg-white p-6 shadow-sm">
+    <section className="rounded-3xl border border-[#E1EAE3] bg-white p-6 shadow-sm">
       <SectionHeader
         title="Platform activity"
         subtitle="Recent business and order events"
@@ -2251,7 +2238,7 @@ function ActivityPanel({
             key={event.id}
             className="relative flex gap-4 border-b border-[#eee6df] py-5 last:border-0"
           >
-            <div className="relative z-10 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#f5eee7] text-[#a46b32]">
+            <div className="relative z-10 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#f5eee7] text-[#22C55E]">
               {event.icon}
             </div>
 
@@ -2260,7 +2247,7 @@ function ActivityPanel({
                 {event.title}
               </p>
 
-              <p className="mt-1 text-sm text-[#75645a]">
+              <p className="mt-1 text-sm text-[#647067]">
                 {event.description}
               </p>
 
@@ -2286,9 +2273,9 @@ function ActivityPanel({
 function SettingsPanel() {
   return (
     <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
-      <section className="rounded-3xl border border-[#ddd3ca] bg-white p-6 shadow-sm">
+      <section className="rounded-3xl border border-[#E1EAE3] bg-white p-6 shadow-sm">
         <div className="flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#f5eee7] text-[#a46b32]">
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#f5eee7] text-[#22C55E]">
             <ShieldCheck size={20} />
           </div>
 
@@ -2297,7 +2284,7 @@ function SettingsPanel() {
               Security
             </h2>
 
-            <p className="text-sm text-[#75645a]">
+            <p className="text-sm text-[#647067]">
               Platform protection
             </p>
           </div>
@@ -2330,9 +2317,9 @@ function SettingsPanel() {
         </div>
       </section>
 
-      <section className="rounded-3xl border border-[#ddd3ca] bg-white p-6 shadow-sm">
+      <section className="rounded-3xl border border-[#E1EAE3] bg-white p-6 shadow-sm">
         <div className="flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#f5eee7] text-[#a46b32]">
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#f5eee7] text-[#22C55E]">
             <Settings size={20} />
           </div>
 
@@ -2341,7 +2328,7 @@ function SettingsPanel() {
               Platform configuration
             </h2>
 
-            <p className="text-sm text-[#75645a]">
+            <p className="text-sm text-[#647067]">
               Current Chowza configuration
             </p>
           </div>
@@ -2412,7 +2399,7 @@ function BusinessDrawer({
                 className="h-16 w-16 rounded-2xl object-cover"
               />
             ) : (
-              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-[#f5eee7] text-[#a46b32]">
+              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-[#f5eee7] text-[#22C55E]">
                 <Store size={26} />
               </div>
             )}
@@ -2422,7 +2409,7 @@ function BusinessDrawer({
                 {business.name}
               </h2>
 
-              <p className="text-sm text-[#75645a]">
+              <p className="text-sm text-[#647067]">
                 /{business.slug}
               </p>
             </div>
@@ -2430,7 +2417,7 @@ function BusinessDrawer({
 
           <button
             onClick={onClose}
-            className="rounded-xl border border-[#ddd3ca] p-2"
+            className="rounded-xl border border-[#E1EAE3] p-2"
           >
             <X size={18} />
           </button>
@@ -2519,7 +2506,7 @@ function BusinessDrawer({
 
         <button
           onClick={onTogglePublish}
-          className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#2d211c] px-4 py-3 text-sm font-black text-white"
+          className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#17201A] px-4 py-3 text-sm font-black text-white"
         >
           {business.is_published ? (
             <>
@@ -2556,7 +2543,7 @@ function OrderDrawer({
       <div className="border-b border-[#eee6df] p-6">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="text-xs font-black uppercase tracking-wider text-[#a46b32]">
+            <p className="text-xs font-black uppercase tracking-wider text-[#22C55E]">
               Platform order
             </p>
 
@@ -2564,14 +2551,14 @@ function OrderDrawer({
               #{order.order_number}
             </h2>
 
-            <p className="mt-1 text-sm text-[#75645a]">
+            <p className="mt-1 text-sm text-[#647067]">
               {businessName}
             </p>
           </div>
 
           <button
             onClick={onClose}
-            className="rounded-xl border border-[#ddd3ca] p-2"
+            className="rounded-xl border border-[#E1EAE3] p-2"
           >
             <X size={18} />
           </button>
@@ -2652,7 +2639,7 @@ function OrderDrawer({
                 event.target.value,
               )
             }
-            className="w-full rounded-xl border border-[#ddd3ca] bg-white px-4 py-3 text-sm font-bold outline-none focus:border-[#a46b32]"
+            className="w-full rounded-xl border border-[#E1EAE3] bg-white px-4 py-3 text-sm font-bold outline-none focus:border-[#a46b32]"
           >
             {ORDER_STATUSES.map(
               (status) => (
@@ -2745,7 +2732,7 @@ function MobileNavItem({
       onClick={onClick}
       className={`flex w-full items-center gap-3 rounded-xl px-3 py-3 text-sm font-bold ${
         active
-          ? 'bg-[#2d211c] text-white'
+          ? 'bg-[#17201A] text-white'
           : 'text-[#5e4d43]'
       }`}
     >
@@ -2767,7 +2754,7 @@ function MetricCard({
   icon: ReactNode;
 }) {
   return (
-    <div className="rounded-3xl border border-[#ddd3ca] bg-white p-5 shadow-sm">
+    <div className="rounded-3xl border border-[#E1EAE3] bg-white p-5 shadow-sm">
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="text-xs font-black uppercase tracking-wider text-[#647067]">
@@ -2783,7 +2770,7 @@ function MetricCard({
           </p>
         </div>
 
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#f5eee7] text-[#a46b32]">
+        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#f5eee7] text-[#22C55E]">
           {icon}
         </div>
       </div>
@@ -2801,8 +2788,8 @@ function MiniMetric({
   icon: ReactNode;
 }) {
   return (
-    <div className="flex items-center gap-3 rounded-2xl border border-[#ddd3ca] bg-white p-4 shadow-sm">
-      <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#f5eee7] text-[#a46b32]">
+    <div className="flex items-center gap-3 rounded-2xl border border-[#E1EAE3] bg-white p-4 shadow-sm">
+      <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#f5eee7] text-[#22C55E]">
         {icon}
       </div>
 
@@ -2865,7 +2852,7 @@ function SectionHeader({
           className={`mt-1 text-sm ${
             dark
               ? 'text-white/50'
-              : 'text-[#75645a]'
+              : 'text-[#647067]'
           }`}
         >
           {subtitle}
@@ -2876,7 +2863,7 @@ function SectionHeader({
         className={`flex h-9 w-9 items-center justify-center rounded-xl ${
           dark
             ? 'bg-white/10 text-[#e4a963]'
-            : 'bg-[#f5eee7] text-[#a46b32]'
+            : 'bg-[#f5eee7] text-[#22C55E]'
         }`}
       >
         {icon}
@@ -3020,11 +3007,11 @@ function EmptyState({
 }) {
   return (
     <div className="rounded-2xl border border-dashed border-[#d9cfc7] p-10 text-center">
-      <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-[#f5eee7] text-[#a46b32]">
+      <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-[#f5eee7] text-[#22C55E]">
         <Activity size={19} />
       </div>
 
-      <p className="text-sm font-semibold text-[#75645a]">
+      <p className="text-sm font-semibold text-[#647067]">
         {text}
       </p>
     </div>

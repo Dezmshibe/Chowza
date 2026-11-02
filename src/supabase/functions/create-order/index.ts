@@ -1,4 +1,4 @@
-import "@supabase/functions-js/edge-runtime.d.ts";
+﻿import "@supabase/functions-js/edge-runtime.d.ts";
 import { withSupabase } from "@supabase/server";
 import { getCorsHeaders, requireCsrf } from "../_shared/csrf.ts";
 
@@ -17,25 +17,36 @@ type OrderRequest = {
 };
 
 export default {
-  fetch: withSupabase(
-    { auth: ["publishable"] },
+fetch: withSupabase(
+    {
+      auth: ["publishable"],
+      cors: {
+        headers: {
+          "Access-Control-Allow-Origin": "*",
+          "Access-Control-Allow-Headers":
+            "authorization, x-client-info, apikey, content-type, x-csrf-token",
+          "Access-Control-Allow-Methods":
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS",
+        },
+      },
+    },
     async (req, ctx) => {
       try {
         const corsHeaders = getCorsHeaders(req);
-        
+
         if (req.method === "OPTIONS") {
           return new Response("ok", {
             status: 200,
             headers: corsHeaders,
           });
         }
-        
+
         const csrfError = await requireCsrf(req);
-        
+
         if (csrfError) {
           return csrfError;
         }
-        
+
         if (req.method !== "POST") {
           return Response.json(
             { error: "Method not allowed." },
