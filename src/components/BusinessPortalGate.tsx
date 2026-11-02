@@ -10,7 +10,8 @@ import {
   Menu as MenuIcon,
   Settings,
   Store,
-  Users,
+   Users,
+  QrCode,
 } from 'lucide-react';
 
 import { supabase } from '../lib/supabase';
@@ -19,6 +20,8 @@ import { BusinessOrdersManager } from './BusinessOrdersManager';
 import { BusinessProfileManager } from './BusinessProfileManager';
 import { BusinessStorefrontManager } from './BusinessStorefrontManager';
 import { BusinessAnalyticsManager } from './BusinessAnalyticsManager';
+import { BusinessPromotionsManager } from './BusinessPromotionsManager';
+import { BusinessQRCodeManager } from './BusinessQRCodeManager';
 
 type Business = {
   id: string;
@@ -49,7 +52,9 @@ type BusinessPage =
   | 'orders'
   | 'profile'
   | 'storefront'
-  | 'analytics';
+  | 'analytics'
+  | 'promotions'
+  | 'qr';
 
 const emptyStats: DashboardStats = {
   menuItems: 0,
@@ -290,6 +295,27 @@ if (currentPage === 'analytics') {
     />
   );
 }
+
+if (currentPage === 'promotions') {
+  return (
+    <BusinessPromotionsManager
+      businessId={business.id}
+      businessName={business.name}
+      onBack={() => setCurrentPage('dashboard')}
+    />
+  );
+}
+
+if (currentPage === 'qr') {
+  return (
+    <BusinessQRCodeManager
+      businessId={business.id}
+      businessName={business.name}
+      businessSlug={business.slug}
+      onBack={() => setCurrentPage('dashboard')}
+    />
+  );
+}
   return (
     <div className="min-h-screen bg-[#F7FAF7] text-[#166534]">
       <header className="border-b border-[#E1EAE3] bg-white">
@@ -442,6 +468,21 @@ if (currentPage === 'analytics') {
   onClick={() => setCurrentPage('analytics')}
 />
 
+<DashboardCard
+  icon={<ExternalLink size={22} />}
+  title="Promotions"
+  description="Create discount codes and special offers for your customers."
+  badge="Manage promotions"
+  onClick={() => setCurrentPage('promotions')}
+/>
+
+<DashboardCard
+  icon={<QrCode size={22} />}
+  title="QR Code"
+  description="Create, download and print a QR code for your Chowza store."
+  badge="Get your QR code"
+  onClick={() => setCurrentPage('qr')}
+/>
             <DashboardCard
               icon={<ExternalLink size={22} />}
               title="Public store"
