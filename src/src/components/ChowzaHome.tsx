@@ -374,16 +374,16 @@ export const ChowzaHome: React.FC<ChowzaHomeProps> = ({
           </div>
 
           {/* Search */}
-          <div className="mt-7 flex max-w-3xl items-center rounded-2xl bg-white p-2 shadow-xl">
-            <Search
-              className="pointer-events-none absolute left-4 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-[#4B5A50]"
-            />
+          <div className="relative mt-7 flex max-w-3xl items-center rounded-2xl bg-white p-2 shadow-xl">
+  <Search
+    className="pointer-events-none absolute left-4 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-[#4B5A50]"
+  />
 
-            <input
+  <input
               value={searchQuery}
               onChange={(event) => setSearchQuery(event.target.value)}
               placeholder="Search food, restaurants, burgers, kotas..."
-              className="min-w-0 flex-1 bg-transparent px-3 py-3 text-sm font-medium text-black outline-none placeholder:text-black/40"
+             className="min-w-0 flex-1 bg-transparent py-3 pl-10 pr-3 text-sm font-medium text-black outline-none placeholder:text-black/40"
             />
 
             {searchQuery && (
