@@ -763,8 +763,39 @@ export const ChowzaHome: React.FC<ChowzaHomeProps> = ({
             </span>
           </div>
 
-          <div className="text-white/40">
-            Built for local food businesses.
+          <div className="flex flex-col gap-3 sm:items-end">
+            <div className="text-white/40">
+              Built for local food businesses.
+            </div>
+
+            <nav
+              aria-label="Legal"
+              className="flex flex-wrap items-center gap-x-4 gap-y-2"
+            >
+              <button
+                type="button"
+                onClick={() => window.location.assign('/privacy')}
+                className="text-white/50 transition hover:text-white"
+              >
+                Privacy Policy
+              </button>
+
+              <button
+                type="button"
+                onClick={() => window.location.assign('/terms')}
+                className="text-white/50 transition hover:text-white"
+              >
+                Terms & Conditions
+              </button>
+
+              <button
+                type="button"
+                onClick={() => window.location.assign('/refunds')}
+                className="text-white/50 transition hover:text-white"
+              >
+                Refund Policy
+              </button>
+            </nav>
           </div>
 
         </div>
