@@ -186,6 +186,61 @@ export function BusinessPortalGate({
     };
   }, []);
 
+  async function handlePublishToggle() {
+    if (!business) return;
+
+    setError('');
+
+    try {
+      const nextPublishedState = !business.is_published;
+
+      const {
+        data: updatedBusiness,
+        error: updateError,
+      } = await supabase
+        .from('businesses')
+        .update({
+          is_published: nextPublishedState,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', business.id)
+        .select(`
+          id,
+          owner_id,
+          name,
+          slug,
+          description,
+          logo_url,
+          public_phone,
+          whatsapp_number,
+          public_address,
+          is_published
+        `)
+        .single();
+
+      if (updateError) {
+        throw updateError;
+      }
+
+      if (!updatedBusiness) {
+        throw new Error('Could not update your store status.');
+      }
+
+      setBusiness(updatedBusiness);
+    } catch (publishError) {
+      console.error(
+        '[Chowza] Could not update store publishing status:',
+        publishError,
+      );
+
+      setError(
+        publishError instanceof Error
+          ? publishError.message
+          : 'Could not update your store publishing status.',
+      );
+    }
+  }
+
   async function handleLogout() {
     await supabase.auth.signOut();
     onBack();
@@ -517,6 +572,18 @@ if (currentPage === 'qr') {
                   ? 'Your store is marked as published in your business settings.'
                   : 'Your business information is saved privately. Storefront publishing controls will be added later.'}
               </p>
+
+              <button
+                type="button"
+                onClick={() => void handlePublishToggle()}
+                className={`mt-4 inline-flex items-center rounded-xl px-5 py-3 text-sm font-bold transition ${
+                  business.is_published
+                    ? 'border border-[#D7E2DA] bg-white text-[#166534] hover:bg-[#F1F5F2]'
+                    : 'bg-[#22C55E] text-[#166534] hover:bg-[#16A34A]'
+                }`}
+              >
+                {business.is_published ? 'Unpublish store' : 'Publish store'}
+              </button>
             </div>
 
             <ChevronRight
@@ -602,3 +669,4 @@ function DashboardCard({
     </button>
   );
 }
+

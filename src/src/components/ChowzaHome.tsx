@@ -304,13 +304,11 @@ export const ChowzaHome: React.FC<ChowzaHomeProps> = ({
             onClick={() => window.location.assign('/')}
             className="flex items-center gap-2"
           >
-            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#15803D]">
-              <ShoppingBag size={18} />
-            </div>
-
-            <span className="text-xl font-black tracking-tight">
-              Chowza
-            </span>
+            <img
+  src="/branding/chowza-logo.png"
+  alt="Chowza"
+  className="h-10 w-auto object-contain"
+/>
           </button>
 
           <div className="hidden items-center gap-5 text-sm font-semibold sm:flex">

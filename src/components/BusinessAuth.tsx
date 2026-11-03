@@ -12,10 +12,79 @@ export function BusinessAuth({
 }: BusinessAuthProps) {
   const [mode, setMode] = useState<'login' | 'signup' | 'reset'>('login');
   const [email, setEmail] = useState('');
+  const [businessName, setBusinessName] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
+
+  function createBusinessSlug(name: string, userId: string) {
+    const baseSlug =
+      name
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '') || 'business';
+
+    return `${baseSlug}-${userId.slice(0, 8)}`;
+  }
+
+  async function ensureBusinessProfile(
+    user: {
+      id: string;
+      user_metadata?: Record<string, unknown> | null;
+    },
+    fallbackBusinessName = '',
+  ) {
+    const { data: existingBusiness, error: lookupError } =
+      await supabase
+        .from('businesses')
+        .select('id')
+        .eq('owner_id', user.id)
+        .maybeSingle();
+
+    if (lookupError) {
+      throw lookupError;
+    }
+
+    if (existingBusiness) {
+      return existingBusiness.id;
+    }
+
+    const metadataBusinessName =
+      typeof user.user_metadata?.business_name === 'string'
+        ? user.user_metadata.business_name.trim()
+        : '';
+
+    const name = fallbackBusinessName.trim() || metadataBusinessName;
+
+    if (!name) {
+      throw new Error(
+        'Your account is ready, but your business profile still needs to be set up.',
+      );
+    }
+
+    const slug = createBusinessSlug(name, user.id);
+
+    const { data: business, error: insertError } =
+      await supabase
+        .from('businesses')
+        .insert({
+          owner_id: user.id,
+          name,
+          slug,
+          description: '',
+          is_published: false,
+        })
+        .select('id')
+        .single();
+
+    if (insertError) {
+      throw insertError;
+    }
+
+    return business.id;
+  }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -40,6 +109,16 @@ export function BusinessAuth({
       // BUSINESS SIGNUP
       // =========================================================
       if (mode === 'signup') {
+        const cleanBusinessName = businessName.trim();
+
+        if (cleanBusinessName.length < 2) {
+          throw new Error('Please enter your business name.');
+        }
+
+        if (cleanBusinessName.length > 100) {
+          throw new Error('Business name must be 100 characters or fewer.');
+        }
+
         console.log('[Chowza] Starting business signup...');
 
         const { data, error: signupError } =
@@ -48,6 +127,9 @@ export function BusinessAuth({
             password,
             options: {
               emailRedirectTo: window.location.origin,
+              data: {
+                business_name: cleanBusinessName,
+              },
             },
           });
 
@@ -67,6 +149,11 @@ export function BusinessAuth({
         // account as a brand-new business signup.
         // ---------------------------------------------------------
         if (data.session && data.user) {
+          await ensureBusinessProfile(
+            data.user,
+            cleanBusinessName,
+          );
+
           setMessage(
             'Your account is ready. Loading your business account...'
           );
@@ -166,6 +253,8 @@ export function BusinessAuth({
             'Login succeeded, but Chowza could not verify the active user session.'
           );
         }
+
+        await ensureBusinessProfile(user);
 
         console.log('[Chowza] Verified authenticated user:', {
           userId: user.id,
@@ -274,6 +363,32 @@ export function BusinessAuth({
           onSubmit={handleSubmit}
           className="space-y-4"
         >
+          {mode === 'signup' && (
+            <div>
+              <label
+                htmlFor="business-name"
+                className="mb-1.5 block text-sm font-semibold text-[#17201A]"
+              >
+                Business name
+              </label>
+
+              <input
+                id="business-name"
+                type="text"
+                autoComplete="organization"
+                required
+                minLength={2}
+                maxLength={100}
+                value={businessName}
+                onChange={(event) =>
+                  setBusinessName(event.target.value)
+                }
+                placeholder="e.g. Makhulu's Kitchen"
+                className="w-full rounded-xl border border-[#D7E2DA] px-4 py-3 text-sm outline-none focus:border-[#166534] focus:ring-2 focus:ring-[#166534]/15"
+              />
+            </div>
+          )}
+
           <div>
             <label
               htmlFor="business-email"
@@ -419,3 +534,8 @@ export function BusinessAuth({
     </main>
   );
 }
+
+
+
+
+
