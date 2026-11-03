@@ -831,15 +831,11 @@ export function PublicBusinessStore({ slug }: { slug: string }) {
 
               {business.logo_url ? (
 
-                <img
-
-                  src={business.logo_url}
-
-                  alt={`${business.name} logo`}
-
-                  className="mb-5 h-20 w-20 rounded-2xl bg-white object-contain p-2"
-
-                />
+              <img
+                src={business.logo_url}
+                alt={business.name}
+                className="h-20 w-20 rounded-2xl object-cover"
+              />
 
               ) : (
 
@@ -989,17 +985,14 @@ export function PublicBusinessStore({ slug }: { slug: string }) {
 
                       {item.image_url ? (
 
-                        <img
-
-                          src={item.image_url}
-
-                          alt={item.name}
-
-                          className="h-48 w-full object-cover"
-
-                          loading="lazy"
-
-                        />
+                      <div className="flex h-64 w-full items-center justify-center bg-white p-3">
+                        <img
+                          src={item.image_url}
+                          alt={item.name}
+                          className="max-h-full max-w-full object-contain"
+                          loading="lazy"
+                        />
+                      </div>
 
                       ) : (
 

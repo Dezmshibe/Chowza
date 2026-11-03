@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useState } from 'react';
-import { ArrowLeft, ImagePlus, LoaderCircle, Pencil, Plus, Trash2, X } from 'lucide-react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { ArrowLeft, ImagePlus, LoaderCircle, Pencil, Plus, RotateCcw, Trash2, X } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
 type MenuItem = {
@@ -36,7 +36,7 @@ const emptyForm: MenuForm = {
 };
 
 const inputClass =
-  'w-full rounded-xl border border-[#D7E2DA] bg-white px-4 py-3 text-sm text-[#166534] outline-none focus:border-[#22C55E]';
+  'w-full rounded-xl border border-[#D7E2DA] bg-white px-4 py-3 text-sm text-[#166534] outline-none focus:border-[#d99a4b]';
 
 const primaryButton =
   'inline-flex items-center justify-center gap-2 rounded-xl bg-[#166534] px-4 py-3 text-sm font-bold text-white hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50';
@@ -61,6 +61,15 @@ export function BusinessMenuManager({
   const [formOpen, setFormOpen] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState('');
+  const [cropOpen, setCropOpen] = useState(false);
+  const [cropZoom, setCropZoom] = useState(1);
+  const [cropX, setCropX] = useState(0);
+  const [cropY, setCropY] = useState(0);
+  const [cropDragging, setCropDragging] = useState(false);
+  const cropDragStart = useRef({ x: 0, y: 0 });
+  const cropOrigin = useRef({ x: 0, y: 0 });
+  const cropFrameRef = useRef<HTMLDivElement | null>(null);
+
 
   const loadItems = useCallback(async () => {
     setLoading(true);
@@ -104,6 +113,11 @@ export function BusinessMenuManager({
 
     setImageFile(null);
     setImagePreview('');
+    setCropOpen(false);
+    setCropZoom(1);
+    setCropX(0);
+    setCropY(0);
+    setCropDragging(false);
   }
 
   function openNewItem() {
@@ -161,6 +175,107 @@ export function BusinessMenuManager({
 
     setImageFile(file);
     setImagePreview(URL.createObjectURL(file));
+    setCropZoom(1);
+    setCropX(0);
+    setCropY(0);
+    setCropOpen(true);
+  }
+
+  function startCropDrag(event: React.PointerEvent<HTMLDivElement>) {
+    event.currentTarget.setPointerCapture(event.pointerId);
+    cropDragStart.current = { x: event.clientX, y: event.clientY };
+    cropOrigin.current = { x: cropX, y: cropY };
+    setCropDragging(true);
+  }
+
+  function moveCropDrag(event: React.PointerEvent<HTMLDivElement>) {
+    if (!cropDragging) return;
+    setCropX(cropOrigin.current.x + event.clientX - cropDragStart.current.x);
+    setCropY(cropOrigin.current.y + event.clientY - cropDragStart.current.y);
+  }
+
+  function endCropDrag() {
+    setCropDragging(false);
+  }
+
+  function resetCrop() {
+    setCropZoom(1);
+    setCropX(0);
+    setCropY(0);
+  }
+
+  async function applyCrop() {
+    if (!imagePreview) return;
+
+    const frame = cropFrameRef.current;
+    if (!frame) return;
+
+    const image = new Image();
+    image.onload = async () => {
+      const outputSize = 1200;
+      const canvas = document.createElement('canvas');
+      canvas.width = outputSize;
+      canvas.height = outputSize;
+
+      const ctx = canvas.getContext('2d');
+      if (!ctx) {
+        setError('Your browser could not prepare the photo.');
+        return;
+      }
+
+      const frameSize = frame.getBoundingClientRect().width;
+      const scale = Math.max(
+        frameSize / image.naturalWidth,
+        frameSize / image.naturalHeight,
+      ) * cropZoom;
+
+      const renderedWidth = image.naturalWidth * scale;
+      const renderedHeight = image.naturalHeight * scale;
+      const offsetX = (frameSize - renderedWidth) / 2 + cropX;
+      const offsetY = (frameSize - renderedHeight) / 2 + cropY;
+
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
+      ctx.drawImage(
+        image,
+        (-offsetX / scale),
+        (-offsetY / scale),
+        frameSize / scale,
+        frameSize / scale,
+        0,
+        0,
+        outputSize,
+        outputSize,
+      );
+
+      const blob = await new Promise<Blob | null>((resolve) =>
+        canvas.toBlob(resolve, 'image/jpeg', 0.92),
+      );
+
+      if (!blob) {
+        setError('Could not prepare the cropped photo.');
+        return;
+      }
+
+      const croppedFile = new File(
+        [blob],
+        `chowza-menu-${Date.now()}.jpg`,
+        { type: 'image/jpeg' },
+      );
+
+      if (imagePreview.startsWith('blob:')) {
+        URL.revokeObjectURL(imagePreview);
+      }
+
+      setImageFile(croppedFile);
+      setImagePreview(URL.createObjectURL(blob));
+      setCropOpen(false);
+      setCropZoom(1);
+      setCropX(0);
+      setCropY(0);
+    };
+    image.onerror = () => setError('Could not read the selected photo.');
+    image.src = imagePreview;
   }
 
   async function uploadImage(file: File): Promise<string | null> {
@@ -386,6 +501,135 @@ export function BusinessMenuManager({
             className="mb-4 rounded-xl border border-green-200 bg-green-50 p-4 text-sm text-green-800"
           >
             {notice}
+          </div>
+        )}
+
+        {cropOpen && imagePreview && (
+          <div className="fixed inset-0 z-50 overflow-y-auto bg-black/70 p-4 sm:p-8">
+            <div className="mx-auto max-w-5xl rounded-3xl bg-white shadow-2xl">
+              <div className="flex items-center justify-between border-b border-[#D7E2DA] px-5 py-4 sm:px-7">
+                <div>
+                  <p className="text-xs font-black uppercase tracking-[0.16em] text-[#166534]">
+                    Chowza photo editor
+                  </p>
+                  <h3 className="mt-1 text-xl font-black text-[#17201A]">Adjust your food photo</h3>
+                  <p className="mt-1 text-sm text-[#647067]">
+                    Drag and zoom the photo. The square frame is what customers will see.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => { setCropOpen(false); resetImageSelection(); }}
+                  className="rounded-xl p-2 hover:bg-[#F7FAF7]"
+                  aria-label="Close photo editor"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+
+              <div className="grid gap-6 p-5 sm:p-7 lg:grid-cols-[minmax(0,1fr)_300px]">
+                <div>
+                  <div
+                    ref={cropFrameRef}
+                    className="relative mx-auto aspect-square w-full max-w-[620px] touch-none select-none overflow-hidden rounded-2xl bg-[#17201A]"
+                    onPointerDown={startCropDrag}
+                    onPointerMove={moveCropDrag}
+                    onPointerUp={endCropDrag}
+                    onPointerCancel={endCropDrag}
+                    style={{ cursor: cropDragging ? 'grabbing' : 'grab' }}
+                  >
+                    <img
+                      src={imagePreview}
+                      alt="Photo being adjusted"
+                      draggable={false}
+                      className="pointer-events-none absolute left-1/2 top-1/2 max-w-none"
+                      style={{
+                        minWidth: '100%',
+                        minHeight: '100%',
+                        transform: `translate(calc(-50% + ${cropX}px), calc(-50% + ${cropY}px)) scale(${cropZoom})`,
+                        transformOrigin: 'center center',
+                      }}
+                    />
+                    <div className="pointer-events-none absolute inset-0 ring-1 ring-inset ring-white/70" />
+                    <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+                      <div className="h-[92%] w-[92%] rounded-xl border-2 border-white/90 shadow-[0_0_0_9999px_rgba(0,0,0,0.28)]" />
+                    </div>
+                    <div className="pointer-events-none absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-black/65 px-3 py-1.5 text-xs font-bold text-white">
+                      Drag to position
+                    </div>
+                  </div>
+
+                  <div className="mx-auto mt-5 max-w-[620px]">
+                    <div className="flex items-center justify-between text-sm font-bold text-[#17201A]">
+                      <span>Zoom</span>
+                    </div>
+                    <input
+                      type="range"
+                      min="1"
+                      max="3"
+                      step="0.01"
+                      value={cropZoom}
+                      onChange={(event) => setCropZoom(Number(event.target.value))}
+                      className="mt-2 w-full accent-[#166534]"
+                      aria-label="Photo zoom"
+                    />
+                    <button
+                      type="button"
+                      onClick={resetCrop}
+                      className="mt-3 inline-flex items-center gap-2 rounded-xl border border-[#D7E2DA] px-3 py-2 text-sm font-bold text-[#166534] hover:bg-[#F7FAF7]"
+                    >
+                      <RotateCcw size={15} /> Reset position
+                    </button>
+                  </div>
+                </div>
+
+                <aside className="rounded-2xl border border-[#D7E2DA] bg-[#F7FAF7] p-4">
+                  <p className="text-xs font-black uppercase tracking-[0.14em] text-[#166534]">Customer preview</p>
+                  <p className="mt-1 text-sm text-[#647067]">This is how the photo will appear in the menu.</p>
+
+                  <div className="mt-4 overflow-hidden rounded-2xl border border-[#D7E2DA] bg-white shadow-sm">
+                    <div className="aspect-square overflow-hidden bg-[#EEF3EF]">
+                      <img
+                        src={imagePreview}
+                        alt="Customer preview"
+                        className="h-full w-full object-cover"
+                        style={{
+                          transform: `scale(${cropZoom}) translate(${cropX / 120}px, ${cropY / 120}px)`,
+                          transformOrigin: 'center center',
+                        }}
+                      />
+                    </div>
+                    <div className="p-4">
+                      <p className="truncate text-sm font-black text-[#17201A]">{form.name || 'Your food item'}</p>
+                      <p className="mt-1 line-clamp-2 text-xs text-[#647067]">
+                        {form.description || 'Your food description will appear here.'}
+                      </p>
+                      <div className="mt-3 flex items-center justify-between">
+                        <span className="text-sm font-black text-[#166534]">R{Number(form.price || 0).toFixed(2)}</span>
+                        <span className="rounded-lg bg-[#166534] px-3 py-1.5 text-xs font-bold text-white">Add</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="mt-5 flex gap-3">
+                    <button
+                      type="button"
+                      onClick={() => { setCropOpen(false); resetImageSelection(); }}
+                      className="flex-1 rounded-xl border border-[#D7E2DA] px-4 py-3 text-sm font-bold hover:bg-white"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => void applyCrop()}
+                      className="flex-1 rounded-xl bg-[#166534] px-4 py-3 text-sm font-bold text-white hover:bg-[#14532D]"
+                    >
+                      Use this photo
+                    </button>
+                  </div>
+                </aside>
+              </div>
+            </div>
           </div>
         )}
 

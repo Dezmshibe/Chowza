@@ -391,13 +391,13 @@ export const CustomerStore: React.FC = () => {
                     key={food.id}
                     className="group overflow-hidden rounded-2xl border border-[#D7E2DA] bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
                   >
-                    <div className="relative aspect-[4/3] overflow-hidden bg-[#EEF3EF]">
-
+                   <div className="flex aspect-square w-full items-center justify-center overflow-hidden bg-[#F7FAF7] p-3">
                       {food.imageUrl ? (
                         <img
                           src={food.imageUrl}
                           alt={food.name}
-                          className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+                          className="max-h-full max-w-full object-contain"
+                          loading="lazy"
                         />
                       ) : null}
 
@@ -607,31 +607,30 @@ export const CustomerStore: React.FC = () => {
                   >
 
                     {/* FOOD IMAGE */}
+<div className="flex h-56 w-full items-center justify-center overflow-hidden bg-[#F7FAF7] p-3">
+  {food.imageUrl ? (
+    <img
+      src={food.imageUrl}
+      alt={food.name}
+      className="max-h-full max-w-full object-contain"
+      loading="lazy"
+    />
+  ) : null}
 
-                    <div className="relative aspect-[4/3] overflow-hidden bg-[#EEF3EF]">
+  {food.popular && (
+    <span className="absolute left-2 top-2 rounded-full bg-[#17201A] px-2 py-1 text-[10px] font-black text-white">
+      ★ Popular
+    </span>
+  )}
 
-                      {food.imageUrl ? (
-                        <img
-                          src={food.imageUrl}
-                          alt={food.name}
-                          className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
-                        />
-                      ) : null}
-
-                      {food.popular && (
-                        <span className="absolute left-2 top-2 rounded-full bg-[#17201A] px-2 py-1 text-[10px] font-black text-white">
-                          ★ Popular
-                        </span>
-                      )}
-
-                      {!food.available && (
-                        <div className="absolute inset-0 flex items-center justify-center bg-black/45">
-                          <span className="rounded-full bg-white px-3 py-1.5 text-[10px] font-black uppercase text-[#17201A]">
-                            Unavailable
-                          </span>
-                        </div>
-                      )}
-                    </div>
+  {!food.available && (
+    <div className="absolute inset-0 flex items-center justify-center bg-black/45">
+      <span className="rounded-full bg-white px-3 py-1.5 text-[10px] font-black uppercase text-[#17201A]">
+        Unavailable
+      </span>
+    </div>
+  )}
+</div>
 
                     {/* FOOD INFORMATION */}
 
