@@ -5,9 +5,7 @@ const DEFAULT_ALLOWED_ORIGINS = [
   "https://chowza-jku1.onrender.com",
   "capacitor://localhost",
   "http://localhost",
-  "http://localhost:5173",
-  "http://localhost:4173",
-  "http://localhost:10000",
+  "http://localhost:3000",
 ];
 
 function getAllowedOrigins(): string[] {

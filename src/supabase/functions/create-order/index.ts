@@ -12,7 +12,8 @@ type OrderRequest = {
   customerName: string;
   customerPhone: string;
   deliveryAddress: string;
-  paymentMethod: "cash" | "eft" | "online";
+  fulfillmentType: "Delivery" | "Pickup";
+  paymentMethod: "cash" | "online";
   cart: CartItem[];
 };
 
@@ -60,7 +61,6 @@ fetch: withSupabase(
           !body.businessId ||
           !body.customerName?.trim() ||
           !body.customerPhone?.trim() ||
-          !body.deliveryAddress?.trim() ||
           !body.paymentMethod ||
           !Array.isArray(body.cart) ||
           body.cart.length === 0
@@ -71,7 +71,23 @@ fetch: withSupabase(
           );
         }
 
-        const validPaymentMethods = ["cash", "eft", "online"];
+        const validPaymentMethods = ["cash", "online"];
+
+        const validFulfillmentTypes = ["Delivery", "Pickup"];
+
+        if (!validFulfillmentTypes.includes(body.fulfillmentType)) {
+          return Response.json(
+            { error: "Invalid fulfillment type." },
+            { status: 400 },
+          );
+        }
+
+        if (body.fulfillmentType === "Delivery" && !body.deliveryAddress?.trim()) {
+          return Response.json(
+            { error: "Delivery address is required for delivery orders." },
+            { status: 400 },
+          );
+        }
 
         if (!validPaymentMethods.includes(body.paymentMethod)) {
           return Response.json(
@@ -184,6 +200,10 @@ fetch: withSupabase(
           };
         });
 
+        if (body.fulfillmentType === "Delivery") {
+          total += 25;
+        }
+
         total = Number(total.toFixed(2));
 
         const { data: order, error: orderError } =
@@ -193,7 +213,10 @@ fetch: withSupabase(
               business_id: business.id,
               customer_name: body.customerName.trim(),
               customer_phone: body.customerPhone.trim(),
-              delivery_address: body.deliveryAddress.trim(),
+              delivery_address:
+                body.fulfillmentType === "Pickup"
+                  ? "Pickup / Collection"
+                  : body.deliveryAddress.trim(),
               items: orderItems,
               total,
               status: "pending",

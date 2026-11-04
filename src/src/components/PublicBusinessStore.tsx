@@ -2,23 +2,23 @@ import { useEffect, useMemo, useState } from 'react';
 
 import {
 
-  ArrowLeft,
+  ArrowLeft,
 
-  LoaderCircle,
+  LoaderCircle,
 
-  MapPin,
+  MapPin,
 
-  MessageCircle,
+  MessageCircle,
 
-  Minus,
+  Minus,
 
-  Plus,
+  Plus,
 
-  ShoppingCart,
+  ShoppingCart,
 
-  Store,
+  Store,
 
-  X,
+  X,
 
 } from 'lucide-react';
 
@@ -28,6 +28,7 @@ import { clearCsrfToken, getCsrfToken } from '../lib/csrf';
 import { PublicCheckout } from './PublicCheckout';
 
 import { OrderConfirmation } from './OrderConfirmation';
+import { OrderTracker } from './OrderTracker';
 
 import { useApp } from '../context/AppContext';
 
@@ -35,23 +36,23 @@ import { useApp } from '../context/AppContext';
 
 type Business = {
 
-  id: string;
+  id: string;
 
-  name: string;
+  name: string;
 
-  slug: string;
+  slug: string;
 
-  description: string | null;
+  description: string | null;
 
-  logo_url: string | null;
+  logo_url: string | null;
 
-  public_phone: string | null;
+  public_phone: string | null;
 
-  whatsapp_number: string | null;
+  whatsapp_number: string | null;
 
-  public_address: string | null;
+  public_address: string | null;
 
-  is_published: boolean;
+  is_published: boolean;
 
 };
 
@@ -59,19 +60,19 @@ type Business = {
 
 type MenuItem = {
 
-  id: string;
+  id: string;
 
-  name: string;
+  name: string;
 
-  description: string | null;
+  description: string | null;
 
-  price: number;
+  price: number;
 
-  image_url: string | null;
+  image_url: string | null;
 
-  is_available: boolean;
+  is_available: boolean;
 
-  sort_order: number;
+  sort_order: number;
 
 };
 
@@ -79,9 +80,9 @@ type MenuItem = {
 
 type CartItem = {
 
-  item: MenuItem;
+  item: MenuItem;
 
-  quantity: number;
+  quantity: number;
 
 };
 
@@ -89,15 +90,15 @@ type CartItem = {
 
 type ConfirmationItem = {
 
-  id: string;
+  id: string;
 
-  name: string;
+  name: string;
 
-  price: number;
+  price: number;
 
-  quantity: number;
+  quantity: number;
 
-  line_total: number;
+  line_total: number;
 
 };
 
@@ -105,15 +106,17 @@ type ConfirmationItem = {
 
 type ConfirmationOrder = {
 
-  orderNumber: number;
+  orderNumber: number;
 
-  customerName: string;
+  customerName: string;
 
-  total: number;
+  total: number;
 
-  paymentMethod: 'cash' | 'eft' | 'online';
+  paymentMethod: 'cash' | 'online';
 
-  items: ConfirmationItem[];
+  customerPhone: string;
+
+  items: ConfirmationItem[];
 
 };
 
@@ -121,313 +124,365 @@ type ConfirmationOrder = {
 
 export function PublicBusinessStore({ slug }: { slug: string }) {
 
-  const { setCurrentView } = useApp();  
+  const { setTrackingLookup } = useApp();  
 
-  const [business, setBusiness] = useState<Business | null>(null);
+  const [business, setBusiness] = useState<Business | null>(null);
 
-  const [items, setItems] = useState<MenuItem[]>([]);
+  const [items, setItems] = useState<MenuItem[]>([]);
 
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
 
-  const [error, setError] = useState('');
+  const [error, setError] = useState('');
 
 
 
-  const [cart, setCart] = useState<CartItem[]>([]);
+  const [cart, setCart] = useState<CartItem[]>([]);
 
-  const [cartOpen, setCartOpen] = useState(false);
+  const [cartOpen, setCartOpen] = useState(false);
 
-  const [checkoutOpen, setCheckoutOpen] = useState(false);
+  const [checkoutOpen, setCheckoutOpen] = useState(false);
 
-  const [confirmationOrder, setConfirmationOrder] =
+  const [confirmationOrder, setConfirmationOrder] =
 
-    useState<ConfirmationOrder | null>(null);
+    useState<ConfirmationOrder | null>(null);
 
+  const [trackingOpen, setTrackingOpen] = useState(false);
 
 
-  useEffect(() => {
 
-    let cancelled = false;
+  useEffect(() => {
 
+    let cancelled = false;
 
 
-    async function loadStore() {
 
-      setLoading(true);
+    async function loadStore() {
 
-      setError('');
+      setLoading(true);
 
+      setError('');
 
 
-      const { data: businessData, error: businessError } = await supabase
 
-        .from('businesses')
+      const { data: businessData, error: businessError } = await supabase
 
-        .select(
+        .from('businesses')
 
-          'id, name, slug, description, logo_url, public_phone, whatsapp_number, public_address, is_published',
+        .select(
 
-        )
+          'id, name, slug, description, logo_url, public_phone, whatsapp_number, public_address, is_published',
 
-        .eq('slug', slug)
+        )
 
-        .eq('is_published', true)
+        .eq('slug', slug)
 
-        .maybeSingle();
+        .eq('is_published', true)
 
+        .maybeSingle();
 
 
-      if (cancelled) return;
 
+      if (cancelled) return;
 
 
-      if (businessError) {
 
-        setError('We could not load this store. Please try again.');
+      if (businessError) {
 
-        setLoading(false);
+        setError('We could not load this store. Please try again.');
 
-        return;
+        setLoading(false);
 
-      }
+        return;
 
+      }
 
 
-      if (!businessData) {
 
-        setBusiness(null);
+      if (!businessData) {
 
-        setItems([]);
+        setBusiness(null);
 
-        setError('This store does not exist or has not been published yet.');
+        setItems([]);
 
-        setLoading(false);
+        setError('This store does not exist or has not been published yet.');
 
-        return;
+        setLoading(false);
 
-      }
+        return;
 
+      }
 
 
-      setBusiness(businessData as Business);
 
+      setBusiness(businessData as Business);
 
 
-      const { data: menuData, error: menuError } = await supabase
 
-        .from('menu_items')
+      const { data: menuData, error: menuError } = await supabase
 
-        .select(
+        .from('menu_items')
 
-          'id, name, description, price, image_url, is_available, sort_order',
+        .select(
 
-        )
+          'id, name, description, price, image_url, is_available, sort_order',
 
-        .eq('business_id', businessData.id)
+        )
 
-        .eq('is_available', true)
+        .eq('business_id', businessData.id)
 
-        .order('sort_order', { ascending: true });
+        .eq('is_available', true)
 
+        .order('sort_order', { ascending: true });
 
 
-      if (cancelled) return;
 
+      if (cancelled) return;
 
 
-      if (menuError) {
 
-        setError('The store loaded, but its menu could not be loaded.');
+      if (menuError) {
 
-      } else {
+        setError('The store loaded, but its menu could not be loaded.');
 
-        setItems((menuData ?? []) as MenuItem[]);
+      } else {
 
-      }
+        setItems((menuData ?? []) as MenuItem[]);
 
+      }
 
 
-      setLoading(false);
 
-    }
+      setLoading(false);
 
+    }
 
 
-    void loadStore();
 
+    void loadStore();
 
 
-    return () => {
 
-      cancelled = true;
+    return () => {
 
-    };
+      cancelled = true;
 
-  }, [slug]);
+    };
 
+  }, [slug]);
 
 
-  const money = (amount: number) =>
 
-    new Intl.NumberFormat('en-ZA', {
+  const money = (amount: number) =>
 
-      style: 'currency',
+    new Intl.NumberFormat('en-ZA', {
 
-      currency: 'ZAR',
+      style: 'currency',
 
-    }).format(amount);
+      currency: 'ZAR',
 
+    }).format(amount);
 
 
-  const whatsappNumber = (business?.whatsapp_number || '').replace(/\D/g, '');
 
+  const whatsappNumber = (business?.whatsapp_number || '').replace(/\D/g, '');
 
 
-  const cartCount = useMemo(
 
-    () => cart.reduce((total, cartItem) => total + cartItem.quantity, 0),
+  const cartCount = useMemo(
 
-    [cart],
+    () => cart.reduce((total, cartItem) => total + cartItem.quantity, 0),
 
-  );
+    [cart],
 
+  );
 
 
-  const cartTotal = useMemo(
 
-    () =>
+  const cartTotal = useMemo(
 
-      cart.reduce(
+    () =>
 
-        (total, cartItem) =>
+      cart.reduce(
 
-          total + Number(cartItem.item.price) * cartItem.quantity,
+        (total, cartItem) =>
 
-        0,
+          total + Number(cartItem.item.price) * cartItem.quantity,
 
-      ),
+        0,
 
-    [cart],
+      ),
 
-  );
+    [cart],
 
+  );
 
 
-  function addToCart(item: MenuItem) {
 
-    setCart((currentCart) => {
+  function addToCart(item: MenuItem) {
 
-      const existing = currentCart.find(
+    setCart((currentCart) => {
 
-        (cartItem) => cartItem.item.id === item.id,
+      const existing = currentCart.find(
 
-      );
+        (cartItem) => cartItem.item.id === item.id,
 
+      );
 
 
-      if (existing) {
 
-        return currentCart.map((cartItem) =>
+      if (existing) {
 
-          cartItem.item.id === item.id
+        return currentCart.map((cartItem) =>
 
-            ? { ...cartItem, quantity: cartItem.quantity + 1 }
+          cartItem.item.id === item.id
 
-            : cartItem,
+            ? { ...cartItem, quantity: cartItem.quantity + 1 }
 
-        );
+            : cartItem,
 
-      }
+        );
 
+      }
 
 
-      return [...currentCart, { item, quantity: 1 }];
 
-    });
+      return [...currentCart, { item, quantity: 1 }];
 
-  }
+    });
 
+  }
 
 
-  function changeQuantity(itemId: string, amount: number) {
 
-    setCart((currentCart) =>
+  function changeQuantity(itemId: string, amount: number) {
 
-      currentCart
+    setCart((currentCart) =>
 
-        .map((cartItem) =>
+      currentCart
 
-          cartItem.item.id === itemId
+        .map((cartItem) =>
 
-            ? { ...cartItem, quantity: cartItem.quantity + amount }
+          cartItem.item.id === itemId
 
-            : cartItem,
+            ? { ...cartItem, quantity: cartItem.quantity + amount }
 
-        )
+            : cartItem,
 
-        .filter((cartItem) => cartItem.quantity > 0),
+        )
 
-    );
+        .filter((cartItem) => cartItem.quantity > 0),
 
-  }
+    );
 
+  }
 
 
-  if (confirmationOrder && business) {
 
-    return (
+  if (trackingOpen && confirmationOrder) {
+    return (
+      <div className="min-h-screen bg-[#F7FAF7] text-[#17201A]">
+        <div className="sticky top-0 z-40 flex items-center gap-3 border-b border-[#E1EAE3] bg-white px-5 py-4">
+          <button
+            type="button"
+            onClick={() => setTrackingOpen(false)}
+            className="rounded-xl border border-[#D7E2DA] px-4 py-2 font-bold hover:bg-[#F7FAF7]"
+          >
+            <ArrowLeft size={17} className="mr-2 inline" />
+            Back to receipt
+          </button>
+          <span className="font-black">Track your order</span>
+        </div>
+        <OrderTracker />
+      </div>
+    );
+  }
 
-      <OrderConfirmation
+  if (confirmationOrder && business) {
 
-        businessName={business.name}
+    return (
 
-        orderNumber={confirmationOrder.orderNumber}
+      <OrderConfirmation
 
-        customerName={confirmationOrder.customerName}
+        businessName={business.name}
 
-        total={confirmationOrder.total}
+        orderNumber={confirmationOrder.orderNumber}
 
-        paymentMethod={confirmationOrder.paymentMethod}
+        customerName={confirmationOrder.customerName}
 
-        items={confirmationOrder.items}
+        total={confirmationOrder.total}
 
-        onTrackOrder={() => {
+        paymentMethod={confirmationOrder.paymentMethod}
 
-  setCurrentView('track');
+        items={confirmationOrder.items}
 
-        }}
+        onTrackOrder={() => {
+          setTrackingLookup(
+            String(confirmationOrder.orderNumber),
+            confirmationOrder.customerPhone,
+          );
+          setTrackingOpen(true);
+        }}
 
-        onBackToStore={() => {
+        onBackToStore={() => {
 
-          setConfirmationOrder(null);
+          setConfirmationOrder(null);
 
-        }}
+        }}
 
-      />
+      />
 
-    );
+    );
 
-  }
+  }
 
 
 
-  if (checkoutOpen && business) {
+  if (checkoutOpen && business) {
 
-    return (
+    return (
 
-      <PublicCheckout
+      <PublicCheckout
 
-        businessName={business.name}
+        businessName={business.name}
 
-        cart={cart}
+        cart={cart}
 
-        onBack={() => setCheckoutOpen(false)}
+        onBack={() => setCheckoutOpen(false)}
 
 
+        onUpdateQuantity={(itemId, quantity) => {
+          if (quantity <= 0) {
+            setCart((current) =>
+              current.filter((cartItem) => cartItem.item.id !== itemId),
+            );
+            return;
+          }
 
-       onPlaceOrder={async (details) => {
+          setCart((current) =>
+            current.map((cartItem) =>
+              cartItem.item.id === itemId
+                ? { ...cartItem, quantity }
+                : cartItem,
+            ),
+          );
+        }}
 
-  let csrfToken = await getCsrfToken();
+        onRemoveItem={(itemId) => {
+          setCart((current) =>
+            current.filter((cartItem) => cartItem.item.id !== itemId),
+          );
+        }}
+
+        onClearCart={() => {
+          setCart([]);
+          setCheckoutOpen(false);
+        }}
+
+
+
+       onPlaceOrder={async (details) => {
+
+  let csrfToken = await getCsrfToken();
 
   let { data, error } = await supabase.functions.invoke(
     'create-order',
@@ -435,29 +490,30 @@ export function PublicBusinessStore({ slug }: { slug: string }) {
       headers: { 'x-csrf-token': csrfToken },
       body: {
 
-        businessId: business.id,
+        businessId: business.id,
 
-        customerName: details.customerName,
+        customerName: details.customerName,
 
-        customerPhone: details.customerPhone,
+        customerPhone: details.customerPhone,
 
-        deliveryAddress: details.deliveryAddress,
+        deliveryAddress: details.deliveryAddress,
+        fulfillmentType: details.fulfillmentType,
 
-        paymentMethod: details.paymentMethod,
+        paymentMethod: details.paymentMethod,
 
-        cart: cart.map((cartItem) => ({
+        cart: cart.map((cartItem) => ({
 
-          itemId: cartItem.item.id,
+          itemId: cartItem.item.id,
 
-          quantity: cartItem.quantity,
+          quantity: cartItem.quantity,
 
-        })),
+        })),
 
-      },
+      },
 
-    }
+    }
 
-  );
+  );
 
   if (error?.status === 403) {
     clearCsrfToken();
@@ -472,6 +528,7 @@ export function PublicBusinessStore({ slug }: { slug: string }) {
           customerName: details.customerName,
           customerPhone: details.customerPhone,
           deliveryAddress: details.deliveryAddress,
+          fulfillmentType: details.fulfillmentType,
           paymentMethod: details.paymentMethod,
           cart: cart.map((cartItem) => ({
             itemId: cartItem.item.id,
@@ -490,224 +547,114 @@ export function PublicBusinessStore({ slug }: { slug: string }) {
 
   if (!data?.success) {
 
-    throw new Error(
+    throw new Error(
 
-      data?.error || 'Could not place your order.'
+      data?.error || 'Could not place your order.'
 
-    );
+    );
 
-  }
-
-
-
-  const orderNumber = Number(data.order.orderNumber);
-
-  const orderTotal = Number(data.order.total);
+  }
 
 
 
-  /*
+  const orderNumber = Number(data.order.orderNumber);
 
-   * ONLINE PAYMENT
+  const orderTotal = Number(data.order.total);
 
-   *
 
-   * Create the PayFast payment after the Chowza
 
-   * order has successfully been created.
-
-   */
-
-  if (details.paymentMethod === 'online') {
-
-    const {
-
-      data: paymentData,
-
-      error: paymentError,
-
-    } = await supabase.functions.invoke(
-
-      'create-payfast-payment',
-
-      {
-
-        headers: { 'x-csrf-token': csrfToken },
+  /*
+   * ONLINE PAYMENT
+   *
+   * Create the real Yoco hosted checkout after the Chowza
+   * order has successfully been created.
+   */
+  if (details.paymentMethod === 'online') {
+    const {
+      data: paymentData,
+      error: paymentError,
+    } = await supabase.functions.invoke(
+      'create-yoco-checkout',
+      {
+        headers: { 'x-csrf-token': csrfToken },
         body: {
+          orderNumber,
+        },
+      },
+    );
 
-          orderNumber,
+    if (paymentError) {
+      console.error(
+        'Create Yoco checkout failed:',
+        paymentError,
+      );
 
-        },
+      throw new Error(
+        paymentError.message ||
+          'Could not start the Yoco payment.',
+      );
+    }
 
-      }
+    if (!paymentData?.success || !paymentData?.redirectUrl) {
+      throw new Error(
+        paymentData?.error ||
+          'Yoco did not return a payment URL.',
+      );
+    }
 
-    );
+    window.location.assign(paymentData.redirectUrl);
+    return;
+  }
 
+  /*
 
+   * CASH PAYMENT
 
-    if (paymentError) {
+   *
 
-      console.error(
+   * Keep the existing Chowza confirmation flow.
 
-        'Create PayFast payment failed:',
+   */
 
-        paymentError
+  setConfirmationOrder({
 
-      );
+    orderNumber,
 
+    customerName: details.customerName,
 
+    customerPhone: details.customerPhone,
 
-      throw new Error(
+    total: orderTotal,
 
-        paymentError.message ||
+    paymentMethod: details.paymentMethod,
 
-          'Could not start the PayFast payment.'
+    items: cart.map((cartItem) => ({
 
-      );
+      id: cartItem.item.id,
 
-    }
+      name: cartItem.item.name,
 
+      price: Number(cartItem.item.price),
 
+      quantity: cartItem.quantity,
 
-    if (!paymentData?.success) {
+      line_total:
 
-      throw new Error(
+        Number(cartItem.item.price) *
 
-        paymentData?.error ||
+        cartItem.quantity,
 
-          'Could not start the PayFast payment.'
+    })),
 
-      );
+  });
 
-    }
 
 
+  setCart([]);
 
-    if (
+  setCheckoutOpen(false);
 
-      !paymentData?.processUrl ||
-
-      !paymentData?.fields
-
-    ) {
-
-      throw new Error(
-
-        'PayFast did not return the payment information.'
-
-      );
-
-    }
-
-
-
-    /*
-
-     * Build and submit the PayFast form.
-
-     *
-
-     * The customer is now redirected to PayFast.
-
-     */
-
-    const form = document.createElement('form');
-
-
-
-    form.method = 'POST';
-
-    form.action = paymentData.processUrl;
-
-    form.style.display = 'none';
-
-
-
-    Object.entries(
-
-      paymentData.fields as Record<string, string>
-
-    ).forEach(([name, value]) => {
-
-      const input = document.createElement('input');
-
-
-
-      input.type = 'hidden';
-
-      input.name = name;
-
-      input.value = String(value);
-
-
-
-      form.appendChild(input);
-
-    });
-
-
-
-    document.body.appendChild(form);
-
-
-
-    form.submit();
-
-
-
-    return;
-
-  }
-
-
-
-  /*
-
-   * CASH PAYMENT
-
-   *
-
-   * Keep the existing Chowza confirmation flow.
-
-   */
-
-  setConfirmationOrder({
-
-    orderNumber,
-
-    customerName: details.customerName,
-
-    total: orderTotal,
-
-    paymentMethod: details.paymentMethod,
-
-    items: cart.map((cartItem) => ({
-
-      id: cartItem.item.id,
-
-      name: cartItem.item.name,
-
-      price: Number(cartItem.item.price),
-
-      quantity: cartItem.quantity,
-
-      line_total:
-
-        Number(cartItem.item.price) *
-
-        cartItem.quantity,
-
-    })),
-
-  });
-
-
-
-  setCart([]);
-
-  setCheckoutOpen(false);
-
-  setCartOpen(false);
+  setCartOpen(false);
 
         }}
 
@@ -717,667 +664,674 @@ export function PublicBusinessStore({ slug }: { slug: string }) {
 
   }
 
-  return (
+  return (
 
-    <div className="min-h-screen bg-[#F7FAF7] text-[#17201A]">
+    <div className="min-h-screen bg-[#F7FAF7] text-[#17201A]">
 
-      <header className="sticky top-0 z-40 border-b border-[#E1EAE3] bg-white">
+      <header className="sticky top-0 z-40 border-b border-[#E1EAE3] bg-white">
 
-        <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-5 py-4">
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-5 py-4">
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3">
 
-            <button
+            <button
 
-              type="button"
+              type="button"
 
-              onClick={() => window.location.assign('/')}
+              onClick={() => window.location.assign('/')}
 
-              className="rounded-xl border border-[#D7E2DA] p-2 hover:bg-[#F7FAF7]"
+              className="rounded-xl border border-[#D7E2DA] p-2 hover:bg-[#F7FAF7]"
 
-              aria-label="Back to Chowza"
+              aria-label="Back to Chowza"
 
-            >
+            >
 
-              <ArrowLeft size={19} />
+              <ArrowLeft size={19} />
 
-            </button>
+            </button>
 
 
 
-            <Store size={23} />
+            <Store size={23} />
 
 
 
-            <div>
+            <div>
 
-              <p className="text-xs font-bold uppercase tracking-widest text-[#166534]">
+              <p className="text-xs font-bold uppercase tracking-widest text-[#166534]">
 
-                Chowza
+                Chowza
 
-              </p>
+              </p>
 
-              <p className="font-black">Local food, made easy</p>
+              <p className="font-black">Local food, made easy</p>
 
-            </div>
+            </div>
 
-          </div>
+          </div>
 
 
 
-          <button
+          <button
 
-            type="button"
+            type="button"
 
-            onClick={() => setCartOpen(true)}
+            onClick={() => setCartOpen(true)}
 
-            className="relative flex items-center gap-2 rounded-xl bg-[#166534] px-4 py-3 font-bold text-white"
+            className="relative flex items-center gap-2 rounded-xl bg-[#166534] px-4 py-3 font-bold text-white"
 
-          >
+          >
 
-            <ShoppingCart size={19} />
+            <ShoppingCart size={19} />
 
-            <span>Cart</span>
+            <span>Cart</span>
 
 
 
-            {cartCount > 0 && (
+            {cartCount > 0 && (
 
-              <span className="flex h-6 min-w-6 items-center justify-center rounded-full bg-[#22C55E] px-1.5 text-xs font-black text-white">
+              <span className="flex h-6 min-w-6 items-center justify-center rounded-full bg-[#22C55E] px-1.5 text-xs font-black text-white">
 
-                {cartCount}
+                {cartCount}
 
-              </span>
+              </span>
 
-            )}
+            )}
 
-          </button>
+          </button>
 
-        </div>
+        </div>
 
-      </header>
+      </header>
 
 
 
-      {loading ? (
+      {loading ? (
 
-        <div className="flex min-h-[60vh] items-center justify-center gap-3">
+        <div className="flex min-h-[60vh] items-center justify-center gap-3">
 
-          <LoaderCircle className="animate-spin" />
+          <LoaderCircle className="animate-spin" />
 
-          <p>Loading store...</p>
+          <p>Loading store...</p>
 
-        </div>
+        </div>
 
-      ) : error && !business ? (
+      ) : error && !business ? (
 
-        <main className="mx-auto max-w-xl px-5 py-20 text-center">
+        <main className="mx-auto max-w-xl px-5 py-20 text-center">
 
-          <Store size={42} className="mx-auto mb-4 text-[#166534]" />
+          <Store size={42} className="mx-auto mb-4 text-[#166534]" />
 
-          <h1 className="text-2xl font-black">Store unavailable</h1>
+          <h1 className="text-2xl font-black">Store unavailable</h1>
 
-          <p className="mt-3 text-[#166534]">{error}</p>
+          <p className="mt-3 text-[#166534]">{error}</p>
 
-        </main>
+        </main>
 
-      ) : business ? (
+      ) : business ? (
 
-        <>
+        <>
 
-          <section className="bg-[#166534] text-white">
+          <section className="bg-[#166534] text-white">
 
-            <div className="mx-auto max-w-6xl px-5 py-12">
+            <div className="mx-auto max-w-6xl px-5 py-12">
 
-              {business.logo_url ? (
+              {business.logo_url ? (
 
-              <img
-                src={business.logo_url}
-                alt={business.name}
-                className="h-20 w-20 rounded-2xl object-cover"
-              />
+                <img
 
-              ) : (
+                  src={business.logo_url}
 
-                <div className="mb-5 flex h-20 w-20 items-center justify-center rounded-2xl bg-white/10">
+                  alt={`${business.name} logo`}
 
-                  <Store size={34} />
+                  className="mb-5 h-20 w-20 rounded-2xl bg-white object-contain p-2"
 
-                </div>
+                />
 
-              )}
+              ) : (
 
+                <div className="mb-5 flex h-20 w-20 items-center justify-center rounded-2xl bg-white/10">
 
+                  <Store size={34} />
 
-              <h1 className="text-3xl font-black sm:text-5xl">
+                </div>
 
-                {business.name}
+              )}
 
-              </h1>
 
 
+              <h1 className="text-3xl font-black sm:text-5xl">
 
-              {business.description && (
+                {business.name}
 
-                <p className="mt-3 max-w-2xl text-white/80">
+              </h1>
 
-                  {business.description}
 
-                </p>
 
-              )}
+              {business.description && (
 
+                <p className="mt-3 max-w-2xl text-white/80">
 
+                  {business.description}
 
-              {business.public_address && (
+                </p>
 
-                <p className="mt-4 flex items-center gap-2 text-sm text-white/80">
+              )}
 
-                  <MapPin size={17} />
 
-                  {business.public_address}
 
-                </p>
+              {business.public_address && (
 
-              )}
+                <p className="mt-4 flex items-center gap-2 text-sm text-white/80">
 
+                  <MapPin size={17} />
 
+                  {business.public_address}
 
-              {whatsappNumber && (
+                </p>
 
-                <a
+              )}
 
-                  href={`https\://wa.me/${whatsappNumber}`}
 
-                  target="_blank"
 
-                  rel="noreferrer"
+              {whatsappNumber && (
 
-                  className="mt-5 inline-flex items-center gap-2 rounded-xl bg-[#22C55E] px-5 py-3 font-bold text-white"
+                <a
 
-                >
+                  href={`https\://wa.me/${whatsappNumber}`}
 
-                  <MessageCircle size={18} />
+                  target="_blank"
 
-                  Contact on WhatsApp
+                  rel="noreferrer"
 
-                </a>
+                  className="mt-5 inline-flex items-center gap-2 rounded-xl bg-[#22C55E] px-5 py-3 font-bold text-white"
 
-              )}
+                >
 
-            </div>
+                  <MessageCircle size={18} />
 
-          </section>
+                  Contact on WhatsApp
 
+                </a>
 
+              )}
 
-          <main className="mx-auto max-w-6xl px-5 py-10">
+            </div>
 
-            <div className="mb-6">
+          </section>
 
-              <h2 className="text-2xl font-black">Our menu</h2>
 
-              <p className="mt-1 text-sm text-[#166534]">
 
-                Browse the items currently available from this store.
+          <main className="mx-auto max-w-6xl px-5 py-10">
 
-              </p>
+            <div className="mb-6">
 
-            </div>
+              <h2 className="text-2xl font-black">Our menu</h2>
 
+              <p className="mt-1 text-sm text-[#166534]">
 
+                Browse the items currently available from this store.
 
-            {error && (
+              </p>
 
-              <p
+            </div>
 
-                role="alert"
 
-                className="mb-5 rounded-xl bg-red-50 p-4 text-sm text-red-800"
 
-              >
+            {error && (
 
-                {error}
+              <p
 
-              </p>
+                role="alert"
 
-            )}
+                className="mb-5 rounded-xl bg-red-50 p-4 text-sm text-red-800"
 
+              >
 
+                {error}
 
-            {items.length === 0 ? (
+              </p>
 
-              <div className="rounded-2xl border border-[#E1EAE3] bg-white p-8 text-center">
+            )}
 
-                <p className="font-bold">No available menu items yet.</p>
 
-                <p className="mt-2 text-sm text-[#166534]">
 
-                  Please check back later.
+            {items.length === 0 ? (
 
-                </p>
+              <div className="rounded-2xl border border-[#E1EAE3] bg-white p-8 text-center">
 
-              </div>
+                <p className="font-bold">No available menu items yet.</p>
 
-            ) : (
+                <p className="mt-2 text-sm text-[#166534]">
 
-              <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                  Please check back later.
 
-                {items.map((item) => {
+                </p>
 
-                  const cartItem = cart.find(
+              </div>
 
-                    (entry) => entry.item.id === item.id,
+            ) : (
 
-                  );
+              <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
 
+                {items.map((item) => {
 
+                  const cartItem = cart.find(
 
-                  return (
+                    (entry) => entry.item.id === item.id,
 
-                    <article
+                  );
 
-                      key={item.id}
 
-                      className="overflow-hidden rounded-2xl border border-[#E1EAE3] bg-white shadow-sm"
 
-                    >
+                  return (
 
-                      {item.image_url ? (
+                    <article
 
-                      <div className="flex h-64 w-full items-center justify-center bg-white p-3">
+                      key={item.id}
+
+                      className="overflow-hidden rounded-2xl border border-[#E1EAE3] bg-white shadow-sm"
+
+                    >
+
+                      {item.image_url ? (
+
                         <img
+
                           src={item.image_url}
+
                           alt={item.name}
-                          className="max-h-full max-w-full object-contain"
+
+                          className="h-48 w-full object-cover"
+
                           loading="lazy"
+
                         />
+
+                      ) : (
+
+                        <div className="flex h-32 items-center justify-center bg-[#F0FDF4]">
+
+                          <Store size={32} className="text-[#166534]" />
+
+                        </div>
+
+                      )}
+
+
+
+                      <div className="p-5">
+
+                        <div className="flex items-start justify-between gap-3">
+
+                          <h3 className="font-black">{item.name}</h3>
+
+
+
+                          <span className="shrink-0 font-black text-[#166534]">
+
+                            {money(Number(item.price))}
+
+                          </span>
+
+                        </div>
+
+
+
+                        {item.description && (
+
+                          <p className="mt-2 text-sm text-[#166534]">
+
+                            {item.description}
+
+                          </p>
+
+                        )}
+
+
+
+                        <button
+
+                          type="button"
+
+                          onClick={() => addToCart(item)}
+
+                          className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-[#166534] px-4 py-3 font-bold text-white hover:bg-[#15803D]"
+
+                        >
+
+                          <Plus size={18} />
+
+                          {cartItem
+
+                            ? `Add another (${cartItem.quantity})`
+
+                            : 'Add to cart'}
+
+                        </button>
+
                       </div>
 
-                      ) : (
+                    </article>
 
-                        <div className="flex h-32 items-center justify-center bg-[#F0FDF4]">
+                  );
 
-                          <Store size={32} className="text-[#166534]" />
+                })}
 
-                        </div>
+              </div>
 
-                      )}
+            )}
 
+          </main>
 
+        </>
 
-                      <div className="p-5">
+      ) : null}
 
-                        <div className="flex items-start justify-between gap-3">
 
-                          <h3 className="font-black">{item.name}</h3>
 
+      <footer className="border-t border-[#E1EAE3] bg-white px-5 py-6 text-center text-sm text-[#166534]">
 
+        Powered by Chowza
 
-                          <span className="shrink-0 font-black text-[#166534]">
+      </footer>
 
-                            {money(Number(item.price))}
 
-                          </span>
 
-                        </div>
+      {cartOpen && (
 
+        <div className="fixed inset-0 z-50">
 
+          <button
 
-                        {item.description && (
+            type="button"
 
-                          <p className="mt-2 text-sm text-[#166534]">
+            aria-label="Close cart"
 
-                            {item.description}
+            onClick={() => setCartOpen(false)}
 
-                          </p>
+            className="absolute inset-0 bg-black/40"
 
-                        )}
+          />
 
 
 
-                        <button
+          <aside className="absolute right-0 top-0 flex h-full w-full max-w-md flex-col bg-white shadow-2xl">
 
-                          type="button"
+            <div className="flex items-center justify-between border-b border-[#E1EAE3] px-5 py-4">
 
-                          onClick={() => addToCart(item)}
+              <div>
 
-                          className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-[#166534] px-4 py-3 font-bold text-white hover:bg-[#15803D]"
+                <h2 className="text-xl font-black">Your cart</h2>
 
-                        >
+                <p className="text-sm text-[#166534]">
 
-                          <Plus size={18} />
+                  {cartCount} {cartCount === 1 ? 'item' : 'items'}
 
-                          {cartItem
+                </p>
 
-                            ? `Add another (${cartItem.quantity})`
+              </div>
 
-                            : 'Add to cart'}
 
-                        </button>
 
-                      </div>
+              <button
 
-                    </article>
+                type="button"
 
-                  );
+                onClick={() => setCartOpen(false)}
 
-                })}
+                className="rounded-xl p-2 hover:bg-[#F7FAF7]"
 
-              </div>
+                aria-label="Close cart"
 
-            )}
+              >
 
-          </main>
+                <X size={22} />
 
-        </>
+              </button>
 
-      ) : null}
+            </div>
 
 
 
-      <footer className="border-t border-[#E1EAE3] bg-white px-5 py-6 text-center text-sm text-[#166534]">
+            {cart.length === 0 ? (
 
-        Powered by Chowza
+              <div className="flex flex-1 flex-col items-center justify-center px-6 text-center">
 
-      </footer>
+                <ShoppingCart size={45} className="text-[#166534]" />
 
+                <h3 className="mt-4 text-lg font-black">Your cart is empty</h3>
 
+                <p className="mt-2 text-sm text-[#166534]">
 
-      {cartOpen && (
+                  Add something delicious from the menu.
 
-        <div className="fixed inset-0 z-50">
+                </p>
 
-          <button
 
-            type="button"
 
-            aria-label="Close cart"
+                <button
 
-            onClick={() => setCartOpen(false)}
+                  type="button"
 
-            className="absolute inset-0 bg-black/40"
+                  onClick={() => setCartOpen(false)}
 
-          />
+                  className="mt-5 rounded-xl bg-[#166534] px-5 py-3 font-bold text-white"
 
+                >
 
+                  Browse menu
 
-          <aside className="absolute right-0 top-0 flex h-full w-full max-w-md flex-col bg-white shadow-2xl">
+                </button>
 
-            <div className="flex items-center justify-between border-b border-[#E1EAE3] px-5 py-4">
+              </div>
 
-              <div>
+            ) : (
 
-                <h2 className="text-xl font-black">Your cart</h2>
+              <>
 
-                <p className="text-sm text-[#166534]">
+                <div className="flex-1 overflow-y-auto px-5 py-5">
 
-                  {cartCount} {cartCount === 1 ? 'item' : 'items'}
+                  <div className="space-y-4">
 
-                </p>
+                    {cart.map((cartItem) => (
 
-              </div>
+                      <div
 
+                        key={cartItem.item.id}
 
+                        className="rounded-2xl border border-[#E1EAE3] p-4"
 
-              <button
+                      >
 
-                type="button"
+                        <div className="flex items-start justify-between gap-3">
 
-                onClick={() => setCartOpen(false)}
+                          <div>
 
-                className="rounded-xl p-2 hover:bg-[#F7FAF7]"
+                            <h3 className="font-black">
 
-                aria-label="Close cart"
+                              {cartItem.item.name}
 
-              >
+                            </h3>
 
-                <X size={22} />
+                            <p className="mt-1 text-sm text-[#166534]">
 
-              </button>
+                              {money(Number(cartItem.item.price))} each
 
-            </div>
+                            </p>
 
+                          </div>
 
 
-            {cart.length === 0 ? (
 
-              <div className="flex flex-1 flex-col items-center justify-center px-6 text-center">
+                          <p className="font-black">
 
-                <ShoppingCart size={45} className="text-[#166534]" />
+                            {money(
 
-                <h3 className="mt-4 text-lg font-black">Your cart is empty</h3>
+                              Number(cartItem.item.price) *
 
-                <p className="mt-2 text-sm text-[#166534]">
+                                cartItem.quantity,
 
-                  Add something delicious from the menu.
+                            )}
 
-                </p>
+                          </p>
 
+                        </div>
 
 
-                <button
 
-                  type="button"
+                        <div className="mt-4 flex items-center justify-between">
 
-                  onClick={() => setCartOpen(false)}
+                          <div className="flex items-center gap-2 rounded-xl bg-[#F7FAF7] p-1">
 
-                  className="mt-5 rounded-xl bg-[#166534] px-5 py-3 font-bold text-white"
+                            <button
 
-                >
+                              type="button"
 
-                  Browse menu
+                              onClick={() =>
 
-                </button>
+                                changeQuantity(cartItem.item.id, -1)
 
-              </div>
+                              }
 
-            ) : (
+                              className="rounded-lg p-2 hover:bg-white"
 
-              <>
+                              aria-label={`Remove one ${cartItem.item.name}`}
 
-                <div className="flex-1 overflow-y-auto px-5 py-5">
+                            >
 
-                  <div className="space-y-4">
+                              <Minus size={16} />
 
-                    {cart.map((cartItem) => (
+                            </button>
 
-                      <div
 
-                        key={cartItem.item.id}
 
-                        className="rounded-2xl border border-[#E1EAE3] p-4"
+                            <span className="w-8 text-center font-black">
 
-                      >
+                              {cartItem.quantity}
 
-                        <div className="flex items-start justify-between gap-3">
+                            </span>
 
-                          <div>
 
-                            <h3 className="font-black">
 
-                              {cartItem.item.name}
+                            <button
 
-                            </h3>
+                              type="button"
 
-                            <p className="mt-1 text-sm text-[#166534]">
+                              onClick={() =>
 
-                              {money(Number(cartItem.item.price))} each
+                                changeQuantity(cartItem.item.id, 1)
 
-                            </p>
+                              }
 
-                          </div>
+                              className="rounded-lg p-2 hover:bg-white"
 
+                              aria-label={`Add one ${cartItem.item.name}`}
 
+                            >
 
-                          <p className="font-black">
+                              <Plus size={16} />
 
-                            {money(
+                            </button>
 
-                              Number(cartItem.item.price) *
+                          </div>
 
-                                cartItem.quantity,
 
-                            )}
 
-                          </p>
+                          <button
 
-                        </div>
+                            type="button"
 
+                            onClick={() =>
 
+                              changeQuantity(
 
-                        <div className="mt-4 flex items-center justify-between">
+                                cartItem.item.id,
 
-                          <div className="flex items-center gap-2 rounded-xl bg-[#F7FAF7] p-1">
+                                -cartItem.quantity,
 
-                            <button
+                              )
 
-                              type="button"
+                            }
 
-                              onClick={() =>
+                            className="text-sm font-bold text-red-700"
 
-                                changeQuantity(cartItem.item.id, -1)
+                          >
 
-                              }
+                            Remove
 
-                              className="rounded-lg p-2 hover:bg-white"
+                          </button>
 
-                              aria-label={`Remove one ${cartItem.item.name}`}
+                        </div>
 
-                            >
+                      </div>
 
-                              <Minus size={16} />
+                    ))}
 
-                            </button>
+                  </div>
 
+                </div>
 
 
-                            <span className="w-8 text-center font-black">
 
-                              {cartItem.quantity}
+                <div className="border-t border-[#E1EAE3] bg-[#fffaf5] px-5 py-5">
 
-                            </span>
+                  <div className="flex items-center justify-between">
 
+                    <span className="font-bold">Total</span>
 
+                    <span className="text-xl font-black">
 
-                            <button
+                      {money(cartTotal)}
 
-                              type="button"
+                    </span>
 
-                              onClick={() =>
+                  </div>
 
-                                changeQuantity(cartItem.item.id, 1)
 
-                              }
 
-                              className="rounded-lg p-2 hover:bg-white"
+                  <button
 
-                              aria-label={`Add one ${cartItem.item.name}`}
+                    type="button"
 
-                            >
+                    onClick={() => {
 
-                              <Plus size={16} />
+                      setCartOpen(false);
 
-                            </button>
+                      setCheckoutOpen(true);
 
-                          </div>
+                    }}
 
+                    className="mt-4 w-full rounded-xl bg-[#166534] px-5 py-3 font-black text-white hover:bg-[#15803D]"
 
+                  >
 
-                          <button
+                    Checkout
 
-                            type="button"
+                  </button>
 
-                            onClick={() =>
 
-                              changeQuantity(
 
-                                cartItem.item.id,
+                  <p className="mt-3 text-center text-xs text-[#166534]">
 
-                                -cartItem.quantity,
+                    Continue to checkout to place your order.
 
-                              )
+                  </p>
 
-                            }
+                </div>
 
-                            className="text-sm font-bold text-red-700"
+              </>
 
-                          >
+            )}
 
-                            Remove
+          </aside>
 
-                          </button>
+        </div>
 
-                        </div>
+      )}
 
-                      </div>
+    </div>
 
-                    ))}
-
-                  </div>
-
-                </div>
-
-
-
-                <div className="border-t border-[#E1EAE3] bg-[#fffaf5] px-5 py-5">
-
-                  <div className="flex items-center justify-between">
-
-                    <span className="font-bold">Total</span>
-
-                    <span className="text-xl font-black">
-
-                      {money(cartTotal)}
-
-                    </span>
-
-                  </div>
-
-
-
-                  <button
-
-                    type="button"
-
-                    onClick={() => {
-
-                      setCartOpen(false);
-
-                      setCheckoutOpen(true);
-
-                    }}
-
-                    className="mt-4 w-full rounded-xl bg-[#166534] px-5 py-3 font-black text-white hover:bg-[#15803D]"
-
-                  >
-
-                    Checkout
-
-                  </button>
-
-
-
-                  <p className="mt-3 text-center text-xs text-[#166534]">
-
-                    Continue to checkout to place your order.
-
-                  </p>
-
-                </div>
-
-              </>
-
-            )}
-
-          </aside>
-
-        </div>
-
-      )}
-
-    </div>
-
-  );
+  );
 
 }

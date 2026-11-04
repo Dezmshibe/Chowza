@@ -34,12 +34,16 @@ export const OrderConfirmation: React.FC<OrderConfirmationProps> = ({
   const [showReceipt, setShowReceipt] = useState(false);
 
   useEffect(() => {
-    const timer = window.setTimeout(() => {
-      setShowReceipt(true);
-    }, 150);
+  const timer = window.setTimeout(() => {
+    setShowReceipt(true);
 
-    return () => window.clearTimeout(timer);
-  }, []);
+    window.setTimeout(() => {
+      window.print();
+    }, 700);
+  }, 150);
+
+  return () => window.clearTimeout(timer);
+}, []);
 
   const money = (amount: number) =>
     new Intl.NumberFormat('en-ZA', {

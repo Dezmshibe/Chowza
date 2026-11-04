@@ -1,18 +1,19 @@
+
 import React, { useEffect, useMemo, useState } from 'react';
 import {
   ArrowRight,
   ChevronRight,
   Clock,
-  LoaderCircle,
   MapPin,
-  Plus,
   Search,
   ShoppingBag,
   Star,
   Store,
   Truck,
 } from 'lucide-react';
+
 import { supabase } from '../lib/supabase';
+import { ChowzaPageSkeleton } from './Skeleton';
 
 type Business = {
   id: string;
@@ -115,7 +116,7 @@ export const ChowzaHome: React.FC<ChowzaHomeProps> = ({
   initialFoods = [],
 }) => {
   const hasInitialData =
-    initialBusinesses.length > 0 || initialFoods.length > 0;
+    initialBusinesses.length > 0 && initialFoods.length > 0;
 
   const [businesses, setBusinesses] =
     useState<Business[]>(initialBusinesses);
@@ -129,7 +130,7 @@ export const ChowzaHome: React.FC<ChowzaHomeProps> = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
 
-    useEffect(() => {
+  useEffect(() => {
     if (hasInitialData) {
       return;
     }
@@ -210,7 +211,7 @@ export const ChowzaHome: React.FC<ChowzaHomeProps> = ({
     return () => {
       cancelled = true;
     };
- }, [hasInitialData]);
+  }, [hasInitialData]);
 
   const categories = useMemo(() => {
     const availableCategories = Array.from(
@@ -244,26 +245,9 @@ export const ChowzaHome: React.FC<ChowzaHomeProps> = ({
     window.location.assign(`/business/${encodeURIComponent(slug)}`);
   };
 
+  // Use the existing Chowza skeleton while marketplace data loads.
   if (loading) {
-    return (
-      <div className="min-h-screen bg-[#F7FAF7] text-[#17201A]">
-        <div className="flex min-h-[70vh] items-center justify-center">
-          <div className="text-center">
-            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-[#15803D] text-white">
-              <LoaderCircle className="animate-spin" size={24} />
-            </div>
-
-            <p className="font-semibold">
-              Loading Chowza...
-            </p>
-
-            <p className="mt-1 text-sm text-black/50">
-              Finding food near you
-            </p>
-          </div>
-        </div>
-      </div>
-    );
+    return <ChowzaPageSkeleton />;
   }
 
   if (error) {
@@ -305,10 +289,10 @@ export const ChowzaHome: React.FC<ChowzaHomeProps> = ({
             className="flex items-center gap-2"
           >
             <img
-  src="/branding/chowza-logo.png"
-  alt="Chowza"
-  className="h-10 w-auto object-contain"
-/>
+              src="/branding/chowza-logo.png"
+              alt="Chowza"
+              className="h-10 w-auto object-contain"
+            />
           </button>
 
           <div className="hidden items-center gap-5 text-sm font-semibold sm:flex">
@@ -333,14 +317,14 @@ export const ChowzaHome: React.FC<ChowzaHomeProps> = ({
           <button
             type="button"
             onClick={() => {
-              window.alert(
-                'Your cart is connected to the restaurant you order from. Open a restaurant to start ordering.'
-              );
+              document.getElementById('restaurants')?.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start',
+              });
             }}
-            className="flex items-center gap-2 rounded-xl bg-[#15803D] px-4 py-2 text-sm font-black text-white hover:bg-[#9E351E]"
+            className="rounded-xl bg-[#15803D] px-4 py-2 text-sm font-black text-white transition hover:bg-[#166534]"
           >
-            <ShoppingBag size={17} />
-            <span>Cart</span>
+            Explore food
           </button>
 
         </div>
@@ -358,45 +342,47 @@ export const ChowzaHome: React.FC<ChowzaHomeProps> = ({
             </div>
 
             <h1 className="text-4xl font-black leading-tight tracking-tight sm:text-6xl">
-  Order food online
-  <br />
-  with Chowza.
-</h1>
+              Discover great local food
+              <br />
+              with Chowza.
+            </h1>
 
             <p className="mt-4 max-w-xl text-sm leading-6 text-white/65 sm:text-base">
-  Discover local restaurants and food businesses in South Africa,
-  browse digital menus, order your favourite meals online, and track
-  your order from your phone.
-</p>
+              Explore meals from local restaurants and food businesses across
+              South Africa. Choose what you love, visit the restaurant’s own
+              page, and complete your order there.
+            </p>
 
           </div>
 
           {/* Search */}
-          <div className="mt-7 flex max-w-3xl items-center rounded-2xl bg-white p-2 shadow-xl">
-            <Search
-              className="pointer-events-none absolute left-4 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-[#4B5A50]"
-            />
+          <div className="relative mt-7 flex max-w-3xl items-center rounded-2xl bg-white p-2 shadow-xl">
+
+            
 
             <input
+              type="text"
               value={searchQuery}
               onChange={(event) => setSearchQuery(event.target.value)}
               placeholder="Search food, restaurants, burgers, kotas..."
-              className="min-w-0 flex-1 bg-transparent px-3 py-3 text-sm font-medium text-black outline-none placeholder:text-black/40"
+              className="min-w-0 w-full flex-1 bg-transparent px-3 py-3 text-sm font-medium text-black outline-none placeholder:text-black/40"
             />
 
             {searchQuery && (
               <button
                 type="button"
                 onClick={() => setSearchQuery('')}
-                className="mr-2 rounded-lg px-3 py-2 text-xs font-bold text-black/50 hover:bg-black/5"
+                className="mr-2 shrink-0 rounded-lg px-3 py-2 text-xs font-bold text-black/50 hover:bg-black/5"
               >
                 Clear
               </button>
             )}
+
           </div>
 
           {/* Delivery */}
           <div className="mt-4 flex flex-wrap items-center gap-4 text-xs text-white/60">
+
             <span className="flex items-center gap-1.5">
               <MapPin size={14} className="text-[#22C55E]" />
               Delivering around Johannesburg
@@ -406,6 +392,7 @@ export const ChowzaHome: React.FC<ChowzaHomeProps> = ({
               <Truck size={14} className="text-[#15803D]" />
               Local delivery
             </span>
+
           </div>
 
         </div>
@@ -452,17 +439,17 @@ export const ChowzaHome: React.FC<ChowzaHomeProps> = ({
         )}
 
         {/* Restaurants */}
-        <section className="mb-10">
+        <section id="restaurants" className="mb-10 scroll-mt-24">
 
           <div className="mb-4 flex items-end justify-between gap-4">
             <div>
               <p className="text-xs font-black uppercase tracking-[0.18em] text-[#22C55E]">
-  Local Food
-</p>
+                Local Food
+              </p>
 
               <h2 className="mt-1 text-2xl font-black">
-  Local Restaurants & Food Businesses
-</h2>
+                Local Restaurants & Food Businesses
+              </h2>
             </div>
 
             <span className="text-xs font-semibold text-black/40">
@@ -582,12 +569,12 @@ export const ChowzaHome: React.FC<ChowzaHomeProps> = ({
 
             <div>
               <p className="text-xs font-black uppercase tracking-[0.18em] text-[#22C55E]">
-                Hungry?
+                Find Your Next Favourite
               </p>
 
               <h2 className="mt-1 text-2xl font-black">
-  Popular Food to Order Online
-</h2>
+                Popular Food to Order Online
+              </h2>
             </div>
 
             {filteredFoods.length > 0 && (
@@ -695,8 +682,8 @@ export const ChowzaHome: React.FC<ChowzaHomeProps> = ({
                       onClick={() => openBusiness(food.businessSlug)}
                       className="flex items-center gap-1 rounded-lg bg-[#15803D] px-3 py-2 text-[10px] font-black text-white hover:bg-[#9E351E]"
                     >
-                      <Plus size={13} />
-                      Order
+                      <ChevronRight size={13} />
+                      View Menu
                     </button>
 
                   </div>
@@ -720,13 +707,13 @@ export const ChowzaHome: React.FC<ChowzaHomeProps> = ({
               </p>
 
               <h2 className="mt-2 text-2xl font-black sm:text-3xl">
-  Digital Menus & Online Ordering for Food Businesses
-</h2>
+                Get Your Food Business on Chowza
+              </h2>
 
-<p className="mt-2 max-w-xl text-sm leading-6 text-white/60">
-  Create a digital menu, manage your orders and give customers
-  an easy way to discover your food business and order online.
-</p>
+              <p className="mt-2 max-w-xl text-sm leading-6 text-white/60">
+                Create a digital menu, manage your orders and help more customers
+                discover your food business through Chowza.
+              </p>
             </div>
 
             <button

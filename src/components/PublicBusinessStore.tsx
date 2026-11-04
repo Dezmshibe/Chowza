@@ -2,23 +2,23 @@ import { useEffect, useMemo, useState } from 'react';
 
 import {
 
-  ArrowLeft,
+  ArrowLeft,
 
-  LoaderCircle,
+  LoaderCircle,
 
-  MapPin,
+  MapPin,
 
-  MessageCircle,
+  MessageCircle,
 
-  Minus,
+  Minus,
 
-  Plus,
+  Plus,
 
-  ShoppingCart,
+  ShoppingCart,
 
-  Store,
+  Store,
 
-  X,
+  X,
 
 } from 'lucide-react';
 
@@ -28,50 +28,42 @@ import { clearCsrfToken, getCsrfToken } from '../lib/csrf';
 import { PublicCheckout } from './PublicCheckout';
 
 import { OrderConfirmation } from './OrderConfirmation';
+import { OrderTracker } from './OrderTracker';
 
 import { useApp } from '../context/AppContext';
 
 
 
 type Business = {
-
-  id: string;
-
-  name: string;
-
-  slug: string;
-
-  description: string | null;
-
-  logo_url: string | null;
-
-  public_phone: string | null;
-
-  whatsapp_number: string | null;
-
-  public_address: string | null;
-
-  is_published: boolean;
-
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  logo_url: string | null;
+  public_phone: string | null;
+  whatsapp_number: string | null;
+  public_address: string | null;
+  is_published: boolean;
+  delivery_fee: number | null;
 };
 
 
 
 type MenuItem = {
 
-  id: string;
+  id: string;
 
-  name: string;
+  name: string;
 
-  description: string | null;
+  description: string | null;
 
-  price: number;
+  price: number;
 
-  image_url: string | null;
+  image_url: string | null;
 
-  is_available: boolean;
+  is_available: boolean;
 
-  sort_order: number;
+  sort_order: number;
 
 };
 
@@ -79,9 +71,9 @@ type MenuItem = {
 
 type CartItem = {
 
-  item: MenuItem;
+  item: MenuItem;
 
-  quantity: number;
+  quantity: number;
 
 };
 
@@ -89,15 +81,15 @@ type CartItem = {
 
 type ConfirmationItem = {
 
-  id: string;
+  id: string;
 
-  name: string;
+  name: string;
 
-  price: number;
+  price: number;
 
-  quantity: number;
+  quantity: number;
 
-  line_total: number;
+  line_total: number;
 
 };
 
@@ -105,15 +97,17 @@ type ConfirmationItem = {
 
 type ConfirmationOrder = {
 
-  orderNumber: number;
+  orderNumber: number;
 
-  customerName: string;
+  customerName: string;
 
-  total: number;
+  total: number;
 
-  paymentMethod: 'cash' | 'eft' | 'online';
+  paymentMethod: 'cash' | 'online';
 
-  items: ConfirmationItem[];
+  customerPhone: string;
+
+  items: ConfirmationItem[];
 
 };
 
@@ -121,313 +115,357 @@ type ConfirmationOrder = {
 
 export function PublicBusinessStore({ slug }: { slug: string }) {
 
-  const { setCurrentView } = useApp();  
+  const { setTrackingLookup } = useApp();  
 
-  const [business, setBusiness] = useState<Business | null>(null);
+  const [business, setBusiness] = useState<Business | null>(null);
 
-  const [items, setItems] = useState<MenuItem[]>([]);
+  const [items, setItems] = useState<MenuItem[]>([]);
 
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
 
-  const [error, setError] = useState('');
+  const [error, setError] = useState('');
 
 
 
-  const [cart, setCart] = useState<CartItem[]>([]);
+  const [cart, setCart] = useState<CartItem[]>([]);
 
-  const [cartOpen, setCartOpen] = useState(false);
+  const [cartOpen, setCartOpen] = useState(false);
 
-  const [checkoutOpen, setCheckoutOpen] = useState(false);
+  const [checkoutOpen, setCheckoutOpen] = useState(false);
 
-  const [confirmationOrder, setConfirmationOrder] =
+  const [confirmationOrder, setConfirmationOrder] =
 
-    useState<ConfirmationOrder | null>(null);
+    useState<ConfirmationOrder | null>(null);
 
+  const [trackingOpen, setTrackingOpen] = useState(false);
 
 
-  useEffect(() => {
 
-    let cancelled = false;
+  useEffect(() => {
 
+    let cancelled = false;
 
 
-    async function loadStore() {
 
-      setLoading(true);
+    async function loadStore() {
 
-      setError('');
+      setLoading(true);
 
+      setError('');
 
 
-      const { data: businessData, error: businessError } = await supabase
 
-        .from('businesses')
+      const { data: businessData, error: businessError } = await supabase
+  .from('businesses')
+  .select(
+    'id, name, slug, description, logo_url, public_phone, whatsapp_number, public_address, is_published, delivery_fee'
+  )
+  .eq('slug', slug)
+  .eq('is_published', true)
+  .maybeSingle();
 
-        .select(
 
-          'id, name, slug, description, logo_url, public_phone, whatsapp_number, public_address, is_published',
 
-        )
+      if (cancelled) return;
 
-        .eq('slug', slug)
 
-        .eq('is_published', true)
 
-        .maybeSingle();
+      if (businessError) {
 
+        setError('We could not load this store. Please try again.');
 
+        setLoading(false);
 
-      if (cancelled) return;
+        return;
 
+      }
 
 
-      if (businessError) {
 
-        setError('We could not load this store. Please try again.');
+      if (!businessData) {
 
-        setLoading(false);
+        setBusiness(null);
 
-        return;
+        setItems([]);
 
-      }
+        setError('This store does not exist or has not been published yet.');
 
+        setLoading(false);
 
+        return;
 
-      if (!businessData) {
+      }
 
-        setBusiness(null);
 
-        setItems([]);
 
-        setError('This store does not exist or has not been published yet.');
+      setBusiness(businessData as Business);
 
-        setLoading(false);
 
-        return;
 
-      }
+      const { data: menuData, error: menuError } = await supabase
 
+        .from('menu_items')
 
+        .select(
 
-      setBusiness(businessData as Business);
+          'id, name, description, price, image_url, is_available, sort_order',
 
+        )
 
+        .eq('business_id', businessData.id)
 
-      const { data: menuData, error: menuError } = await supabase
+        .eq('is_available', true)
 
-        .from('menu_items')
+        .order('sort_order', { ascending: true });
 
-        .select(
 
-          'id, name, description, price, image_url, is_available, sort_order',
 
-        )
+      if (cancelled) return;
 
-        .eq('business_id', businessData.id)
 
-        .eq('is_available', true)
 
-        .order('sort_order', { ascending: true });
+      if (menuError) {
 
+        setError('The store loaded, but its menu could not be loaded.');
 
+      } else {
 
-      if (cancelled) return;
+        setItems((menuData ?? []) as MenuItem[]);
 
+      }
 
 
-      if (menuError) {
 
-        setError('The store loaded, but its menu could not be loaded.');
+      setLoading(false);
 
-      } else {
+    }
 
-        setItems((menuData ?? []) as MenuItem[]);
 
-      }
 
+    void loadStore();
 
 
-      setLoading(false);
 
-    }
+    return () => {
 
+      cancelled = true;
 
+    };
 
-    void loadStore();
+  }, [slug]);
 
 
 
-    return () => {
+  const money = (amount: number) =>
 
-      cancelled = true;
+    new Intl.NumberFormat('en-ZA', {
 
-    };
+      style: 'currency',
 
-  }, [slug]);
+      currency: 'ZAR',
 
+    }).format(amount);
 
 
-  const money = (amount: number) =>
 
-    new Intl.NumberFormat('en-ZA', {
+  const whatsappNumber = (business?.whatsapp_number || '').replace(/\D/g, '');
 
-      style: 'currency',
 
-      currency: 'ZAR',
 
-    }).format(amount);
+  const cartCount = useMemo(
 
+    () => cart.reduce((total, cartItem) => total + cartItem.quantity, 0),
 
+    [cart],
 
-  const whatsappNumber = (business?.whatsapp_number || '').replace(/\D/g, '');
+  );
 
 
 
-  const cartCount = useMemo(
+  const cartTotal = useMemo(
 
-    () => cart.reduce((total, cartItem) => total + cartItem.quantity, 0),
+    () =>
 
-    [cart],
+      cart.reduce(
 
-  );
+        (total, cartItem) =>
 
+          total + Number(cartItem.item.price) * cartItem.quantity,
 
+        0,
 
-  const cartTotal = useMemo(
+      ),
 
-    () =>
+    [cart],
 
-      cart.reduce(
+  );
 
-        (total, cartItem) =>
 
-          total + Number(cartItem.item.price) * cartItem.quantity,
 
-        0,
+  function addToCart(item: MenuItem) {
 
-      ),
+    setCart((currentCart) => {
 
-    [cart],
+      const existing = currentCart.find(
 
-  );
+        (cartItem) => cartItem.item.id === item.id,
 
+      );
 
 
-  function addToCart(item: MenuItem) {
 
-    setCart((currentCart) => {
+      if (existing) {
 
-      const existing = currentCart.find(
+        return currentCart.map((cartItem) =>
 
-        (cartItem) => cartItem.item.id === item.id,
+          cartItem.item.id === item.id
 
-      );
+            ? { ...cartItem, quantity: cartItem.quantity + 1 }
 
+            : cartItem,
 
+        );
 
-      if (existing) {
+      }
 
-        return currentCart.map((cartItem) =>
 
-          cartItem.item.id === item.id
 
-            ? { ...cartItem, quantity: cartItem.quantity + 1 }
+      return [...currentCart, { item, quantity: 1 }];
 
-            : cartItem,
+    });
 
-        );
+  }
 
-      }
 
 
+  function changeQuantity(itemId: string, amount: number) {
 
-      return [...currentCart, { item, quantity: 1 }];
+    setCart((currentCart) =>
 
-    });
+      currentCart
 
-  }
+        .map((cartItem) =>
 
+          cartItem.item.id === itemId
 
+            ? { ...cartItem, quantity: cartItem.quantity + amount }
 
-  function changeQuantity(itemId: string, amount: number) {
+            : cartItem,
 
-    setCart((currentCart) =>
+        )
 
-      currentCart
+        .filter((cartItem) => cartItem.quantity > 0),
 
-        .map((cartItem) =>
+    );
 
-          cartItem.item.id === itemId
+  }
 
-            ? { ...cartItem, quantity: cartItem.quantity + amount }
 
-            : cartItem,
 
-        )
+  if (trackingOpen && confirmationOrder) {
+    return (
+      <div className="min-h-screen bg-[#F7FAF7] text-[#17201A]">
+        <div className="sticky top-0 z-40 flex items-center gap-3 border-b border-[#E1EAE3] bg-white px-5 py-4">
+          <button
+            type="button"
+            onClick={() => setTrackingOpen(false)}
+            className="rounded-xl border border-[#D7E2DA] px-4 py-2 font-bold hover:bg-[#F7FAF7]"
+          >
+            <ArrowLeft size={17} className="mr-2 inline" />
+            Back to receipt
+          </button>
+          <span className="font-black">Track your order</span>
+        </div>
+        <OrderTracker />
+      </div>
+    );
+  }
 
-        .filter((cartItem) => cartItem.quantity > 0),
+  if (confirmationOrder && business) {
 
-    );
+    return (
 
-  }
+      <OrderConfirmation
 
+        businessName={business.name}
 
+        orderNumber={confirmationOrder.orderNumber}
 
-  if (confirmationOrder && business) {
+        customerName={confirmationOrder.customerName}
 
-    return (
+        total={confirmationOrder.total}
 
-      <OrderConfirmation
+        paymentMethod={confirmationOrder.paymentMethod}
 
-        businessName={business.name}
+        items={confirmationOrder.items}
 
-        orderNumber={confirmationOrder.orderNumber}
+        onTrackOrder={() => {
+          setTrackingLookup(
+            String(confirmationOrder.orderNumber),
+            confirmationOrder.customerPhone,
+          );
+          setTrackingOpen(true);
+        }}
 
-        customerName={confirmationOrder.customerName}
+        onBackToStore={() => {
 
-        total={confirmationOrder.total}
+          setConfirmationOrder(null);
 
-        paymentMethod={confirmationOrder.paymentMethod}
+        }}
 
-        items={confirmationOrder.items}
+      />
 
-        onTrackOrder={() => {
+    );
 
-  setCurrentView('track');
+  }
 
-        }}
 
-        onBackToStore={() => {
 
-          setConfirmationOrder(null);
+  if (checkoutOpen && business) {
 
-        }}
+    return (
 
-      />
+      <PublicCheckout
+  businessName={business.name}
+  deliveryFee={Number(business.delivery_fee ?? 25)}
+  cart={cart}
 
-    );
+        onBack={() => setCheckoutOpen(false)}
 
-  }
 
+        onUpdateQuantity={(itemId, quantity) => {
+          if (quantity <= 0) {
+            setCart((current) =>
+              current.filter((cartItem) => cartItem.item.id !== itemId),
+            );
+            return;
+          }
 
+          setCart((current) =>
+            current.map((cartItem) =>
+              cartItem.item.id === itemId
+                ? { ...cartItem, quantity }
+                : cartItem,
+            ),
+          );
+        }}
 
-  if (checkoutOpen && business) {
+        onRemoveItem={(itemId) => {
+          setCart((current) =>
+            current.filter((cartItem) => cartItem.item.id !== itemId),
+          );
+        }}
 
-    return (
+        onClearCart={() => {
+          setCart([]);
+          setCheckoutOpen(false);
+        }}
 
-      <PublicCheckout
 
-        businessName={business.name}
 
-        cart={cart}
+       onPlaceOrder={async (details) => {
 
-        onBack={() => setCheckoutOpen(false)}
-
-
-
-       onPlaceOrder={async (details) => {
-
-  let csrfToken = await getCsrfToken();
+  let csrfToken = await getCsrfToken();
 
   let { data, error } = await supabase.functions.invoke(
     'create-order',
@@ -435,29 +473,31 @@ export function PublicBusinessStore({ slug }: { slug: string }) {
       headers: { 'x-csrf-token': csrfToken },
       body: {
 
-        businessId: business.id,
+        businessId: business.id,
 
-        customerName: details.customerName,
+        customerName: details.customerName,
 
-        customerPhone: details.customerPhone,
+        customerPhone: details.customerPhone,
 
-        deliveryAddress: details.deliveryAddress,
+        deliveryAddress: details.deliveryAddress,
+customerNote: details.customerNote,
+promoCode: details.promoCode,
+fulfillmentType: details.fulfillmentType,
+paymentMethod: details.paymentMethod,
 
-        paymentMethod: details.paymentMethod,
+        cart: cart.map((cartItem) => ({
 
-        cart: cart.map((cartItem) => ({
+          itemId: cartItem.item.id,
 
-          itemId: cartItem.item.id,
+          quantity: cartItem.quantity,
 
-          quantity: cartItem.quantity,
+        })),
 
-        })),
+      },
 
-      },
+    }
 
-    }
-
-  );
+  );
 
   if (error?.status === 403) {
     clearCsrfToken();
@@ -472,6 +512,7 @@ export function PublicBusinessStore({ slug }: { slug: string }) {
           customerName: details.customerName,
           customerPhone: details.customerPhone,
           deliveryAddress: details.deliveryAddress,
+          fulfillmentType: details.fulfillmentType,
           paymentMethod: details.paymentMethod,
           cart: cart.map((cartItem) => ({
             itemId: cartItem.item.id,
@@ -490,224 +531,114 @@ export function PublicBusinessStore({ slug }: { slug: string }) {
 
   if (!data?.success) {
 
-    throw new Error(
+    throw new Error(
 
-      data?.error || 'Could not place your order.'
+      data?.error || 'Could not place your order.'
 
-    );
+    );
 
-  }
-
-
-
-  const orderNumber = Number(data.order.orderNumber);
-
-  const orderTotal = Number(data.order.total);
+  }
 
 
 
-  /*
+  const orderNumber = Number(data.order.orderNumber);
 
-   * ONLINE PAYMENT
+  const orderTotal = Number(data.order.total);
 
-   *
 
-   * Create the PayFast payment after the Chowza
 
-   * order has successfully been created.
-
-   */
-
-  if (details.paymentMethod === 'online') {
-
-    const {
-
-      data: paymentData,
-
-      error: paymentError,
-
-    } = await supabase.functions.invoke(
-
-      'create-payfast-payment',
-
-      {
-
-        headers: { 'x-csrf-token': csrfToken },
+  /*
+   * ONLINE PAYMENT
+   *
+   * Create the real Yoco hosted checkout after the Chowza
+   * order has successfully been created.
+   */
+  if (details.paymentMethod === 'online') {
+    const {
+      data: paymentData,
+      error: paymentError,
+    } = await supabase.functions.invoke(
+      'create-yoco-checkout',
+      {
+        headers: { 'x-csrf-token': csrfToken },
         body: {
+          orderNumber,
+        },
+      },
+    );
 
-          orderNumber,
+    if (paymentError) {
+      console.error(
+        'Create Yoco checkout failed:',
+        paymentError,
+      );
 
-        },
+      throw new Error(
+        paymentError.message ||
+          'Could not start the Yoco payment.',
+      );
+    }
 
-      }
+    if (!paymentData?.success || !paymentData?.redirectUrl) {
+      throw new Error(
+        paymentData?.error ||
+          'Yoco did not return a payment URL.',
+      );
+    }
 
-    );
+    window.location.assign(paymentData.redirectUrl);
+    return;
+  }
 
+  /*
 
+   * CASH PAYMENT
 
-    if (paymentError) {
+   *
 
-      console.error(
+   * Keep the existing Chowza confirmation flow.
 
-        'Create PayFast payment failed:',
+   */
 
-        paymentError
+  setConfirmationOrder({
 
-      );
+    orderNumber,
 
+    customerName: details.customerName,
 
+    customerPhone: details.customerPhone,
 
-      throw new Error(
+    total: orderTotal,
 
-        paymentError.message ||
+    paymentMethod: details.paymentMethod,
 
-          'Could not start the PayFast payment.'
+    items: cart.map((cartItem) => ({
 
-      );
+      id: cartItem.item.id,
 
-    }
+      name: cartItem.item.name,
 
+      price: Number(cartItem.item.price),
 
+      quantity: cartItem.quantity,
 
-    if (!paymentData?.success) {
+      line_total:
 
-      throw new Error(
+        Number(cartItem.item.price) *
 
-        paymentData?.error ||
+        cartItem.quantity,
 
-          'Could not start the PayFast payment.'
+    })),
 
-      );
+  });
 
-    }
 
 
+  setCart([]);
 
-    if (
+  setCheckoutOpen(false);
 
-      !paymentData?.processUrl ||
-
-      !paymentData?.fields
-
-    ) {
-
-      throw new Error(
-
-        'PayFast did not return the payment information.'
-
-      );
-
-    }
-
-
-
-    /*
-
-     * Build and submit the PayFast form.
-
-     *
-
-     * The customer is now redirected to PayFast.
-
-     */
-
-    const form = document.createElement('form');
-
-
-
-    form.method = 'POST';
-
-    form.action = paymentData.processUrl;
-
-    form.style.display = 'none';
-
-
-
-    Object.entries(
-
-      paymentData.fields as Record<string, string>
-
-    ).forEach(([name, value]) => {
-
-      const input = document.createElement('input');
-
-
-
-      input.type = 'hidden';
-
-      input.name = name;
-
-      input.value = String(value);
-
-
-
-      form.appendChild(input);
-
-    });
-
-
-
-    document.body.appendChild(form);
-
-
-
-    form.submit();
-
-
-
-    return;
-
-  }
-
-
-
-  /*
-
-   * CASH PAYMENT
-
-   *
-
-   * Keep the existing Chowza confirmation flow.
-
-   */
-
-  setConfirmationOrder({
-
-    orderNumber,
-
-    customerName: details.customerName,
-
-    total: orderTotal,
-
-    paymentMethod: details.paymentMethod,
-
-    items: cart.map((cartItem) => ({
-
-      id: cartItem.item.id,
-
-      name: cartItem.item.name,
-
-      price: Number(cartItem.item.price),
-
-      quantity: cartItem.quantity,
-
-      line_total:
-
-        Number(cartItem.item.price) *
-
-        cartItem.quantity,
-
-    })),
-
-  });
-
-
-
-  setCart([]);
-
-  setCheckoutOpen(false);
-
-  setCartOpen(false);
+  setCartOpen(false);
 
         }}
 
@@ -717,674 +648,674 @@ export function PublicBusinessStore({ slug }: { slug: string }) {
 
   }
 
-  return (
+  return (
 
-    <div className="min-h-screen bg-[#F7FAF7] text-[#17201A]">
+    <div className="min-h-screen bg-[#F7FAF7] text-[#17201A]">
 
-      <header className="sticky top-0 z-40 border-b border-[#E1EAE3] bg-white">
+      <header className="sticky top-0 z-40 border-b border-[#E1EAE3] bg-white">
 
-        <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-5 py-4">
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-5 py-4">
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3">
 
-            <button
+            <button
 
-              type="button"
+              type="button"
 
-              onClick={() => window.location.assign('/')}
+              onClick={() => window.location.assign('/')}
 
-              className="rounded-xl border border-[#D7E2DA] p-2 hover:bg-[#F7FAF7]"
+              className="rounded-xl border border-[#D7E2DA] p-2 hover:bg-[#F7FAF7]"
 
-              aria-label="Back to Chowza"
+              aria-label="Back to Chowza"
 
-            >
+            >
 
-              <ArrowLeft size={19} />
+              <ArrowLeft size={19} />
 
-            </button>
+            </button>
 
 
 
-            <Store size={23} />
+            <Store size={23} />
 
 
 
-            <div>
+            <div>
 
-              <p className="text-xs font-bold uppercase tracking-widest text-[#166534]">
+              <p className="text-xs font-bold uppercase tracking-widest text-[#166534]">
 
-                Chowza
+                Chowza
 
-              </p>
+              </p>
 
-              <p className="font-black">Local food, made easy</p>
+              <p className="font-black">Local food, made easy</p>
 
-            </div>
+            </div>
 
-          </div>
+          </div>
 
 
 
-          <button
+          <button
 
-            type="button"
+            type="button"
 
-            onClick={() => setCartOpen(true)}
+            onClick={() => setCartOpen(true)}
 
-            className="relative flex items-center gap-2 rounded-xl bg-[#166534] px-4 py-3 font-bold text-white"
+            className="relative flex items-center gap-2 rounded-xl bg-[#166534] px-4 py-3 font-bold text-white"
 
-          >
+          >
 
-            <ShoppingCart size={19} />
+            <ShoppingCart size={19} />
 
-            <span>Cart</span>
+            <span>Cart</span>
 
 
 
-            {cartCount > 0 && (
+            {cartCount > 0 && (
 
-              <span className="flex h-6 min-w-6 items-center justify-center rounded-full bg-[#22C55E] px-1.5 text-xs font-black text-white">
+              <span className="flex h-6 min-w-6 items-center justify-center rounded-full bg-[#22C55E] px-1.5 text-xs font-black text-white">
 
-                {cartCount}
+                {cartCount}
 
-              </span>
+              </span>
 
-            )}
+            )}
 
-          </button>
+          </button>
 
-        </div>
+        </div>
 
-      </header>
+      </header>
 
 
 
-      {loading ? (
+      {loading ? (
 
-        <div className="flex min-h-[60vh] items-center justify-center gap-3">
+        <div className="flex min-h-[60vh] items-center justify-center gap-3">
 
-          <LoaderCircle className="animate-spin" />
+          <LoaderCircle className="animate-spin" />
 
-          <p>Loading store...</p>
+          <p>Loading store...</p>
 
-        </div>
+        </div>
 
-      ) : error && !business ? (
+      ) : error && !business ? (
 
-        <main className="mx-auto max-w-xl px-5 py-20 text-center">
+        <main className="mx-auto max-w-xl px-5 py-20 text-center">
 
-          <Store size={42} className="mx-auto mb-4 text-[#166534]" />
+          <Store size={42} className="mx-auto mb-4 text-[#166534]" />
 
-          <h1 className="text-2xl font-black">Store unavailable</h1>
+          <h1 className="text-2xl font-black">Store unavailable</h1>
 
-          <p className="mt-3 text-[#166534]">{error}</p>
+          <p className="mt-3 text-[#166534]">{error}</p>
 
-        </main>
+        </main>
 
-      ) : business ? (
+      ) : business ? (
 
-        <>
+        <>
 
-          <section className="bg-[#166534] text-white">
+          <section className="bg-[#166534] text-white">
 
-            <div className="mx-auto max-w-6xl px-5 py-12">
+            <div className="mx-auto max-w-6xl px-5 py-12">
 
-              {business.logo_url ? (
+              {business.logo_url ? (
 
-                <img
+                <img
 
-                  src={business.logo_url}
+                  src={business.logo_url}
 
-                  alt={`${business.name} logo`}
+                  alt={`${business.name} logo`}
 
-                  className="mb-5 h-20 w-20 rounded-2xl bg-white object-contain p-2"
+                  className="mb-5 h-20 w-20 rounded-2xl bg-white object-contain p-2"
 
-                />
+                />
 
-              ) : (
+              ) : (
 
-                <div className="mb-5 flex h-20 w-20 items-center justify-center rounded-2xl bg-white/10">
+                <div className="mb-5 flex h-20 w-20 items-center justify-center rounded-2xl bg-white/10">
 
-                  <Store size={34} />
+                  <Store size={34} />
 
-                </div>
+                </div>
 
-              )}
+              )}
 
 
 
-              <h1 className="text-3xl font-black sm:text-5xl">
+              <h1 className="text-3xl font-black sm:text-5xl">
 
-                {business.name}
+                {business.name}
 
-              </h1>
+              </h1>
 
 
 
-              {business.description && (
+              {business.description && (
 
-                <p className="mt-3 max-w-2xl text-white/80">
+                <p className="mt-3 max-w-2xl text-white/80">
 
-                  {business.description}
+                  {business.description}
 
-                </p>
+                </p>
 
-              )}
+              )}
 
 
 
-              {business.public_address && (
+              {business.public_address && (
 
-                <p className="mt-4 flex items-center gap-2 text-sm text-white/80">
+                <p className="mt-4 flex items-center gap-2 text-sm text-white/80">
 
-                  <MapPin size={17} />
+                  <MapPin size={17} />
 
-                  {business.public_address}
+                  {business.public_address}
 
-                </p>
+                </p>
 
-              )}
+              )}
 
 
 
-              {whatsappNumber && (
+              {whatsappNumber && (
 
-                <a
+                <a
 
-                  href={`https\://wa.me/${whatsappNumber}`}
+                  href={`https\://wa.me/${whatsappNumber}`}
 
-                  target="_blank"
+                  target="_blank"
 
-                  rel="noreferrer"
+                  rel="noreferrer"
 
-                  className="mt-5 inline-flex items-center gap-2 rounded-xl bg-[#22C55E] px-5 py-3 font-bold text-white"
+                  className="mt-5 inline-flex items-center gap-2 rounded-xl bg-[#22C55E] px-5 py-3 font-bold text-white"
 
-                >
+                >
 
-                  <MessageCircle size={18} />
+                  <MessageCircle size={18} />
 
-                  Contact on WhatsApp
+                  Contact on WhatsApp
 
-                </a>
+                </a>
 
-              )}
+              )}
 
-            </div>
+            </div>
 
-          </section>
+          </section>
 
 
 
-          <main className="mx-auto max-w-6xl px-5 py-10">
+          <main className="mx-auto max-w-6xl px-5 py-10">
 
-            <div className="mb-6">
+            <div className="mb-6">
 
-              <h2 className="text-2xl font-black">Our menu</h2>
+              <h2 className="text-2xl font-black">Our menu</h2>
 
-              <p className="mt-1 text-sm text-[#166534]">
+              <p className="mt-1 text-sm text-[#166534]">
 
-                Browse the items currently available from this store.
+                Browse the items currently available from this store.
 
-              </p>
+              </p>
 
-            </div>
+            </div>
 
 
 
-            {error && (
+            {error && (
 
-              <p
+              <p
 
-                role="alert"
+                role="alert"
 
-                className="mb-5 rounded-xl bg-red-50 p-4 text-sm text-red-800"
+                className="mb-5 rounded-xl bg-red-50 p-4 text-sm text-red-800"
 
-              >
+              >
 
-                {error}
+                {error}
 
-              </p>
+              </p>
 
-            )}
+            )}
 
 
 
-            {items.length === 0 ? (
+            {items.length === 0 ? (
 
-              <div className="rounded-2xl border border-[#E1EAE3] bg-white p-8 text-center">
+              <div className="rounded-2xl border border-[#E1EAE3] bg-white p-8 text-center">
 
-                <p className="font-bold">No available menu items yet.</p>
+                <p className="font-bold">No available menu items yet.</p>
 
-                <p className="mt-2 text-sm text-[#166534]">
+                <p className="mt-2 text-sm text-[#166534]">
 
-                  Please check back later.
+                  Please check back later.
 
-                </p>
+                </p>
 
-              </div>
+              </div>
 
-            ) : (
+            ) : (
 
-              <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
 
-                {items.map((item) => {
+                {items.map((item) => {
 
-                  const cartItem = cart.find(
+                  const cartItem = cart.find(
 
-                    (entry) => entry.item.id === item.id,
+                    (entry) => entry.item.id === item.id,
 
-                  );
+                  );
 
 
 
-                  return (
+                  return (
 
-                    <article
+                    <article
 
-                      key={item.id}
+                      key={item.id}
 
-                      className="overflow-hidden rounded-2xl border border-[#E1EAE3] bg-white shadow-sm"
+                      className="overflow-hidden rounded-2xl border border-[#E1EAE3] bg-white shadow-sm"
 
-                    >
+                    >
 
-                      {item.image_url ? (
+                      {item.image_url ? (
 
-                        <img
+                        <img
 
-                          src={item.image_url}
+                          src={item.image_url}
 
-                          alt={item.name}
+                          alt={item.name}
 
-                          className="h-48 w-full object-cover"
+                          className="h-48 w-full object-cover"
 
-                          loading="lazy"
+                          loading="lazy"
 
-                        />
+                        />
 
-                      ) : (
+                      ) : (
 
-                        <div className="flex h-32 items-center justify-center bg-[#F0FDF4]">
+                        <div className="flex h-32 items-center justify-center bg-[#F0FDF4]">
 
-                          <Store size={32} className="text-[#166534]" />
+                          <Store size={32} className="text-[#166534]" />
 
-                        </div>
+                        </div>
 
-                      )}
+                      )}
 
 
 
-                      <div className="p-5">
+                      <div className="p-5">
 
-                        <div className="flex items-start justify-between gap-3">
+                        <div className="flex items-start justify-between gap-3">
 
-                          <h3 className="font-black">{item.name}</h3>
+                          <h3 className="font-black">{item.name}</h3>
 
 
 
-                          <span className="shrink-0 font-black text-[#166534]">
+                          <span className="shrink-0 font-black text-[#166534]">
 
-                            {money(Number(item.price))}
+                            {money(Number(item.price))}
 
-                          </span>
+                          </span>
 
-                        </div>
+                        </div>
 
 
 
-                        {item.description && (
+                        {item.description && (
 
-                          <p className="mt-2 text-sm text-[#166534]">
+                          <p className="mt-2 text-sm text-[#166534]">
 
-                            {item.description}
+                            {item.description}
 
-                          </p>
+                          </p>
 
-                        )}
+                        )}
 
 
 
-                        <button
+                        <button
 
-                          type="button"
+                          type="button"
 
-                          onClick={() => addToCart(item)}
+                          onClick={() => addToCart(item)}
 
-                          className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-[#166534] px-4 py-3 font-bold text-white hover:bg-[#15803D]"
+                          className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-[#166534] px-4 py-3 font-bold text-white hover:bg-[#15803D]"
 
-                        >
+                        >
 
-                          <Plus size={18} />
+                          <Plus size={18} />
 
-                          {cartItem
+                          {cartItem
 
-                            ? `Add another (${cartItem.quantity})`
+                            ? `Add another (${cartItem.quantity})`
 
-                            : 'Add to cart'}
+                            : 'Add to cart'}
 
-                        </button>
+                        </button>
 
-                      </div>
+                      </div>
 
-                    </article>
+                    </article>
 
-                  );
+                  );
 
-                })}
+                })}
 
-              </div>
+              </div>
 
-            )}
+            )}
 
-          </main>
+          </main>
 
-        </>
+        </>
 
-      ) : null}
+      ) : null}
 
 
 
-      <footer className="border-t border-[#E1EAE3] bg-white px-5 py-6 text-center text-sm text-[#166534]">
+      <footer className="border-t border-[#E1EAE3] bg-white px-5 py-6 text-center text-sm text-[#166534]">
 
-        Powered by Chowza
+        Powered by Chowza
 
-      </footer>
+      </footer>
 
 
 
-      {cartOpen && (
+      {cartOpen && (
 
-        <div className="fixed inset-0 z-50">
+        <div className="fixed inset-0 z-50">
 
-          <button
+          <button
 
-            type="button"
+            type="button"
 
-            aria-label="Close cart"
+            aria-label="Close cart"
 
-            onClick={() => setCartOpen(false)}
+            onClick={() => setCartOpen(false)}
 
-            className="absolute inset-0 bg-black/40"
+            className="absolute inset-0 bg-black/40"
 
-          />
+          />
 
 
 
-          <aside className="absolute right-0 top-0 flex h-full w-full max-w-md flex-col bg-white shadow-2xl">
+          <aside className="absolute right-0 top-0 flex h-full w-full max-w-md flex-col bg-white shadow-2xl">
 
-            <div className="flex items-center justify-between border-b border-[#E1EAE3] px-5 py-4">
+            <div className="flex items-center justify-between border-b border-[#E1EAE3] px-5 py-4">
 
-              <div>
+              <div>
 
-                <h2 className="text-xl font-black">Your cart</h2>
+                <h2 className="text-xl font-black">Your cart</h2>
 
-                <p className="text-sm text-[#166534]">
+                <p className="text-sm text-[#166534]">
 
-                  {cartCount} {cartCount === 1 ? 'item' : 'items'}
+                  {cartCount} {cartCount === 1 ? 'item' : 'items'}
 
-                </p>
+                </p>
 
-              </div>
+              </div>
 
 
 
-              <button
+              <button
 
-                type="button"
+                type="button"
 
-                onClick={() => setCartOpen(false)}
+                onClick={() => setCartOpen(false)}
 
-                className="rounded-xl p-2 hover:bg-[#F7FAF7]"
+                className="rounded-xl p-2 hover:bg-[#F7FAF7]"
 
-                aria-label="Close cart"
+                aria-label="Close cart"
 
-              >
+              >
 
-                <X size={22} />
+                <X size={22} />
 
-              </button>
+              </button>
 
-            </div>
+            </div>
 
 
 
-            {cart.length === 0 ? (
+            {cart.length === 0 ? (
 
-              <div className="flex flex-1 flex-col items-center justify-center px-6 text-center">
+              <div className="flex flex-1 flex-col items-center justify-center px-6 text-center">
 
-                <ShoppingCart size={45} className="text-[#166534]" />
+                <ShoppingCart size={45} className="text-[#166534]" />
 
-                <h3 className="mt-4 text-lg font-black">Your cart is empty</h3>
+                <h3 className="mt-4 text-lg font-black">Your cart is empty</h3>
 
-                <p className="mt-2 text-sm text-[#166534]">
+                <p className="mt-2 text-sm text-[#166534]">
 
-                  Add something delicious from the menu.
+                  Add something delicious from the menu.
 
-                </p>
+                </p>
 
 
 
-                <button
+                <button
 
-                  type="button"
+                  type="button"
 
-                  onClick={() => setCartOpen(false)}
+                  onClick={() => setCartOpen(false)}
 
-                  className="mt-5 rounded-xl bg-[#166534] px-5 py-3 font-bold text-white"
+                  className="mt-5 rounded-xl bg-[#166534] px-5 py-3 font-bold text-white"
 
-                >
+                >
 
-                  Browse menu
+                  Browse menu
 
-                </button>
+                </button>
 
-              </div>
+              </div>
 
-            ) : (
+            ) : (
 
-              <>
+              <>
 
-                <div className="flex-1 overflow-y-auto px-5 py-5">
+                <div className="flex-1 overflow-y-auto px-5 py-5">
 
-                  <div className="space-y-4">
+                  <div className="space-y-4">
 
-                    {cart.map((cartItem) => (
+                    {cart.map((cartItem) => (
 
-                      <div
+                      <div
 
-                        key={cartItem.item.id}
+                        key={cartItem.item.id}
 
-                        className="rounded-2xl border border-[#E1EAE3] p-4"
+                        className="rounded-2xl border border-[#E1EAE3] p-4"
 
-                      >
+                      >
 
-                        <div className="flex items-start justify-between gap-3">
+                        <div className="flex items-start justify-between gap-3">
 
-                          <div>
+                          <div>
 
-                            <h3 className="font-black">
+                            <h3 className="font-black">
 
-                              {cartItem.item.name}
+                              {cartItem.item.name}
 
-                            </h3>
+                            </h3>
 
-                            <p className="mt-1 text-sm text-[#166534]">
+                            <p className="mt-1 text-sm text-[#166534]">
 
-                              {money(Number(cartItem.item.price))} each
+                              {money(Number(cartItem.item.price))} each
 
-                            </p>
+                            </p>
 
-                          </div>
+                          </div>
 
 
 
-                          <p className="font-black">
+                          <p className="font-black">
 
-                            {money(
+                            {money(
 
-                              Number(cartItem.item.price) *
+                              Number(cartItem.item.price) *
 
-                                cartItem.quantity,
+                                cartItem.quantity,
 
-                            )}
+                            )}
 
-                          </p>
+                          </p>
 
-                        </div>
+                        </div>
 
 
 
-                        <div className="mt-4 flex items-center justify-between">
+                        <div className="mt-4 flex items-center justify-between">
 
-                          <div className="flex items-center gap-2 rounded-xl bg-[#F7FAF7] p-1">
+                          <div className="flex items-center gap-2 rounded-xl bg-[#F7FAF7] p-1">
 
-                            <button
+                            <button
 
-                              type="button"
+                              type="button"
 
-                              onClick={() =>
+                              onClick={() =>
 
-                                changeQuantity(cartItem.item.id, -1)
+                                changeQuantity(cartItem.item.id, -1)
 
-                              }
+                              }
 
-                              className="rounded-lg p-2 hover:bg-white"
+                              className="rounded-lg p-2 hover:bg-white"
 
-                              aria-label={`Remove one ${cartItem.item.name}`}
+                              aria-label={`Remove one ${cartItem.item.name}`}
 
-                            >
+                            >
 
-                              <Minus size={16} />
+                              <Minus size={16} />
 
-                            </button>
+                            </button>
 
 
 
-                            <span className="w-8 text-center font-black">
+                            <span className="w-8 text-center font-black">
 
-                              {cartItem.quantity}
+                              {cartItem.quantity}
 
-                            </span>
+                            </span>
 
 
 
-                            <button
+                            <button
 
-                              type="button"
+                              type="button"
 
-                              onClick={() =>
+                              onClick={() =>
 
-                                changeQuantity(cartItem.item.id, 1)
+                                changeQuantity(cartItem.item.id, 1)
 
-                              }
+                              }
 
-                              className="rounded-lg p-2 hover:bg-white"
+                              className="rounded-lg p-2 hover:bg-white"
 
-                              aria-label={`Add one ${cartItem.item.name}`}
+                              aria-label={`Add one ${cartItem.item.name}`}
 
-                            >
+                            >
 
-                              <Plus size={16} />
+                              <Plus size={16} />
 
-                            </button>
+                            </button>
 
-                          </div>
+                          </div>
 
 
 
-                          <button
+                          <button
 
-                            type="button"
+                            type="button"
 
-                            onClick={() =>
+                            onClick={() =>
 
-                              changeQuantity(
+                              changeQuantity(
 
-                                cartItem.item.id,
+                                cartItem.item.id,
 
-                                -cartItem.quantity,
+                                -cartItem.quantity,
 
-                              )
+                              )
 
-                            }
+                            }
 
-                            className="text-sm font-bold text-red-700"
+                            className="text-sm font-bold text-red-700"
 
-                          >
+                          >
 
-                            Remove
+                            Remove
 
-                          </button>
+                          </button>
 
-                        </div>
+                        </div>
 
-                      </div>
+                      </div>
 
-                    ))}
+                    ))}
 
-                  </div>
+                  </div>
 
-                </div>
+                </div>
 
 
 
-                <div className="border-t border-[#E1EAE3] bg-[#fffaf5] px-5 py-5">
+                <div className="border-t border-[#E1EAE3] bg-[#fffaf5] px-5 py-5">
 
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between">
 
-                    <span className="font-bold">Total</span>
+                    <span className="font-bold">Total</span>
 
-                    <span className="text-xl font-black">
+                    <span className="text-xl font-black">
 
-                      {money(cartTotal)}
+                      {money(cartTotal)}
 
-                    </span>
+                    </span>
 
-                  </div>
+                  </div>
 
 
 
-                  <button
+                  <button
 
-                    type="button"
+                    type="button"
 
-                    onClick={() => {
+                    onClick={() => {
 
-                      setCartOpen(false);
+                      setCartOpen(false);
 
-                      setCheckoutOpen(true);
+                      setCheckoutOpen(true);
 
-                    }}
+                    }}
 
-                    className="mt-4 w-full rounded-xl bg-[#166534] px-5 py-3 font-black text-white hover:bg-[#15803D]"
+                    className="mt-4 w-full rounded-xl bg-[#166534] px-5 py-3 font-black text-white hover:bg-[#15803D]"
 
-                  >
+                  >
 
-                    Checkout
+                    Checkout
 
-                  </button>
+                  </button>
 
 
 
-                  <p className="mt-3 text-center text-xs text-[#166534]">
+                  <p className="mt-3 text-center text-xs text-[#166534]">
 
-                    Continue to checkout to place your order.
+                    Continue to checkout to place your order.
 
-                  </p>
+                  </p>
 
-                </div>
+                </div>
 
-              </>
+              </>
 
-            )}
+            )}
 
-          </aside>
+          </aside>
 
-        </div>
+        </div>
 
-      )}
+      )}
 
-    </div>
+    </div>
 
-  );
+  );
 
 }

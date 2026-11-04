@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { AppProvider, useApp } from './context/AppContext';
 
@@ -13,73 +14,67 @@ import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsAndConditions from './pages/TermsAndConditions';
 import RefundPolicy from './pages/RefundPolicy';
 
+type ChowzaHomeData = {
+  businesses?: any[];
+  foods?: any[];
+};
+
+declare global {
+  interface Window {
+    __CHOWZA_HOME_DATA__?: ChowzaHomeData;
+  }
+}
+
 const AppContent: React.FC = () => {
-  const {
-    currentView,
-    businessesLoading,
-  } = useApp();
+  const { businessesLoading } = useApp();
 
   const pathname = window.location.pathname;
 
-  /*
-   * ============================================================
-   * PRIVACY POLICY
-   * ============================================================
-   *
-   * /privacy
-   */
-  if (pathname === '/') {
-  const ssrData = (
-    window as Window & {
-      __CHOWZA_HOME_DATA__?: {
-        businesses?: any[];
-        foods?: any[];
-      };
-    }
-  ).__CHOWZA_HOME_DATA__;
+  // ============================================================
+  // CHOWZA PUBLIC MARKETPLACE HOMEPAGE
+  // Homepage is for discovering businesses and food only.
+  // Ordering and cart functionality stay on restaurant pages.
+  // ============================================================
 
-  if (ssrData) {
+  if (pathname === '/') {
+    const ssrData = window.__CHOWZA_HOME_DATA__;
+
     return (
       <ChowzaHome
-        initialBusinesses={ssrData.businesses || []}
-        initialFoods={ssrData.foods || []}
+        initialBusinesses={ssrData?.businesses ?? []}
+        initialFoods={ssrData?.foods ?? []}
       />
     );
   }
-}
+
+  // ============================================================
+  // PRIVACY POLICY
+  // ============================================================
+
   if (pathname === '/privacy') {
     return <PrivacyPolicy />;
   }
 
-  /*
-   * ============================================================
-   * TERMS & CONDITIONS
-   * ============================================================
-   *
-   * /terms
-   */
+  // ============================================================
+  // TERMS AND CONDITIONS
+  // ============================================================
+
   if (pathname === '/terms') {
     return <TermsAndConditions />;
   }
 
-  /*
-   * ============================================================
-   * REFUND & CANCELLATION POLICY
-   * ============================================================
-   *
-   * /refunds
-   */
+  // ============================================================
+  // REFUND AND CANCELLATION POLICY
+  // ============================================================
+
   if (pathname === '/refunds') {
     return <RefundPolicy />;
   }
 
-  /*
-   * ============================================================
-   * ADMIN APP
-   * ============================================================
-   *
-   * /admin
-   */
+  // ============================================================
+  // ADMIN DASHBOARD
+  // ============================================================
+
   if (pathname === '/admin') {
     return (
       <AdminApp
@@ -90,22 +85,18 @@ const AppContent: React.FC = () => {
     );
   }
 
-  /*
-   * ============================================================
-   * BUSINESS APP
-   * ============================================================
-   *
-   * /business
-   */
+  // ============================================================
+  // BUSINESS DASHBOARD
+  // ============================================================
+
   if (pathname === '/business') {
     return <BusinessApp />;
   }
 
-  /*
-   * ============================================================
-   * PASSWORD RESET
-   * ============================================================
-   */
+  // ============================================================
+  // BUSINESS PASSWORD RESET
+  // ============================================================
+
   if (pathname === '/reset-password') {
     return (
       <BusinessPasswordReset
@@ -116,15 +107,12 @@ const AppContent: React.FC = () => {
     );
   }
 
-  /*
-   * ============================================================
-   * PAYMENT RETURN PAGES
-   * ============================================================
-   *
-   * PayFast redirects the browser here, but the redirect itself is
-   * not proof that the payment is complete. The PayFast ITN/webhook
-   * is the source of truth for the order's payment status.
-   */
+  // ============================================================
+  // PAYMENT RETURN PAGES
+  // Yoco confirmation/webhook remains the source of truth
+  // for whether a payment has actually been completed.
+  // ============================================================
+
   const paymentPath =
     pathname === '/payment/success' ||
     pathname === '/payment/failed' ||
@@ -144,7 +132,7 @@ const AppContent: React.FC = () => {
         : 'Payment not completed';
 
     const message = isSuccess
-      ? 'PayFast returned you to Chowza. We are confirming the payment with the payment provider before marking your order as paid.'
+      ? 'Yoco returned you to Chowza. We are confirming the payment with the payment provider before marking your order as paid.'
       : isCancelled
         ? 'The online payment was cancelled. Your order has not been confirmed as paid.'
         : 'The online payment was not completed. You can return to Chowza and try again.';
@@ -208,24 +196,20 @@ const AppContent: React.FC = () => {
     );
   }
 
-  /*
-   * ============================================================
-   * PUBLIC BUSINESS STOREFRONT
-   * ============================================================
-   *
-   * Examples:
-   *
-   * /business/sbuda
-   * /business/mcdonalds
-   * /business/some-restaurant
-   */
+  // ============================================================
+  // PUBLIC BUSINESS STOREFRONTS
+  //
+  // Examples:
+  // /business/sbuda
+  // /business/mcdonalds
+  // /business/restaurant-name
+  //
+  // These pages retain their full ordering functionality.
+  // ============================================================
+
   const pathMatch = pathname.match(/^\/business\/([^/]+)\/?$/);
 
   if (pathMatch) {
-    if (currentView === 'track') {
-      return <CustomerApp />;
-    }
-
     return (
       <PublicBusinessStore
         slug={decodeURIComponent(pathMatch[1])}
@@ -233,25 +217,20 @@ const AppContent: React.FC = () => {
     );
   }
 
-  /*
-   * ============================================================
-   * CUSTOMER APP LOADING
-   * ============================================================
-   *
-   * Show the Chowza skeleton while the published businesses
-   * are being loaded from Supabase.
-   */
+  // ============================================================
+  // CUSTOMER APP LOADING
+  // ============================================================
+
   if (businessesLoading) {
     return <ChowzaPageSkeleton />;
   }
 
-  /*
-   * ============================================================
-   * CUSTOMER APP
-   * ============================================================
-   *
-   * Everything else belongs to the customer application.
-   */
+  // ============================================================
+  // CUSTOMER APP
+  // Used for other existing customer application routes.
+  // The homepage never reaches this section.
+  // ============================================================
+
   return <CustomerApp />;
 };
 
