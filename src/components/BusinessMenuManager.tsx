@@ -39,7 +39,7 @@ const inputClass =
   'w-full rounded-xl border border-[#D7E2DA] bg-white px-4 py-3 text-sm text-[#166534] outline-none focus:border-[#d99a4b]';
 
 const primaryButton =
-  'inline-flex items-center justify-center gap-2 rounded-xl bg-[#166534] px-4 py-3 text-sm font-bold text-white hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50';
+  'inline-flex items-center justify-center gap-2 rounded-xl bg-[#15803D] px-4 py-3 text-sm font-bold text-white hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50';
 
 const IMAGE_BUCKET = 'menu-images';
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
@@ -606,7 +606,7 @@ export function BusinessMenuManager({
                       </p>
                       <div className="mt-3 flex items-center justify-between">
                         <span className="text-sm font-black text-[#166534]">R{Number(form.price || 0).toFixed(2)}</span>
-                        <span className="rounded-lg bg-[#166534] px-3 py-1.5 text-xs font-bold text-white">Add</span>
+                        <span className="rounded-lg bg-[#15803D] px-3 py-1.5 text-xs font-bold text-white">Add</span>
                       </div>
                     </div>
                   </div>
@@ -622,7 +622,7 @@ export function BusinessMenuManager({
                     <button
                       type="button"
                       onClick={() => void applyCrop()}
-                      className="flex-1 rounded-xl bg-[#166534] px-4 py-3 text-sm font-bold text-white hover:bg-[#14532D]"
+                      className="flex-1 rounded-xl bg-[#15803D] px-4 py-3 text-sm font-bold text-white hover:bg-[#14532D]"
                     >
                       Use this photo
                     </button>

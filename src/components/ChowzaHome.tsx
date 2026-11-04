@@ -619,7 +619,7 @@ export const ChowzaHome: React.FC<ChowzaHomeProps> = ({
               {featuredFoods.map((food) => (
                 <article
                   key={food.id}
-                  className="overflow-hidden rounded-2xl border border-black/10 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
+                  className="overflow-hidden rounded-2xl border border-[#D7E2DA] bg-white shadow-sm transition duration-200 hover:-translate-y-1 hover:shadow-lg"
                 >
 
                   <button
@@ -628,7 +628,7 @@ export const ChowzaHome: React.FC<ChowzaHomeProps> = ({
                     className="block w-full text-left"
                   >
 
-                    <div className="relative aspect-[1.15/1] overflow-hidden bg-[#27231F]">
+                    <div className="relative aspect-[1.15/1] overflow-hidden bg-[#EEF3EF]">
 
                       {food.image_url ? (
                         <img
@@ -680,7 +680,7 @@ export const ChowzaHome: React.FC<ChowzaHomeProps> = ({
                     <button
                       type="button"
                       onClick={() => openBusiness(food.businessSlug)}
-                      className="flex items-center gap-1 rounded-lg bg-[#15803D] px-3 py-2 text-[10px] font-black text-white hover:bg-[#9E351E]"
+                      className="flex items-center gap-1 rounded-lg bg-[#15803D] px-3 py-2 text-[10px] font-black text-white transition-colors duration-200 hover:bg-[#166534] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22C55E] focus-visible:ring-offset-2"
                     >
                       <ChevronRight size={13} />
                       View Menu

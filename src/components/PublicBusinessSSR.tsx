@@ -64,7 +64,7 @@ export default function PublicBusinessSSR({ business, items }: Props) {
         </div>
       </header>
 
-      <section className="bg-[#166534] text-white">
+      <section className="bg-[#15803D] text-white">
         <div className="mx-auto max-w-6xl px-5 py-12">
           {business.logo_url ? (
             <img
@@ -173,7 +173,7 @@ export default function PublicBusinessSSR({ business, items }: Props) {
                   <button
                     type="button"
                     disabled
-                    className="mt-5 w-full rounded-xl bg-[#166534] px-4 py-3 font-bold text-white opacity-80"
+                    className="mt-5 w-full rounded-xl bg-[#15803D] px-4 py-3 font-bold text-white opacity-80"
                   >
                     Add to cart
                   </button>

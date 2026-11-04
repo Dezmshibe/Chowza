@@ -291,7 +291,7 @@ export function BusinessPortalGate({
               <button
                 type="button"
                 onClick={() => void handleLogout()}
-                className="flex items-center gap-2 rounded-xl bg-[#166534] px-4 py-3 text-sm font-semibold text-white hover:opacity-90"
+                className="flex items-center gap-2 rounded-xl bg-[#15803D] px-4 py-3 text-sm font-semibold text-white hover:opacity-90"
               >
                 <LogOut size={17} />
                 Log out
@@ -407,7 +407,7 @@ if (currentPage === 'qr') {
       </header>
 
       <main className="mx-auto max-w-7xl px-5 py-7 lg:px-8">
-        <section className="mb-7 rounded-2xl bg-[#166534] p-6 text-white shadow-sm lg:p-8">
+        <section className="mb-7 rounded-2xl bg-[#15803D] p-6 text-white shadow-sm lg:p-8">
           <div className="flex flex-col justify-between gap-6 md:flex-row md:items-center">
             <div>
               <div className="mb-3 flex items-center gap-2">

@@ -396,7 +396,7 @@ export function BusinessProfileManager({
             </button>
 
             <div className="flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#166534] text-white shadow-sm">
+              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#15803D] text-white shadow-sm">
                 <Building2 size={21} />
               </div>
 
@@ -526,7 +526,7 @@ export function BusinessProfileManager({
                         type="button"
                         disabled={uploadingLogo || removingLogo}
                         onClick={() => fileInputRef.current?.click()}
-                        className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#166534] px-4 py-3 text-sm font-black text-white transition hover:bg-[#43261b] disabled:cursor-not-allowed disabled:opacity-60"
+                        className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#15803D] px-4 py-3 text-sm font-black text-white transition hover:bg-[#43261b] disabled:cursor-not-allowed disabled:opacity-60"
                       >
                         {uploadingLogo ? (
                           <LoaderCircle
@@ -574,7 +574,7 @@ export function BusinessProfileManager({
                 </section>
 
                 {/* PROFILE TIP */}
-                <div className="rounded-3xl border border-[#E1EAE3] bg-[#166534] p-6 text-white shadow-sm">
+                <div className="rounded-3xl border border-[#E1EAE3] bg-[#15803D] p-6 text-white shadow-sm">
                   <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/10">
                     <UserRound size={19} />
                   </div>
@@ -804,7 +804,7 @@ export function BusinessProfileManager({
                     <button
                       type="submit"
                       disabled={saving}
-                      className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#166534] px-6 py-3.5 text-sm font-black text-white shadow-sm transition hover:bg-[#43261b] disabled:cursor-not-allowed disabled:opacity-60"
+                      className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#15803D] px-6 py-3.5 text-sm font-black text-white shadow-sm transition hover:bg-[#43261b] disabled:cursor-not-allowed disabled:opacity-60"
                     >
                       {saving ? (
                         <LoaderCircle

@@ -578,7 +578,7 @@ export function PublicCheckout({
               <button
                 type="submit"
                 disabled={submitting || cart.length === 0}
-                className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-[#166534] px-5 py-4 font-black text-white transition hover:bg-[#15803D] disabled:cursor-not-allowed disabled:bg-[#9CA3AF]"
+                className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-[#15803D] px-5 py-4 font-black text-white transition hover:bg-[#166534] disabled:cursor-not-allowed disabled:bg-[#9CA3AF]"
               >
                 {submitting && (
                   <LoaderCircle size={19} className="animate-spin" />

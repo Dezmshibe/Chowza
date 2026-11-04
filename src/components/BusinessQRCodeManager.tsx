@@ -147,7 +147,7 @@ export function BusinessQRCodeManager({
               <button
                 type="button"
                 onClick={handleCopy}
-                className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#166534] px-4 py-3 text-sm font-bold text-white transition hover:bg-[#14532D]"
+                className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#15803D] px-4 py-3 text-sm font-bold text-white transition hover:bg-[#14532D]"
               >
                 {copied ? <Check size={17} /> : <Copy size={17} />}
                 {copied ? 'Link copied' : 'Copy store link'}

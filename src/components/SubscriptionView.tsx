@@ -169,7 +169,7 @@ export const SubscriptionView: React.FC = () => {
           <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl p-6 border border-[#17201A]/10 space-y-4 animate-in fade-in zoom-in-95 duration-150">
             <div className="flex items-center justify-between pb-3 border-b border-[#17201A]/10">
               <div className="flex items-center gap-2">
-                <div className="w-7 h-7 rounded-md bg-[#166534] text-white flex items-center justify-center font-bold text-xs">
+                <div className="w-7 h-7 rounded-md bg-[#15803D] text-white flex items-center justify-center font-bold text-xs">
                   PF
                 </div>
                 <h3 className="font-bold text-base text-[#17201A]">PayFast Recurring Checkout</h3>
