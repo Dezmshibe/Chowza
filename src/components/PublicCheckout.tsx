@@ -132,7 +132,7 @@ export function PublicCheckout({
         paymentMethod,
       });
     } catch (submitError) {
-      console.error(submitError);
+      
 
       const message =
         submitError instanceof Error
@@ -514,7 +514,7 @@ export function PublicCheckout({
                     <span>
                       <span className="block font-bold">Online / Card</span>
                       <span className="mt-1 block text-sm text-[#647067]">
-                        Pay securely using Yoco.
+                        Pay securely with PayFast.
                       </span>
                     </span>
                   </label>
@@ -571,7 +571,7 @@ export function PublicCheckout({
                 </div>
 
                 <p className="mt-2 text-xs leading-5 text-[#647067]">
-                  The final total may change if your promotion code is accepted. The confirmed total will be used for your order and Yoco payment.
+                  The final total may change if your promotion code is accepted. The confirmed total will be used for your order and PayFast payment.
                 </p>
               </div>
 

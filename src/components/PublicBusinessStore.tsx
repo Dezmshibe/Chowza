@@ -1,258 +1,459 @@
-
 import { useEffect, useMemo, useState } from 'react';
+
 import {
+
   ArrowLeft,
+
   LoaderCircle,
+
   MapPin,
+
   MessageCircle,
+
   Minus,
+
   Plus,
+
   ShoppingCart,
+
   Store,
+
   X,
+
 } from 'lucide-react';
 
 import { supabase } from '../lib/supabase';
 import { clearCsrfToken, getCsrfToken } from '../lib/csrf';
 
 import { PublicCheckout } from './PublicCheckout';
+
 import { OrderConfirmation } from './OrderConfirmation';
-import { OrderTracker } from './OrderTracker';
 
 import { useApp } from '../context/AppContext';
 
+
+
 type Business = {
+
   id: string;
+
   name: string;
+
   slug: string;
+
   description: string | null;
+
   logo_url: string | null;
+
   public_phone: string | null;
+
   whatsapp_number: string | null;
+
   public_address: string | null;
-  is_published: boolean;
+
   delivery_fee: number | null;
+
+  is_published: boolean;
+
 };
+
+
 
 type MenuItem = {
+
   id: string;
+
   name: string;
+
   description: string | null;
+
   price: number;
+
   image_url: string | null;
+
   is_available: boolean;
+
   sort_order: number;
+
 };
+
+
 
 type CartItem = {
+
   item: MenuItem;
+
   quantity: number;
+
 };
+
+
 
 type ConfirmationItem = {
+
   id: string;
+
   name: string;
+
   price: number;
+
   quantity: number;
+
   line_total: number;
+
 };
 
+
+
 type ConfirmationOrder = {
+
   orderNumber: number;
+
   customerName: string;
+
   total: number;
-  paymentMethod: 'cash' | 'online';
-  customerPhone: string;
+
+  paymentMethod: 'cash' | 'eft' | 'online';
+
   items: ConfirmationItem[];
+
+};
+
+
+
+type CreateOrderPayload = {
+  businessId: string;
+  customerName: string;
+  customerPhone: string;
+  deliveryAddress: string;
+  customerNote: string;
+  promoCode: string;
+  fulfillmentType: 'delivery' | 'pickup';
+  paymentMethod: 'cash' | 'online';
+  cart: {
+    itemId: string;
+    quantity: number;
+  }[];
 };
 
 export function PublicBusinessStore({ slug }: { slug: string }) {
-  const { setTrackingLookup } = useApp();
+
+  const { setCurrentView } = useApp();  
 
   const [business, setBusiness] = useState<Business | null>(null);
+
   const [items, setItems] = useState<MenuItem[]>([]);
+
   const [loading, setLoading] = useState(true);
+
   const [error, setError] = useState('');
 
+
+
   const [cart, setCart] = useState<CartItem[]>([]);
+
   const [cartOpen, setCartOpen] = useState(false);
+
   const [checkoutOpen, setCheckoutOpen] = useState(false);
 
   const [confirmationOrder, setConfirmationOrder] =
+
     useState<ConfirmationOrder | null>(null);
 
-  const [trackingOpen, setTrackingOpen] = useState(false);
+
 
   useEffect(() => {
+
     let cancelled = false;
 
+
+
     async function loadStore() {
+
       setLoading(true);
+
       setError('');
 
+
+
       const { data: businessData, error: businessError } = await supabase
+
         .from('businesses')
+
         .select(
-          'id, name, slug, description, logo_url, public_phone, whatsapp_number, public_address, is_published, delivery_fee'
+
+          'id, name, slug, description, logo_url, public_phone, whatsapp_number, public_address, delivery_fee, is_published',
+
         )
+
         .eq('slug', slug)
+
         .eq('is_published', true)
+
         .maybeSingle();
+
+
 
       if (cancelled) return;
 
+
+
       if (businessError) {
+
         setError('We could not load this store. Please try again.');
+
         setLoading(false);
+
         return;
+
       }
 
+
+
       if (!businessData) {
+
         setBusiness(null);
+
         setItems([]);
+
         setError('This store does not exist or has not been published yet.');
+
         setLoading(false);
+
         return;
+
       }
+
+
 
       setBusiness(businessData as Business);
 
+
+
       const { data: menuData, error: menuError } = await supabase
+
         .from('menu_items')
+
         .select(
-          'id, name, description, price, image_url, is_available, sort_order'
+
+          'id, name, description, price, image_url, is_available, sort_order',
+
         )
+
         .eq('business_id', businessData.id)
+
         .eq('is_available', true)
+
         .order('sort_order', { ascending: true });
+
+
 
       if (cancelled) return;
 
+
+
       if (menuError) {
+
         setError('The store loaded, but its menu could not be loaded.');
+
       } else {
+
         setItems((menuData ?? []) as MenuItem[]);
+
       }
 
+
+
       setLoading(false);
+
     }
+
+
 
     void loadStore();
 
+
+
     return () => {
+
       cancelled = true;
+
     };
+
   }, [slug]);
 
+
+
   const money = (amount: number) =>
+
     new Intl.NumberFormat('en-ZA', {
+
       style: 'currency',
+
       currency: 'ZAR',
+
     }).format(amount);
+
+
 
   const whatsappNumber = (business?.whatsapp_number || '').replace(/\D/g, '');
 
+
+
   const cartCount = useMemo(
+
     () => cart.reduce((total, cartItem) => total + cartItem.quantity, 0),
-    [cart]
+
+    [cart],
+
   );
+
+
 
   const cartTotal = useMemo(
+
     () =>
+
       cart.reduce(
+
         (total, cartItem) =>
+
           total + Number(cartItem.item.price) * cartItem.quantity,
-        0
+
+        0,
+
       ),
-    [cart]
+
+    [cart],
+
   );
 
+
+
   function addToCart(item: MenuItem) {
+
     setCart((currentCart) => {
+
       const existing = currentCart.find(
-        (cartItem) => cartItem.item.id === item.id
+
+        (cartItem) => cartItem.item.id === item.id,
+
       );
 
+
+
       if (existing) {
+
         return currentCart.map((cartItem) =>
+
           cartItem.item.id === item.id
+
             ? { ...cartItem, quantity: cartItem.quantity + 1 }
-            : cartItem
+
+            : cartItem,
+
         );
+
       }
 
+
+
       return [...currentCart, { item, quantity: 1 }];
+
     });
+
   }
+
+
 
   function changeQuantity(itemId: string, amount: number) {
+
     setCart((currentCart) =>
+
       currentCart
+
         .map((cartItem) =>
+
           cartItem.item.id === itemId
+
             ? { ...cartItem, quantity: cartItem.quantity + amount }
-            : cartItem
+
+            : cartItem,
+
         )
-        .filter((cartItem) => cartItem.quantity > 0)
+
+        .filter((cartItem) => cartItem.quantity > 0),
+
+    );
+
+  }
+
+
+
+  function updateCartQuantity(itemId: string, quantity: number) {
+    if (quantity <= 0) {
+      setCart((currentCart) =>
+        currentCart.filter((cartItem) => cartItem.item.id !== itemId),
+      );
+      return;
+    }
+
+    setCart((currentCart) =>
+      currentCart.map((cartItem) =>
+        cartItem.item.id === itemId
+          ? { ...cartItem, quantity }
+          : cartItem,
+      ),
     );
   }
 
-  // ============================================================
-  // ORDER TRACKING
-  // ============================================================
-
-  if (trackingOpen && confirmationOrder) {
-    return (
-      <div className="min-h-screen bg-[#F7FAF7] text-[#17201A]">
-        <div className="sticky top-0 z-40 flex items-center gap-3 border-b border-[#E1EAE3] bg-white px-5 py-4">
-          <button
-            type="button"
-            onClick={() => setTrackingOpen(false)}
-            className="rounded-xl border border-[#D7E2DA] px-4 py-2 font-bold hover:bg-[#F7FAF7]"
-          >
-            <ArrowLeft size={17} className="mr-2 inline" />
-            Back to receipt
-          </button>
-
-          <span className="font-black">Track your order</span>
-        </div>
-
-        <OrderTracker />
-      </div>
+  function removeCartItem(itemId: string) {
+    setCart((currentCart) =>
+      currentCart.filter((cartItem) => cartItem.item.id !== itemId),
     );
   }
 
-  // ============================================================
-  // ORDER CONFIRMATION
-  // ============================================================
+  function clearCart() {
+    setCart([]);
+  }
 
   if (confirmationOrder && business) {
-    return (
-      <OrderConfirmation
-        businessName={business.name}
-        orderNumber={confirmationOrder.orderNumber}
-        customerName={confirmationOrder.customerName}
-        total={confirmationOrder.total}
-        paymentMethod={confirmationOrder.paymentMethod}
-        items={confirmationOrder.items}
-        onTrackOrder={() => {
-          setTrackingLookup(
-            String(confirmationOrder.orderNumber),
-            confirmationOrder.customerPhone
-          );
 
-          setTrackingOpen(true);
+    return (
+
+      <OrderConfirmation
+
+        businessName={business.name}
+
+        orderNumber={confirmationOrder.orderNumber}
+
+        customerName={confirmationOrder.customerName}
+
+        total={confirmationOrder.total}
+
+        paymentMethod={confirmationOrder.paymentMethod}
+
+        items={confirmationOrder.items}
+
+        onTrackOrder={() => {
+
+  setCurrentView('track');
+
         }}
+
         onBackToStore={() => {
+
           setConfirmationOrder(null);
+
         }}
+
       />
+
     );
+
   }
 
-  // ============================================================
-  // CHECKOUT
-  // ============================================================
+
 
   if (checkoutOpen && business) {
     return (
@@ -261,53 +462,36 @@ export function PublicBusinessStore({ slug }: { slug: string }) {
         deliveryFee={Number(business.delivery_fee ?? 25)}
         cart={cart}
         onBack={() => setCheckoutOpen(false)}
-        onUpdateQuantity={(itemId, quantity) => {
-          if (quantity <= 0) {
-            setCart((current) =>
-              current.filter((cartItem) => cartItem.item.id !== itemId)
-            );
-            return;
-          }
-
-          setCart((current) =>
-            current.map((cartItem) =>
-              cartItem.item.id === itemId
-                ? { ...cartItem, quantity }
-                : cartItem
-            )
-          );
-        }}
-        onRemoveItem={(itemId) => {
-          setCart((current) =>
-            current.filter((cartItem) => cartItem.item.id !== itemId)
-          );
-        }}
-        onClearCart={() => {
-          setCart([]);
-          setCheckoutOpen(false);
-        }}
+        onUpdateQuantity={updateCartQuantity}
+        onRemoveItem={removeCartItem}
+        onClearCart={clearCart}
         onPlaceOrder={async (details) => {
           let csrfToken = await getCsrfToken();
+
+          const orderBody: CreateOrderPayload = {
+            businessId: business.id,
+            customerName: details.customerName.trim(),
+            customerPhone: details.customerPhone.trim(),
+            deliveryAddress:
+              details.fulfillmentType === 'delivery'
+                ? details.deliveryAddress.trim()
+                : '',
+            customerNote: details.customerNote.trim(),
+            promoCode: details.promoCode.trim(),
+            fulfillmentType: details.fulfillmentType,
+            paymentMethod: details.paymentMethod,
+            cart: cart.map((cartItem) => ({
+              itemId: cartItem.item.id,
+              quantity: cartItem.quantity,
+            })),
+          };
 
           let { data, error } = await supabase.functions.invoke(
             'create-order',
             {
               headers: { 'x-csrf-token': csrfToken },
-              body: {
-                businessId: business.id,
-                customerName: details.customerName,
-                customerPhone: details.customerPhone,
-                deliveryAddress: details.deliveryAddress,
-                customerNote: details.customerNote,
-                promoCode: details.promoCode,
-                fulfillmentType: details.fulfillmentType,
-                paymentMethod: details.paymentMethod,
-                cart: cart.map((cartItem) => ({
-                  itemId: cartItem.item.id,
-                  quantity: cartItem.quantity,
-                })),
-              },
-            }
+              body: orderBody,
+            },
           );
 
           if (error?.status === 403) {
@@ -318,86 +502,84 @@ export function PublicBusinessStore({ slug }: { slug: string }) {
               'create-order',
               {
                 headers: { 'x-csrf-token': csrfToken },
-                body: {
-                  businessId: business.id,
-                  customerName: details.customerName,
-                  customerPhone: details.customerPhone,
-                  deliveryAddress: details.deliveryAddress,
-                  fulfillmentType: details.fulfillmentType,
-                  paymentMethod: details.paymentMethod,
-                  cart: cart.map((cartItem) => ({
-                    itemId: cartItem.item.id,
-                    quantity: cartItem.quantity,
-                  })),
-                },
-              }
+                body: orderBody,
+              },
             ));
           }
 
           if (error) {
             throw new Error(
-              error.message || 'Could not place your order.'
+              error.message || 'Could not place your order.',
             );
           }
 
-          if (!data?.success) {
+          if (!data?.success || !data?.order) {
             throw new Error(
-              data?.error || 'Could not place your order.'
+              data?.error || 'Could not place your order.',
             );
           }
 
           const orderNumber = Number(data.order.orderNumber);
           const orderTotal = Number(data.order.total);
 
-          // ======================================================
-          // ONLINE PAYMENT - YOCO
-          // ======================================================
+          if (!Number.isFinite(orderNumber) || !Number.isFinite(orderTotal)) {
+            throw new Error('The server returned invalid order details.');
+          }
 
           if (details.paymentMethod === 'online') {
             const {
               data: paymentData,
               error: paymentError,
             } = await supabase.functions.invoke(
-              'create-yoco-checkout',
+              'create-payfast-payment',
               {
                 headers: { 'x-csrf-token': csrfToken },
-                body: {
-                  orderNumber,
-                },
-              }
+                body: { orderNumber },
+              },
             );
 
             if (paymentError) {
-              console.error(
-                'Create Yoco checkout failed:',
-                paymentError
-              );
-
+              console.error('Create PayFast payment failed:', paymentError);
               throw new Error(
                 paymentError.message ||
-                  'Could not start the Yoco payment.'
+                  'Could not start the PayFast payment.',
               );
             }
 
-            if (!paymentData?.success || !paymentData?.redirectUrl) {
+            if (
+              !paymentData?.success ||
+              !paymentData?.processUrl ||
+              !paymentData?.fields
+            ) {
               throw new Error(
                 paymentData?.error ||
-                  'Yoco did not return a payment URL.'
+                  'PayFast did not return the payment information.',
               );
             }
 
-            window.location.assign(paymentData.redirectUrl);
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = paymentData.processUrl;
+            form.style.display = 'none';
+
+            Object.entries(
+              paymentData.fields as Record<string, string>,
+            ).forEach(([name, value]) => {
+              const input = document.createElement('input');
+              input.type = 'hidden';
+              input.name = name;
+              input.value = String(value);
+              form.appendChild(input);
+            });
+
+            document.body.appendChild(form);
+            form.submit();
             return;
           }
-
-          // ======================================================
-          // CASH PAYMENT - CONFIRMATION
-          // ======================================================
 
           setConfirmationOrder({
             orderNumber,
             customerName: details.customerName,
-            customerPhone: details.customerPhone,
             total: orderTotal,
             paymentMethod: details.paymentMethod,
             items: cart.map((cartItem) => ({
@@ -418,430 +600,669 @@ export function PublicBusinessStore({ slug }: { slug: string }) {
     );
   }
 
-  // ============================================================
-  // MAIN RESTAURANT STOREFRONT
-  // ============================================================
-
   return (
-    <div className="min-h-screen bg-[#F7FAF7] text-[#17201A]">
 
-      {/* CHOWZA STOREFRONT HEADER */}
-      <header className="sticky top-0 z-40 border-b border-white/10 bg-[#17201A] text-white">
-        <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3 sm:px-5">
+    <div className="chowza-storefront min-h-screen bg-[#F7FAF7] text-[#17201A]">
 
-          {/* Back button and Chowza branding */}
-          <div className="flex min-w-0 items-center gap-3">
+      <header className="chowza-store-header sticky top-0 z-40 border-b border-white/10 bg-[#17201A] text-white">
+
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-5 py-4">
+
+          <div className="flex items-center gap-3">
 
             <button
+
               type="button"
+
               onClick={() => window.location.assign('/')}
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/20 text-white transition hover:bg-white/10"
+
+              className="rounded-full border border-white/20 p-2 text-white transition hover:bg-white/10"
+
               aria-label="Back to Chowza"
+
             >
+
               <ArrowLeft size={19} />
+
             </button>
 
-            <img
-              src="/branding/chowza-logo.png"
-              alt="Chowza"
-              className="h-10 w-auto shrink-0 object-contain"
-            />
 
-            <div className="flex min-w-0 flex-col justify-center">
-              <span className="text-[11px] font-black uppercase tracking-[0.16em] text-[#22C55E]">
-                CHOWZA
-              </span>
 
-              <span className="whitespace-nowrap text-sm font-bold text-white">
-                Local food, made easy
-              </span>
+            <img src="/branding/chowza-logo.png" alt="Chowza" className="h-10 w-auto object-contain" />
+
+
+
+            <div>
+
+              <p className="text-[11px] font-black uppercase tracking-[0.16em] text-[#22C55E]">
+
+                Chowza
+
+              </p>
+
+              <p className="font-bold text-white">Local food, made easy</p>
+
             </div>
+
           </div>
 
-          {/* Cart button */}
+
+
           <button
+
             type="button"
+
             onClick={() => setCartOpen(true)}
-            className="relative flex min-h-10 shrink-0 items-center gap-2 rounded-full bg-[#15803D] px-4 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-[#166534] focus:outline-none focus:ring-2 focus:ring-[#22C55E] focus:ring-offset-2 focus:ring-offset-[#17201A]"
+
+            className="relative flex min-h-11 items-center gap-2 rounded-full bg-[#15803D] px-5 py-3 font-bold text-white shadow-lg shadow-black/10 transition hover:-translate-y-0.5 hover:bg-[#22C55E] hover:text-[#102016]"
+
           >
-            <ShoppingCart size={18} />
+
+            <ShoppingCart size={19} />
 
             <span>Cart</span>
 
+
+
             {cartCount > 0 && (
-              <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-white px-1 text-xs font-black text-[#166534]">
+
+              <span className="flex h-6 min-w-6 items-center justify-center rounded-full bg-[#22C55E] px-1.5 text-xs font-black text-white">
+
                 {cartCount}
+
               </span>
+
             )}
+
           </button>
 
         </div>
+
       </header>
 
-      {/* STORE CONTENT */}
+
+
       {loading ? (
+
         <div className="flex min-h-[60vh] items-center justify-center gap-3">
+
           <LoaderCircle className="animate-spin" />
+
           <p>Loading store...</p>
+
         </div>
+
       ) : error && !business ? (
+
         <main className="mx-auto max-w-xl px-5 py-20 text-center">
+
           <Store size={42} className="mx-auto mb-4 text-[#166534]" />
 
-          <h1 className="text-2xl font-black">
-            Store unavailable
-          </h1>
+          <h1 className="text-2xl font-black">Store unavailable</h1>
 
-          <p className="mt-3 text-[#166534]">
-            {error}
-          </p>
+          <p className="mt-3 text-[#166534]">{error}</p>
+
         </main>
+
       ) : business ? (
+
         <>
-          {/* BUSINESS PROFILE BANNER */}
-          <section className="bg-[#17201A] text-white">
+
+          <section className="chowza-business-hero bg-[#17201A] text-white">
+
             <div className="mx-auto max-w-6xl px-5 py-12">
 
               {business.logo_url ? (
+
                 <img
+
                   src={business.logo_url}
+
                   alt={`${business.name} logo`}
+
                   className="mb-5 h-20 w-20 rounded-2xl bg-white object-contain p-2"
+
                 />
+
               ) : (
+
                 <div className="mb-5 flex h-20 w-20 items-center justify-center rounded-2xl bg-white/10">
+
                   <Store size={34} />
+
                 </div>
+
               )}
+
+
 
               <h1 className="text-3xl font-black sm:text-5xl">
+
                 {business.name}
+
               </h1>
 
+
+
               {business.description && (
+
                 <p className="mt-3 max-w-2xl text-white/80">
+
                   {business.description}
+
                 </p>
+
               )}
+
+
 
               {business.public_address && (
+
                 <p className="mt-4 flex items-center gap-2 text-sm text-white/80">
+
                   <MapPin size={17} />
+
                   {business.public_address}
+
                 </p>
+
               )}
 
+
+
               {whatsappNumber && (
+
                 <a
-                  href={`https://wa.me/${whatsappNumber}`}
+
+                  href={`https\://wa.me/${whatsappNumber}`}
+
                   target="_blank"
+
                   rel="noreferrer"
+
                   className="mt-5 inline-flex items-center gap-2 rounded-xl bg-[#22C55E] px-5 py-3 font-bold text-white"
+
                 >
+
                   <MessageCircle size={18} />
+
                   Contact on WhatsApp
+
                 </a>
+
               )}
 
             </div>
+
           </section>
 
-          {/* MENU */}
+
+
           <main className="mx-auto max-w-6xl px-5 py-10">
 
             <div className="mb-6">
-              <h2 className="text-2xl font-black">
-                Our menu
-              </h2>
+
+              <h2 className="text-2xl font-black">Our menu</h2>
 
               <p className="mt-1 text-sm text-[#166534]">
+
                 Browse the items currently available from this store.
+
               </p>
+
             </div>
 
+
+
             {error && (
+
               <p
+
                 role="alert"
+
                 className="mb-5 rounded-xl bg-red-50 p-4 text-sm text-red-800"
+
               >
+
                 {error}
+
               </p>
+
             )}
 
+
+
             {items.length === 0 ? (
+
               <div className="rounded-2xl border border-[#E1EAE3] bg-white p-8 text-center">
-                <p className="font-bold">
-                  No available menu items yet.
-                </p>
+
+                <p className="font-bold">No available menu items yet.</p>
 
                 <p className="mt-2 text-sm text-[#166534]">
+
                   Please check back later.
+
                 </p>
+
               </div>
+
             ) : (
+
               <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
 
                 {items.map((item) => {
+
                   const cartItem = cart.find(
-                    (entry) => entry.item.id === item.id
+
+                    (entry) => entry.item.id === item.id,
+
                   );
 
+
+
                   return (
+
                     <article
+
                       key={item.id}
-                      className="overflow-hidden rounded-2xl border border-[#D7E2DA] bg-white shadow-sm transition-shadow duration-200 hover:shadow-md"
+
+                      className="chowza-menu-card overflow-hidden rounded-2xl border border-[#E1EAE3] bg-white shadow-sm"
+
                     >
 
-                      {/* FOOD IMAGE - MATCHES MARKETPLACE RATIO */}
                       {item.image_url ? (
-                        <div className="aspect-[1.15/1] w-full overflow-hidden bg-[#EEF3EF]">
+                        <div className="aspect-[1.15/1] w-full overflow-hidden bg-[#EAF3EC]">
                           <img
                             src={item.image_url}
                             alt={item.name}
-                            className="h-full w-full object-cover"
+                            className="h-full w-full object-cover transition duration-500 hover:scale-[1.035]"
                             loading="lazy"
                           />
                         </div>
                       ) : (
-                        <div className="flex aspect-[1.15/1] w-full items-center justify-center bg-[#EEF3EF]">
-                          <Store
-                            size={32}
-                            className="text-[#166534]"
-                          />
+
+                        <div className="flex aspect-[1.15/1] w-full items-center justify-center bg-[#F0FDF4]">
+
+                          <Store size={32} className="text-[#166534]" />
+
                         </div>
+
                       )}
+
+
 
                       <div className="p-5">
 
                         <div className="flex items-start justify-between gap-3">
-                          <h3 className="font-black">
-                            {item.name}
-                          </h3>
+
+                          <h3 className="font-black">{item.name}</h3>
+
+
 
                           <span className="shrink-0 font-black text-[#166534]">
+
                             {money(Number(item.price))}
+
                           </span>
+
                         </div>
 
+
+
                         {item.description && (
+
                           <p className="mt-2 text-sm text-[#166534]">
+
                             {item.description}
+
                           </p>
+
                         )}
 
+
+
                         <button
+
                           type="button"
+
                           onClick={() => addToCart(item)}
-                          className="mt-4 flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-[#15803D] px-4 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-[#166534] focus:outline-none focus:ring-2 focus:ring-[#22C55E] focus:ring-offset-2"
+
+                          className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-[#166534] px-4 py-3 font-bold text-white hover:bg-[#15803D] transition-colors duration-200"
+
                         >
+
                           <Plus size={18} />
 
                           {cartItem
+
                             ? `Add another (${cartItem.quantity})`
+
                             : 'Add to cart'}
+
                         </button>
 
                       </div>
+
                     </article>
+
                   );
+
                 })}
 
               </div>
+
             )}
 
           </main>
+
         </>
+
       ) : null}
 
-      {/* FOOTER */}
+
+
       <footer className="border-t border-[#E1EAE3] bg-white px-5 py-6 text-center text-sm text-[#166534]">
+
         Powered by Chowza
+
       </footer>
 
-      {/* CART DRAWER */}
+
+
       {cartOpen && (
+
         <div className="fixed inset-0 z-50">
 
           <button
+
             type="button"
+
             aria-label="Close cart"
+
             onClick={() => setCartOpen(false)}
+
             className="absolute inset-0 bg-black/40"
+
           />
+
+
 
           <aside className="absolute right-0 top-0 flex h-full w-full max-w-md flex-col bg-white shadow-2xl">
 
-            {/* CART HEADER */}
             <div className="flex items-center justify-between border-b border-[#E1EAE3] px-5 py-4">
 
               <div>
-                <h2 className="text-xl font-black">
-                  Your cart
-                </h2>
+
+                <h2 className="text-xl font-black">Your cart</h2>
 
                 <p className="text-sm text-[#166534]">
+
                   {cartCount} {cartCount === 1 ? 'item' : 'items'}
+
                 </p>
+
               </div>
 
+
+
               <button
+
                 type="button"
+
                 onClick={() => setCartOpen(false)}
+
                 className="rounded-xl p-2 hover:bg-[#F7FAF7]"
+
                 aria-label="Close cart"
+
               >
+
                 <X size={22} />
+
               </button>
 
             </div>
 
+
+
             {cart.length === 0 ? (
+
               <div className="flex flex-1 flex-col items-center justify-center px-6 text-center">
 
-                <ShoppingCart
-                  size={45}
-                  className="text-[#166534]"
-                />
+                <ShoppingCart size={45} className="text-[#166534]" />
 
-                <h3 className="mt-4 text-lg font-black">
-                  Your cart is empty
-                </h3>
+                <h3 className="mt-4 text-lg font-black">Your cart is empty</h3>
 
                 <p className="mt-2 text-sm text-[#166534]">
+
                   Add something delicious from the menu.
+
                 </p>
 
+
+
                 <button
+
                   type="button"
+
                   onClick={() => setCartOpen(false)}
-                  className="mt-5 rounded-xl bg-[#15803D] px-5 py-3 font-bold text-white"
+
+                  className="mt-5 rounded-xl bg-[#166534] px-5 py-3 font-bold text-white"
+
                 >
+
                   Browse menu
+
                 </button>
 
               </div>
+
             ) : (
+
               <>
-                {/* CART ITEMS */}
+
                 <div className="flex-1 overflow-y-auto px-5 py-5">
+
                   <div className="space-y-4">
 
                     {cart.map((cartItem) => (
+
                       <div
+
                         key={cartItem.item.id}
+
                         className="rounded-2xl border border-[#E1EAE3] p-4"
+
                       >
 
                         <div className="flex items-start justify-between gap-3">
 
                           <div>
+
                             <h3 className="font-black">
+
                               {cartItem.item.name}
+
                             </h3>
 
                             <p className="mt-1 text-sm text-[#166534]">
+
                               {money(Number(cartItem.item.price))} each
+
                             </p>
+
                           </div>
 
+
+
                           <p className="font-black">
+
                             {money(
+
                               Number(cartItem.item.price) *
-                                cartItem.quantity
+
+                                cartItem.quantity,
+
                             )}
+
                           </p>
 
                         </div>
 
-                        {/* QUANTITY CONTROLS */}
+
+
                         <div className="mt-4 flex items-center justify-between">
 
                           <div className="flex items-center gap-2 rounded-xl bg-[#F7FAF7] p-1">
 
                             <button
+
                               type="button"
+
                               onClick={() =>
+
                                 changeQuantity(cartItem.item.id, -1)
+
                               }
+
                               className="rounded-lg p-2 hover:bg-white"
+
                               aria-label={`Remove one ${cartItem.item.name}`}
+
                             >
+
                               <Minus size={16} />
+
                             </button>
 
+
+
                             <span className="w-8 text-center font-black">
+
                               {cartItem.quantity}
+
                             </span>
 
+
+
                             <button
+
                               type="button"
+
                               onClick={() =>
+
                                 changeQuantity(cartItem.item.id, 1)
+
                               }
+
                               className="rounded-lg p-2 hover:bg-white"
+
                               aria-label={`Add one ${cartItem.item.name}`}
+
                             >
+
                               <Plus size={16} />
+
                             </button>
 
                           </div>
 
+
+
                           <button
+
                             type="button"
+
                             onClick={() =>
+
                               changeQuantity(
+
                                 cartItem.item.id,
-                                -cartItem.quantity
+
+                                -cartItem.quantity,
+
                               )
+
                             }
+
                             className="text-sm font-bold text-red-700"
+
                           >
+
                             Remove
+
                           </button>
 
                         </div>
+
                       </div>
+
                     ))}
 
                   </div>
+
                 </div>
 
-                {/* CART TOTAL AND CHECKOUT */}
+
+
                 <div className="border-t border-[#E1EAE3] bg-[#fffaf5] px-5 py-5">
 
                   <div className="flex items-center justify-between">
-                    <span className="font-bold">
-                      Total
-                    </span>
+
+                    <span className="font-bold">Total</span>
 
                     <span className="text-xl font-black">
+
                       {money(cartTotal)}
+
                     </span>
+
                   </div>
 
+
+
                   <button
+
                     type="button"
+
                     onClick={() => {
+
                       setCartOpen(false);
+
                       setCheckoutOpen(true);
+
                     }}
-                    className="mt-4 w-full rounded-xl bg-[#15803D] px-5 py-3 font-black text-white hover:bg-[#166534]"
+
+                    className="mt-4 w-full rounded-xl bg-[#166534] px-5 py-3 font-black text-white hover:bg-[#15803D] transition-colors duration-200"
+
                   >
+
                     Checkout
+
                   </button>
 
+
+
                   <p className="mt-3 text-center text-xs text-[#166534]">
+
                     Continue to checkout to place your order.
+
                   </p>
 
                 </div>
+
               </>
+
             )}
 
           </aside>
+
         </div>
+
       )}
 
     </div>
+
   );
+
 }
