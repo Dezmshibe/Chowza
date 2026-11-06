@@ -209,7 +209,7 @@ export function BusinessStorefrontManager({
             type="button"
             onClick={() => void updatePublishingStatus()}
             disabled={saving}
-            className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-[#15803D] px-5 py-4 font-bold text-white hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+            className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-[#166534] px-5 py-4 font-bold text-white hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {saving ? (
               <LoaderCircle size={18} className="animate-spin" />

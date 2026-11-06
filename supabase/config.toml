@@ -25,3 +25,7 @@ entrypoint = "./functions/track-order/index.ts"
 enabled = true
 verify_jwt = false
 entrypoint = "./functions/csrf-token/index.ts"
+[functions.payfast-itn]
+enabled = true
+verify_jwt = false
+entrypoint = "./functions/payfast-itn/index.ts"

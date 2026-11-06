@@ -391,12 +391,12 @@ export const CustomerStore: React.FC = () => {
                     key={food.id}
                     className="group overflow-hidden rounded-2xl border border-[#D7E2DA] bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
                   >
-                   <div className="relative aspect-[1.15/1] w-full overflow-hidden bg-[#EEF3EF]">
+                   <div className="flex aspect-square w-full items-center justify-center overflow-hidden bg-[#F7FAF7] p-3">
                       {food.imageUrl ? (
                         <img
                           src={food.imageUrl}
                           alt={food.name}
-                          className="h-full w-full object-cover"
+                          className="max-h-full max-w-full object-contain"
                           loading="lazy"
                         />
                       ) : null}
@@ -612,7 +612,7 @@ export const CustomerStore: React.FC = () => {
     <img
       src={food.imageUrl}
       alt={food.name}
-      className="h-full w-full object-cover"
+      className="max-h-full max-w-full object-contain"
       loading="lazy"
     />
   ) : null}

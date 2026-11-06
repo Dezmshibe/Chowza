@@ -424,7 +424,7 @@ export function PublicCheckout({
                   <span>
                     <span className="block text-sm font-black">Online Payment</span>
                     <span className="mt-1 block text-xs text-[#647067]">
-                      Pay securely with Yoco
+                      Pay securely with PayFast
                     </span>
                   </span>
                   {paymentMethod === 'online' && (

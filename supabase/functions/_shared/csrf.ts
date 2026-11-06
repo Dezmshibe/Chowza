@@ -6,17 +6,19 @@ const DEFAULT_ALLOWED_ORIGINS = [
   "capacitor://localhost",
   "http://localhost",
   "http://localhost:3000",
+  "http://localhost:3001",
 ];
-
 function getAllowedOrigins(): string[] {
   const configured = Deno.env.get("CSRF_ALLOWED_ORIGINS")
     ?.split(",")
     .map((origin) => origin.trim())
-    .filter(Boolean);
+    .filter(Boolean) ?? [];
 
-  return configured?.length
-    ? configured
-    : DEFAULT_ALLOWED_ORIGINS;
+  // Combine configured origins with defaults, removing duplicates.
+  return [...new Set([
+    ...DEFAULT_ALLOWED_ORIGINS,
+    ...configured,
+  ])];
 }
 
 function getSecret(): string {

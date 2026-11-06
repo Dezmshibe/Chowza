@@ -20,6 +20,34 @@ type OrderRequest = {
   cart: CartItem[];
 };
 
+type PromotionExpiry = {
+  expires_at?: string | null;
+};
+
+function bytesToHex(bytes: Uint8Array): string {
+  return Array.from(bytes)
+    .map((byte) => byte.toString(16).padStart(2, "0"))
+    .join("");
+}
+
+async function generatePaymentToken(): Promise<{
+  token: string;
+  hash: string;
+}> {
+  const randomBytes = crypto.getRandomValues(new Uint8Array(32));
+  const token = bytesToHex(randomBytes);
+
+  const digest = await crypto.subtle.digest(
+    "SHA-256",
+    new TextEncoder().encode(token),
+  );
+
+  return {
+    token,
+    hash: bytesToHex(new Uint8Array(digest)),
+  };
+}
+
 export default {
   fetch: withSupabase(
     {
@@ -127,7 +155,9 @@ export default {
           cleanCart.length !== body.cart.length
         ) {
           return Response.json(
-            { error: "Your cart contains invalid items or quantities." },
+            {
+              error: "Your cart contains invalid items or quantities.",
+            },
             { status: 400, headers: corsHeaders },
           );
         }
@@ -296,8 +326,8 @@ export default {
             await ctx.supabaseAdmin
               .from("promotions")
               .select(
-  "id, business_id, code, discount_type, discount_value, minimum_order, customer_message, is_active",
-)
+                "id, business_id, code, discount_type, discount_value, minimum_order, customer_message, is_active, expires_at",
+              )
               .eq("business_id", business.id)
               .ilike("code", normalizedCode)
               .maybeSingle();
@@ -313,17 +343,22 @@ export default {
 
           if (!promotion || !promotion.is_active) {
             return Response.json(
-              { error: "This promotion code is invalid or inactive." },
+              {
+                error: "This promotion code is invalid or inactive.",
+              },
               { status: 400, headers: corsHeaders },
             );
           }
 
+          // Read the optional expiry field safely.
+          const promotionExpiry =
+            (promotion as unknown as PromotionExpiry).expires_at;
+
           const now = Date.now();
 
-          
           if (
-            promotion.expires_at &&
-            new Date(promotion.expires_at).getTime() <= now
+            promotionExpiry &&
+            new Date(promotionExpiry).getTime() <= now
           ) {
             return Response.json(
               { error: "This promotion has expired." },
@@ -332,8 +367,8 @@ export default {
           }
 
           const minimumOrderAmount = Number(
-  promotion.minimum_order ?? 0,
-);
+            promotion.minimum_order ?? 0,
+          );
 
           if (subtotal < minimumOrderAmount) {
             return Response.json(
@@ -372,7 +407,9 @@ export default {
             discountAmount = discountValue;
           } else {
             return Response.json(
-              { error: "This promotion has an unsupported discount type." },
+              {
+                error: "This promotion has an unsupported discount type.",
+              },
               { status: 400, headers: corsHeaders },
             );
           }
@@ -394,6 +431,17 @@ export default {
             { error: "The calculated order total is invalid." },
             { status: 400, headers: corsHeaders },
           );
+        }
+
+        // Generate a one-time payment token for online orders only.
+        let paymentToken: string | null = null;
+        let paymentTokenHash: string | null = null;
+
+        if (body.paymentMethod === "online") {
+          const generated = await generatePaymentToken();
+
+          paymentToken = generated.token;
+          paymentTokenHash = generated.hash;
         }
 
         // Save the complete order and its calculated totals.
@@ -418,6 +466,7 @@ export default {
               total,
               status: "pending",
               payment_method: body.paymentMethod,
+              payment_token_hash: paymentTokenHash,
             })
             .select(
               "id, order_number, total, status, payment_method",
@@ -429,6 +478,13 @@ export default {
 
           return Response.json(
             { error: "Could not create your order." },
+            { status: 500, headers: corsHeaders },
+          );
+        }
+
+        if (!order) {
+          return Response.json(
+            { error: "Order creation returned no order." },
             { status: 500, headers: corsHeaders },
           );
         }
@@ -450,6 +506,7 @@ export default {
               status: order.status,
               paymentMethod: order.payment_method,
             },
+            paymentToken,
           },
           { headers: corsHeaders },
         );

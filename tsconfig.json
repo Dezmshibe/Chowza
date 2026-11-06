@@ -1,3 +1,4 @@
+
 {
   "compilerOptions": {
     "target": "ES2022",
@@ -17,16 +18,24 @@
     "allowJs": true,
     "jsx": "react-jsx",
     "paths": {
-      "@/*": [
-        "./*"
-      ]
-    },
+  "@/*": ["./*"]
+},
     "allowImportingTsExtensions": true,
     "noEmit": true
   },
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "vite.config.ts",
+    "vite.config.ssr.ts"
+  ],
   "exclude": [
+    "node_modules",
     "dist",
     "supabase/functions",
-    "src/supabase/functions"
+    "src/supabase/functions",
+    "src/lib/components",
+    "src/src",
+    "src/android"
   ]
 }

@@ -476,7 +476,7 @@ export function BusinessPromotionsManager({
             <button
               type="button"
               onClick={startCreate}
-              className="inline-flex items-center gap-2 rounded-xl bg-[#15803D] px-4 py-2.5 text-sm font-bold text-white transition hover:bg-[#14532D]"
+              className="inline-flex items-center gap-2 rounded-xl bg-[#166534] px-4 py-2.5 text-sm font-bold text-white transition hover:bg-[#14532D]"
             >
               <Plus size={17} />
               New promotion
@@ -486,7 +486,7 @@ export function BusinessPromotionsManager({
       </header>
 
       <main className="mx-auto max-w-7xl px-5 py-7 lg:px-8">
-        <section className="mb-7 rounded-2xl bg-[#15803D] p-6 text-white shadow-sm">
+        <section className="mb-7 rounded-2xl bg-[#166534] p-6 text-white shadow-sm">
           <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
             <div>
               <p className="mb-2 text-xs font-bold uppercase tracking-[0.16em] text-[#BBF7D0]">
@@ -800,7 +800,7 @@ export function BusinessPromotionsManager({
                 <button
                   type="submit"
                   disabled={saving}
-                  className="inline-flex items-center gap-2 rounded-xl bg-[#15803D] px-5 py-2.5 text-sm font-bold text-white hover:bg-[#14532D] disabled:cursor-not-allowed disabled:opacity-60"
+                  className="inline-flex items-center gap-2 rounded-xl bg-[#166534] px-5 py-2.5 text-sm font-bold text-white hover:bg-[#14532D] disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {saving && (
                     <RefreshCw
@@ -845,7 +845,7 @@ export function BusinessPromotionsManager({
             <button
               type="button"
               onClick={startCreate}
-              className="mt-6 inline-flex items-center gap-2 rounded-xl bg-[#15803D] px-5 py-3 text-sm font-bold text-white hover:bg-[#14532D]"
+              className="mt-6 inline-flex items-center gap-2 rounded-xl bg-[#166534] px-5 py-3 text-sm font-bold text-white hover:bg-[#14532D]"
             >
               <Plus size={17} />
               Create your first promotion

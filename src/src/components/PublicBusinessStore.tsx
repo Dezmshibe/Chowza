@@ -557,52 +557,98 @@ export function PublicBusinessStore({ slug }: { slug: string }) {
 
 
 
-  const orderNumber = Number(data.order.orderNumber);
+const orderNumber = Number(data.order.orderNumber);
+const orderTotal = Number(data.order.total);
+const paymentToken = data.order.paymentToken;
 
-  const orderTotal = Number(data.order.total);
+if (!Number.isFinite(orderNumber) || !Number.isFinite(orderTotal)) {
+  throw new Error('The server returned invalid order details.');
+}
 
+// ADD THE PAYMENT TOKEN VALIDATION HERE
+if (
+  details.paymentMethod === 'online' &&
+  (typeof paymentToken !== 'string' || paymentToken.length < 32)
+) {
+  throw new Error(
+    'Missing payment authorisation token. Please restart checkout.',
+  );
+}
 
 
   /*
-   * ONLINE PAYMENT
-   *
-   * Create the real Yoco hosted checkout after the Chowza
-   * order has successfully been created.
+   * ONLINE PAYMENT - PAYFAST
+   * Create the PayFast payment request after the order is created,
+   * then submit the returned fields to PayFast's hosted checkout.
    */
-  if (details.paymentMethod === 'online') {
-    const {
-      data: paymentData,
-      error: paymentError,
-    } = await supabase.functions.invoke(
-      'create-yoco-checkout',
-      {
-        headers: { 'x-csrf-token': csrfToken },
+  
+if (details.paymentMethod === 'online') {
+  let paymentCsrfToken = csrfToken;
+
+  let {
+    data: paymentData,
+    error: paymentError,
+  } = await supabase.functions.invoke('create-payfast-payment', {
+    headers: { 'x-csrf-token': paymentCsrfToken },
+    body: {
+      orderNumber,
+      paymentToken,
+    },
+  });
+
+  // Refresh the CSRF token once if the payment function rejects it.
+  if (paymentError?.status === 403) {
+    clearCsrfToken();
+    paymentCsrfToken = await getCsrfToken(true);
+
+    ({ data: paymentData, error: paymentError } =
+      await supabase.functions.invoke('create-payfast-payment', {
+        headers: { 'x-csrf-token': paymentCsrfToken },
         body: {
           orderNumber,
+          paymentToken,
         },
+      }));
+  }
+
+  if (paymentError) {
+    console.error('Create PayFast payment failed:', paymentError);
+    throw new Error(
+      paymentError.message || 'Could not start the PayFast payment.',
+    );
+  }
+
+  if (
+    !paymentData?.success ||
+    !paymentData?.processUrl ||
+    !paymentData?.fields
+  ) {
+    throw new Error(
+      paymentData?.error ||
+        'PayFast did not return the required payment details.',
+    );
+  }
+
+
+
+    // PayFast hosted checkout expects a browser POST containing its fields.
+    const paymentForm = document.createElement('form');
+    paymentForm.method = 'POST';
+    paymentForm.action = paymentData.processUrl;
+    paymentForm.style.display = 'none';
+
+    Object.entries(paymentData.fields as Record<string, string>).forEach(
+      ([name, value]) => {
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = name;
+        input.value = String(value);
+        paymentForm.appendChild(input);
       },
     );
 
-    if (paymentError) {
-      console.error(
-        'Create Yoco checkout failed:',
-        paymentError,
-      );
-
-      throw new Error(
-        paymentError.message ||
-          'Could not start the Yoco payment.',
-      );
-    }
-
-    if (!paymentData?.success || !paymentData?.redirectUrl) {
-      throw new Error(
-        paymentData?.error ||
-          'Yoco did not return a payment URL.',
-      );
-    }
-
-    window.location.assign(paymentData.redirectUrl);
+    document.body.appendChild(paymentForm);
+    paymentForm.submit();
     return;
   }
 

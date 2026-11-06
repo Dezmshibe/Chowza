@@ -255,9 +255,7 @@ const [customerAddress, setCustomerAddress] = useState('');
           );
         }
 
-        console.log(
-          '[Chowza PayFast] Creating Chowza order...'
-        );
+        
 
         /*
          * --------------------------------------------------------
@@ -292,10 +290,7 @@ const [customerAddress, setCustomerAddress] = useState('');
           );
 
         if (orderError) {
-          console.error(
-            '[Chowza PayFast] create-order error:',
-            orderError
-          );
+          
 
           /*
            * Supabase sometimes stores the actual Edge
@@ -310,10 +305,7 @@ const [customerAddress, setCustomerAddress] = useState('');
                   .clone()
                   .text();
 
-              console.error(
-                '[Chowza PayFast] Server response:',
-                responseBody
-              );
+              
             } catch {
               // Ignore response parsing failure.
             }
@@ -325,10 +317,7 @@ const [customerAddress, setCustomerAddress] = useState('');
           );
         }
 
-        console.log(
-          '[Chowza PayFast] create-order response:',
-          orderData
-        );
+        
 
         if (
           !orderData?.success ||
@@ -340,41 +329,51 @@ const [customerAddress, setCustomerAddress] = useState('');
           );
         }
 
-        const orderNumber =
-          orderData.order.orderNumber;
-
-        console.log(
-          '[Chowza PayFast] Chowza order created:',
-          orderNumber
+        const orderNumber = Number(
+          orderData.order.orderNumber
         );
+        const orderTotal = Number(orderData.order.total);
+        const paymentToken = orderData.order.paymentToken;
+
+        if (
+          !Number.isFinite(orderNumber) ||
+          !Number.isFinite(orderTotal)
+        ) {
+          throw new Error(
+            'The server returned invalid order details.'
+          );
+        }
+
+        if (
+          typeof paymentToken !== 'string' ||
+          paymentToken.length < 32
+        ) {
+          throw new Error(
+            'Missing payment authorisation token.'
+          );
+        }
 
         /*
          * --------------------------------------------------------
          * STEP 2 — CREATE PAYFAST PAYMENT
          * --------------------------------------------------------
          */
-        console.log(
-          '[Chowza PayFast] Creating PayFast payment...'
-        );
 
         const {
           data: paymentData,
           error: paymentError,
-        } =
-          await supabase.functions.invoke(
-            'create-payfast-payment',
-            {
-              body: {
-                orderNumber,
-              },
-            }
-          );
+        } = await supabase.functions.invoke(
+          'create-payfast-payment',
+          {
+            body: {
+              orderNumber,
+              paymentToken,
+            },
+          }
+        );
 
         if (paymentError) {
-          console.error(
-            '[Chowza PayFast] create-payfast-payment error:',
-            paymentError
-          );
+          
 
           throw new Error(
             paymentError.message ||
@@ -382,10 +381,7 @@ const [customerAddress, setCustomerAddress] = useState('');
           );
         }
 
-        console.log(
-          '[Chowza PayFast] Payment response:',
-          paymentData
-        );
+        
 
         if (
           !paymentData?.success ||
@@ -440,10 +436,7 @@ const [customerAddress, setCustomerAddress] = useState('');
 
         document.body.appendChild(form);
 
-        console.log(
-          '[Chowza PayFast] Redirecting to:',
-          paymentData.processUrl
-        );
+        
 
         /*
          * Browser now leaves Chowza and opens
@@ -453,10 +446,7 @@ const [customerAddress, setCustomerAddress] = useState('');
 
         return;
       } catch (error) {
-        console.error(
-          '[Chowza PayFast] Checkout failed:',
-          error
-        );
+        
 
         const message =
           error instanceof Error

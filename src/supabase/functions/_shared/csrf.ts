@@ -8,6 +8,8 @@ const DEFAULT_ALLOWED_ORIGINS = [
   "http://localhost:5173",
   "http://localhost:4173",
   "http://localhost:10000",
+  'http://localhost:3000',
+
 ];
 
 function getAllowedOrigins(): string[] {

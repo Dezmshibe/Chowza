@@ -213,7 +213,7 @@ export function BusinessAnalyticsManager({
             type="button"
             onClick={() => void loadAnalytics(true)}
             disabled={refreshing}
-            className="flex items-center gap-2 rounded-xl bg-[#15803D] px-4 py-3 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-60"
+            className="flex items-center gap-2 rounded-xl bg-[#166534] px-4 py-3 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-60"
           >
             {refreshing ? (
               <LoaderCircle className="animate-spin" size={17} />
@@ -224,7 +224,7 @@ export function BusinessAnalyticsManager({
           </button>
         </div>
 
-        <section className="mb-6 rounded-2xl bg-[#15803D] p-6 text-white sm:p-8">
+        <section className="mb-6 rounded-2xl bg-[#166534] p-6 text-white sm:p-8">
           <div className="flex items-center gap-3">
             <BarChart3 className="text-[#22C55E]" size={30} />
             <div>

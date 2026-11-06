@@ -1,28 +1,57 @@
+
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { createHash } from "node:crypto";
 
+// ------------------------------------------------------------
+// ENVIRONMENT
+// ------------------------------------------------------------
+
+const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
+const SERVICE_ROLE_KEY =
+  Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+
+if (!SUPABASE_URL || !SERVICE_ROLE_KEY) {
+  throw new Error("Missing Supabase environment configuration.");
+}
+
+const supabaseAdmin = createClient(
+  SUPABASE_URL,
+  SERVICE_ROLE_KEY,
+  {
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
+    },
+  },
+);
+
+// ------------------------------------------------------------
+// CONFIGURATION
+// ------------------------------------------------------------
+
+const VALIDATION_URLS = {
+  test: "https://sandbox.payfast.co.za/eng/query/validate",
+  live: "https://www.payfast.co.za/eng/query/validate",
+} as const;
+
+const PAYFAST_IP_RANGES = [
+  "197.97.145.144/28",
+  "41.74.179.192/27",
+  "102.216.36.0/28",
+  "102.216.36.128/28",
+  "144.126.193.139/32",
+] as const;
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "content-type",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
-const PAYFAST_SANDBOX_VALIDATE_URL =
-  "https://sandbox.payfast.co.za/eng/query/validate";
-
-const PAYFAST_LIVE_VALIDATE_URL =
-  "https://www.payfast.co.za/eng/query/validate";
-
-const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
-const supabaseServiceRoleKey =
-  Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
-
-const supabaseAdmin = createClient(
-  supabaseUrl,
-  supabaseServiceRoleKey,
-);
+type PaymentMode = "test" | "live";
+type ItnEntry = [string, string];
 
 type PayFastConfig = {
   merchant_id: string;
@@ -31,18 +60,148 @@ type PayFastConfig = {
   mode: string;
 };
 
-function payfastUrlEncode(value: string): string {
+type PayFastOrder = {
+  id: string;
+  business_id: string;
+  order_number: number;
+  total: number | string;
+  payment_method: string | null;
+  payment_status: string;
+  payment_gross: number | string | null;
+  payment_commission: number | string | null;
+  payment_restaurant_amount: number | string | null;
+};
+
+// ------------------------------------------------------------
+// RESPONSE
+// ------------------------------------------------------------
+
+function response(
+  message: string,
+  status = 200,
+): Response {
+  return new Response(message, {
+    status,
+    headers: corsHeaders,
+  });
+}
+
+// ------------------------------------------------------------
+// PAYFAST SOURCE IP VERIFICATION
+// ------------------------------------------------------------
+
+function ipv4ToNumber(ip: string): number | null {
+  const parts = ip.split(".");
+
+  if (parts.length !== 4) {
+    return null;
+  }
+
+  const octets = parts.map(Number);
+
+  if (
+    octets.some(
+      (value, index) =>
+        !Number.isInteger(value) ||
+        value < 0 ||
+        value > 255 ||
+        parts[index] !== String(value),
+    )
+  ) {
+    return null;
+  }
+
+  return (
+    (
+      octets[0] * 0x1000000 +
+      octets[1] * 0x10000 +
+      octets[2] * 0x100 +
+      octets[3]
+    ) >>> 0
+  );
+}
+
+function isIpInCidr(
+  ip: string,
+  cidr: string,
+): boolean {
+  const [network, prefixText] = cidr.split("/");
+  const ipNumber = ipv4ToNumber(ip);
+  const networkNumber = ipv4ToNumber(network);
+  const prefix = Number(prefixText);
+
+  if (
+    ipNumber === null ||
+    networkNumber === null ||
+    !Number.isInteger(prefix) ||
+    prefix < 0 ||
+    prefix > 32
+  ) {
+    return false;
+  }
+
+  const mask =
+    prefix === 0
+      ? 0
+      : (0xffffffff << (32 - prefix)) >>> 0;
+
+  return (
+    (ipNumber & mask) ===
+    (networkNumber & mask)
+  );
+}
+
+function isPayFastIp(ip: string): boolean {
+  return PAYFAST_IP_RANGES.some((range) =>
+    isIpInCidr(ip, range)
+  );
+}
+
+function verifyPayFastSourceIp(
+  req: Request,
+): boolean {
+  // Supabase's Cloudflare gateway provides this header.
+  // Do not fall back to arbitrary X-Forwarded-For values.
+  const sourceIp =
+    req.headers.get("cf-connecting-ip")?.trim() ?? "";
+
+  if (!sourceIp) {
+    console.error(
+      "PayFast ITN rejected: source IP header unavailable.",
+    );
+    return false;
+  }
+
+  if (!isPayFastIp(sourceIp)) {
+    console.error(
+      "PayFast ITN rejected: source IP not allowlisted.",
+    );
+    return false;
+  }
+
+  return true;
+}
+
+// ------------------------------------------------------------
+// PAYFAST URL ENCODING
+// ------------------------------------------------------------
+
+function encodePayFastValue(value: string): string {
   return encodeURIComponent(value)
     .replace(/%20/g, "+")
-    .replace(/!/g, "%21")
-    .replace(/'/g, "%27")
-    .replace(/\(/g, "%28")
-    .replace(/\)/g, "%29")
+    .replace(/[!'()*]/g, (character) =>
+      `%${character.charCodeAt(0).toString(16).toUpperCase()}`
+    )
     .replace(/~/g, "%7E");
 }
 
-function buildItnParameterString(
-  entries: Array<[string, string]>,
+// ------------------------------------------------------------
+// ITN SIGNATURE
+// ------------------------------------------------------------
+
+function buildSignatureParameterString(
+  entries: ItnEntry[],
+  passphrase: string,
 ): string {
   const parts: string[] = [];
 
@@ -51,30 +210,281 @@ function buildItnParameterString(
       break;
     }
 
-    parts.push(`${key}=${payfastUrlEncode(value)}`);
+    // Preserve original ITN field order and values.
+    parts.push(
+      `${key}=${encodePayFastValue(value)}`
+    );
+  }
+
+  let parameterString = parts.join("&");
+
+  if (passphrase !== "") {
+    parameterString +=
+      `${parameterString ? "&" : ""}passphrase=${encodePayFastValue(passphrase)}`;
+  }
+
+  return parameterString;
+}
+
+function generateSignature(
+  entries: ItnEntry[],
+  passphrase: string,
+): string {
+  return createHash("md5")
+    .update(
+      buildSignatureParameterString(entries, passphrase),
+      "utf8",
+    )
+    .digest("hex")
+    .toLowerCase();
+}
+
+function signaturesMatch(
+  received: string,
+  expected: string,
+): boolean {
+  if (
+    !/^[a-f0-9]{32}$/i.test(received) ||
+    !/^[a-f0-9]{32}$/i.test(expected)
+  ) {
+    return false;
+  }
+
+  const left = received.toLowerCase();
+  const right = expected.toLowerCase();
+
+  let difference = 0;
+
+  for (let index = 0; index < 32; index++) {
+    difference |=
+      left.charCodeAt(index) ^ right.charCodeAt(index);
+  }
+
+  return difference === 0;
+}
+
+// ------------------------------------------------------------
+// ITN SERVER VALIDATION PARAMETER STRING
+// ------------------------------------------------------------
+
+function buildValidationParameterString(
+  entries: ItnEntry[],
+): string {
+  const parts: string[] = [];
+
+  for (const [key, value] of entries) {
+    if (key === "signature") {
+      break;
+    }
+
+    parts.push(
+      `${key}=${encodePayFastValue(value)}`
+    );
   }
 
   return parts.join("&");
 }
 
-function generateItnSignature(
-  entries: Array<[string, string]>,
-  passphrase: string,
-): string {
-  let parameterString = buildItnParameterString(entries);
+// ------------------------------------------------------------
+// AMOUNT VALIDATION
+// ------------------------------------------------------------
 
-  if (passphrase !== "") {
-    parameterString +=
-      `&passphrase=${payfastUrlEncode(passphrase)}`;
+function validAmount(
+  received: string,
+  expected: number | string | null,
+): boolean {
+  const receivedAmount = Number(received);
+  const expectedAmount = Number(expected);
+
+  if (
+    received.trim() === "" ||
+    expected === null ||
+    !Number.isFinite(receivedAmount) ||
+    !Number.isFinite(expectedAmount) ||
+    receivedAmount <= 0 ||
+    expectedAmount <= 0
+  ) {
+    return false;
   }
 
-  return createHash("md5")
-    .update(parameterString, "utf8")
-    .digest("hex")
-    .toLowerCase();
+  return (
+    Math.round(receivedAmount * 100) ===
+    Math.round(expectedAmount * 100)
+  );
 }
 
-Deno.serve(async (req) => {
+// ------------------------------------------------------------
+// LOAD BUSINESS PAYFAST CONFIGURATION
+// ------------------------------------------------------------
+
+async function loadPayFastConfig(
+  businessId: string,
+): Promise<PayFastConfig | null> {
+  const { data, error } = await supabaseAdmin.rpc(
+    "get_business_payfast_config",
+    {
+      p_business_id: businessId,
+    },
+  );
+
+  if (error || !data) {
+    console.error(
+      "PayFast configuration lookup failed.",
+    );
+    return null;
+  }
+
+  const config = (
+    Array.isArray(data) ? data[0] : data
+  ) as PayFastConfig | null;
+
+  if (
+    !config ||
+    !config.merchant_id ||
+    typeof config.passphrase !== "string" ||
+    !config.mode
+  ) {
+    return null;
+  }
+
+  return config;
+}
+
+// ------------------------------------------------------------
+// PARSE PAYFAST ITN
+// ------------------------------------------------------------
+
+async function parseItn(
+  req: Request,
+): Promise<ItnEntry[]> {
+  const contentType =
+    req.headers.get("content-type")?.toLowerCase() ?? "";
+
+  const entries: ItnEntry[] = [];
+
+  if (
+    contentType.startsWith(
+      "application/x-www-form-urlencoded",
+    )
+  ) {
+    const rawBody = await req.text();
+
+    if (rawBody.length > 65536) {
+      throw new Error("ITN payload too large.");
+    }
+
+    const form = new URLSearchParams(rawBody);
+
+    for (const [key, value] of form.entries()) {
+      entries.push([key, value]);
+    }
+  } else if (
+    contentType.startsWith("multipart/form-data")
+  ) {
+    const form = await req.formData();
+
+    for (const [key, value] of form.entries()) {
+      if (typeof value === "string") {
+        entries.push([key, value]);
+      }
+    }
+  } else {
+    throw new Error("Unsupported ITN content type.");
+  }
+
+  if (entries.length === 0 || entries.length > 100) {
+    throw new Error("Invalid ITN payload.");
+  }
+
+  const seenKeys = new Set<string>();
+
+  for (const [key] of entries) {
+    if (!key || seenKeys.has(key)) {
+      throw new Error("Duplicate or invalid ITN field.");
+    }
+
+    seenKeys.add(key);
+  }
+
+  const signatureIndex = entries.findIndex(
+    ([key]) => key === "signature",
+  );
+
+  if (
+    signatureIndex === -1 ||
+    signatureIndex !== entries.length - 1
+  ) {
+    throw new Error("Missing or misplaced signature.");
+  }
+
+  return entries;
+}
+
+// ------------------------------------------------------------
+// VALIDATE NOTIFICATION WITH PAYFAST
+// ------------------------------------------------------------
+
+async function validateWithPayFast(
+  entries: ItnEntry[],
+  mode: PaymentMode,
+): Promise<boolean> {
+  const parameterString =
+    buildValidationParameterString(entries);
+
+  const validationResponse = await fetch(
+    VALIDATION_URLS[mode],
+    {
+      method: "POST",
+      headers: {
+        "Content-Type":
+          "application/x-www-form-urlencoded",
+      },
+      body: parameterString,
+      signal: AbortSignal.timeout(15000),
+    },
+  );
+
+  if (!validationResponse.ok) {
+    console.error(
+      "PayFast validation HTTP error:",
+      validationResponse.status,
+    );
+
+    return false;
+  }
+
+  const validationText = (
+    await validationResponse.text()
+  ).trim();
+
+  return validationText === "VALID";
+}
+
+// ------------------------------------------------------------
+// RECORDED PAYMENT ID
+// ------------------------------------------------------------
+
+async function getRecordedPaymentId(
+  orderId: string,
+): Promise<string | null> {
+  const { data, error } = await supabaseAdmin
+    .from("orders")
+    .select("payfast_payment_id")
+    .eq("id", orderId)
+    .maybeSingle();
+
+  if (error) {
+    return null;
+  }
+
+  return data?.payfast_payment_id ?? null;
+}
+
+// ------------------------------------------------------------
+// MAIN ITN HANDLER
+// ------------------------------------------------------------
+
+Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", {
       status: 200,
@@ -83,57 +493,19 @@ Deno.serve(async (req) => {
   }
 
   if (req.method !== "POST") {
-    return new Response("Method not allowed", {
-      status: 405,
-      headers: corsHeaders,
-    });
+    return response("Method not allowed", 405);
   }
 
   try {
-    const contentType =
-      req.headers.get("content-type") ?? "";
+    // STEP 1: Verify PayFast source IP.
 
-    console.log(
-      "ITN CONTENT-TYPE:",
-      contentType,
-    );
-
-    if (!contentType) {
-      return new Response("Missing content type", {
-        status: 400,
-        headers: corsHeaders,
-      });
+    if (!verifyPayFastSourceIp(req)) {
+      return response("Forbidden source IP", 403);
     }
 
-    const entries: Array<[string, string]> = [];
+    // STEP 2: Parse notification.
 
-    if (
-      contentType
-        .toLowerCase()
-        .startsWith("multipart/form-data")
-    ) {
-      const formData = await req.formData();
-
-      for (const [key, value] of formData.entries()) {
-        if (typeof value === "string") {
-          entries.push([key, value]);
-        }
-      }
-    } else {
-      const rawBody = await req.text();
-      const form = new URLSearchParams(rawBody);
-
-      for (const [key, value] of form.entries()) {
-        entries.push([key, value]);
-      }
-    }
-
-    if (entries.length === 0) {
-      return new Response("Empty ITN payload", {
-        status: 400,
-        headers: corsHeaders,
-      });
-    }
+    const entries = await parseItn(req);
 
     const data: Record<string, string> = {};
 
@@ -141,453 +513,318 @@ Deno.serve(async (req) => {
       data[key] = value;
     }
 
-    console.log(
-      "ITN FIELDS RECEIVED:",
-      entries.map(([key]) => key),
-    );
-
-    console.log(
-      "ITN m_payment_id:",
-      data.m_payment_id ?? null,
-    );
-
-    console.log(
-      "ITN pf_payment_id:",
-      data.pf_payment_id ?? null,
-    );
-
-    console.log(
-      "ITN payment_status:",
-      data.payment_status ?? null,
-    );
-
-    console.log(
-      "ITN merchant_id:",
-      data.merchant_id ?? null,
-    );
-
-    console.log(
-      "ITN amount_gross:",
-      data.amount_gross ?? null,
-    );
-
     const paymentId = data.m_payment_id;
+    const receivedSignature = data.signature;
+    const merchantId = data.merchant_id;
+    const paymentStatus = data.payment_status;
+    const payfastPaymentId = data.pf_payment_id;
 
-    if (!paymentId) {
-      console.error("Missing m_payment_id.");
-
-      return new Response("Missing payment ID", {
-        status: 400,
-        headers: corsHeaders,
-      });
+    if (
+      !paymentId ||
+      !receivedSignature ||
+      !merchantId ||
+      !paymentStatus
+    ) {
+      return response("Missing required ITN fields", 400);
     }
 
+    // STEP 3: Find order using PayFast payment ID.
+
     const {
-      data: order,
+      data: orderData,
       error: orderError,
     } = await supabaseAdmin
       .from("orders")
       .select(
-        "id, business_id, order_number, total, payment_method, payment_status, status, payment_gross, payment_commission, payment_restaurant_amount, payment_commission_percent",
+        [
+          "id",
+          "business_id",
+          "order_number",
+          "total",
+          "payment_method",
+          "payment_status",
+          "payment_gross",
+          "payment_commission",
+          "payment_restaurant_amount",
+        ].join(", "),
       )
       .eq("id", paymentId)
       .maybeSingle();
 
     if (orderError) {
-      console.error(
-        "Order lookup failed:",
-        orderError,
-      );
-
-      return new Response("Order lookup failed", {
-        status: 500,
-        headers: corsHeaders,
-      });
+      console.error("ITN order lookup failed.");
+      return response("Order lookup failed", 500);
     }
 
-    if (!order) {
-      console.error(
-        "Order not found:",
-        paymentId,
-      );
+    const order = orderData as PayFastOrder | null;
 
-      return new Response("Order not found", {
-        status: 404,
-        headers: corsHeaders,
-      });
+    if (!order) {
+      return response("Order not found", 404);
     }
 
     if (order.payment_method !== "online") {
-      console.error(
-        "Order is not an online payment:",
-        order.id,
-      );
-
-      return new Response("Invalid payment method", {
-        status: 400,
-        headers: corsHeaders,
-      });
+      return response("Invalid payment method", 400);
     }
 
-    const {
-      data: config,
-      error: configError,
-    } = await supabaseAdmin.rpc(
-      "get_business_payfast_config",
-      {
-        p_business_id: order.business_id,
-      },
+    // STEP 4: Load merchant configuration.
+
+    const config = await loadPayFastConfig(
+      order.business_id,
     );
 
-    if (configError || !config) {
-      console.error(
-        "PayFast configuration lookup failed:",
-        configError,
-      );
-
-      return new Response(
+    if (!config) {
+      return response(
         "PayFast configuration unavailable",
-        {
-          status: 500,
-          headers: corsHeaders,
-        },
-      );
-    }
-
-    const payfast: PayFastConfig =
-      Array.isArray(config)
-        ? config[0]
-        : config;
-
-    if (!payfast) {
-      return new Response(
-        "PayFast configuration unavailable",
-        {
-          status: 500,
-          headers: corsHeaders,
-        },
-      );
-    }
-
-    const merchantId =
-      String(payfast.merchant_id ?? "");
-
-    const passphrase =
-      String(payfast.passphrase ?? "");
-
-    const mode =
-      String(payfast.mode ?? "test");
-
-    if (
-      data.merchant_id &&
-      data.merchant_id !== merchantId
-    ) {
-      console.error(
-        "Merchant ID mismatch:",
-        {
-          received: data.merchant_id,
-          expected: merchantId,
-        },
-      );
-
-      return new Response(
-        "Merchant ID mismatch",
-        {
-          status: 400,
-          headers: corsHeaders,
-        },
-      );
-    }
-
-    const receivedSignature =
-      data.signature ?? "";
-
-    if (!receivedSignature) {
-      console.error(
-        "Missing PayFast signature.",
-      );
-
-      return new Response(
-        "Missing signature",
-        {
-          status: 400,
-          headers: corsHeaders,
-        },
-      );
-    }
-
-    const expectedSignature =
-      generateItnSignature(
-        entries,
-        passphrase,
-      );
-
-    const signaturesMatch =
-      receivedSignature.toLowerCase() ===
-      expectedSignature.toLowerCase();
-
-    console.log(
-      "PayFast signature comparison:",
-      {
-        received: receivedSignature,
-        expected: expectedSignature,
-        match: signaturesMatch,
-      },
-    );
-
-    if (!signaturesMatch) {
-      console.error(
-        "Invalid PayFast signature.",
-      );
-
-      return new Response(
-        "Invalid signature",
-        {
-          status: 400,
-          headers: corsHeaders,
-        },
-      );
-    }
-
-    const expectedAmount =
-      Number(order.total);
-
-    const receivedAmount =
-      Number(data.amount_gross ?? "");
-
-    if (
-      !Number.isFinite(expectedAmount) ||
-      !Number.isFinite(receivedAmount)
-    ) {
-      console.error(
-        "Invalid payment amount.",
-      );
-
-      return new Response(
-        "Invalid amount",
-        {
-          status: 400,
-          headers: corsHeaders,
-        },
+        500,
       );
     }
 
     if (
-      Math.abs(
-        receivedAmount - expectedAmount,
-      ) > 0.01
+      config.mode !== "test" &&
+      config.mode !== "live"
     ) {
-      console.error(
-        "Amount mismatch:",
-        {
-          expected: expectedAmount,
-          received: receivedAmount,
-        },
-      );
-
-      return new Response(
-        "Amount mismatch",
-        {
-          status: 400,
-          headers: corsHeaders,
-        },
-      );
+      return response("Invalid payment mode", 500);
     }
 
-    const validationBody =
-      buildItnParameterString(entries);
+    const mode: PaymentMode = config.mode;
 
-    const validationUrl =
-      mode === "test"
-        ? PAYFAST_SANDBOX_VALIDATE_URL
-        : PAYFAST_LIVE_VALIDATE_URL;
+    // STEP 5: Verify merchant ID.
 
-    console.log(
-      "Sending ITN to PayFast validation endpoint:",
-      validationUrl,
-    );
+    const expectedMerchantId =
+      String(config.merchant_id).trim();
 
-    const validationResponse =
-      await fetch(validationUrl, {
-        method: "POST",
-        headers: {
-          "Content-Type":
-            "application/x-www-form-urlencoded",
-        },
-        body: validationBody,
-      });
+    if (
+      !expectedMerchantId ||
+      merchantId.trim() !== expectedMerchantId
+    ) {
+      console.error("PayFast merchant ID mismatch.");
+      return response("Merchant ID mismatch", 400);
+    }
 
-    const validationText =
-      (
-        await validationResponse.text()
-      ).trim();
+    // STEP 6: Verify ITN signature.
 
-    console.log(
-      "PayFast validation response:",
-      validationText,
+    const expectedSignature = generateSignature(
+      entries,
+      config.passphrase,
     );
 
     if (
-      !validationResponse.ok ||
-      validationText !== "VALID"
+      !signaturesMatch(
+        receivedSignature,
+        expectedSignature,
+      )
     ) {
       console.error(
-        "PayFast ITN validation failed:",
-        {
-          status: validationResponse.status,
-          response: validationText,
-        },
+        "PayFast ITN signature verification failed.",
       );
 
-      return new Response(
-        "PayFast validation failed",
-        {
-          status: 400,
-          headers: corsHeaders,
-        },
-      );
+      return response("Invalid signature", 400);
     }
 
-    const paymentStatus =
-      data.payment_status ?? "";
+    // STEP 7: Verify gross payment amount.
 
-    const payfastPaymentId =
-      data.pf_payment_id ?? null;
-
-    if (order.payment_status === "paid") {
-      console.log(
-        "Order already marked as paid:",
-        order.order_number,
-      );
-
-      return new Response("OK", {
-        status: 200,
-        headers: corsHeaders,
-      });
+    if (
+      !validAmount(
+        data.amount_gross ?? "",
+        order.payment_gross,
+      )
+    ) {
+      console.error("PayFast ITN amount mismatch.");
+      return response("Amount mismatch", 400);
     }
+
+    // STEP 8: Validate notification with PayFast.
+
+    const validated = await validateWithPayFast(
+      entries,
+      mode,
+    );
+
+    if (!validated) {
+      console.error("PayFast server validation failed.");
+      return response("PayFast validation failed", 400);
+    }
+
+    // STEP 9: Process successful payment.
 
     if (paymentStatus === "COMPLETE") {
-      const paymentGross =
-        Number(order.payment_gross ?? receivedAmount);
-
-      const paymentCommission =
-        Number(order.payment_commission ?? 0);
-
-      const paymentRestaurantAmount =
-        Number(
-          order.payment_restaurant_amount ??
-          (
-            paymentGross -
-            paymentCommission
-          ).toFixed(2),
+      if (!payfastPaymentId?.trim()) {
+        return response(
+          "Missing PayFast transaction ID",
+          400,
         );
+      }
+
+      if (order.payment_status === "paid") {
+        const recordedPaymentId =
+          await getRecordedPaymentId(order.id);
+
+        if (recordedPaymentId === payfastPaymentId) {
+          return response("OK", 200);
+        }
+
+        return response("Order already paid", 409);
+      }
+
+      if (order.payment_status !== "pending") {
+        return response(
+          "Order is not awaiting payment",
+          409,
+        );
+      }
+
+      // Verify stored payment split.
+
+      const paymentGross = Number(order.payment_gross);
+      const paymentCommission =
+        Number(order.payment_commission);
+
+      const restaurantAmount =
+        Number(order.payment_restaurant_amount);
+
+      if (
+        !Number.isFinite(paymentGross) ||
+        !Number.isFinite(paymentCommission) ||
+        !Number.isFinite(restaurantAmount) ||
+        paymentGross <= 0 ||
+        paymentCommission < 0 ||
+        restaurantAmount < 0 ||
+        Math.round(
+          (paymentCommission + restaurantAmount) * 100,
+        ) !== Math.round(paymentGross * 100)
+      ) {
+        console.error("Recorded payment split is invalid.");
+
+        return response(
+          "Invalid recorded payment split",
+          400,
+        );
+      }
+
+      // Only pending orders can become paid.
+
+      const completedAt = new Date().toISOString();
 
       const {
+        data: updatedOrder,
         error: updateError,
       } = await supabaseAdmin
         .from("orders")
         .update({
           payment_status: "paid",
-          payment_gross: paymentGross,
-          payment_commission: paymentCommission,
-          payment_restaurant_amount:
-            paymentRestaurantAmount,
-          payfast_payment_id:
-            payfastPaymentId,
-          payfast_event_id:
-            payfastPaymentId,
-          payment_completed_at:
-            new Date().toISOString(),
-          updated_at:
-            new Date().toISOString(),
+          payfast_payment_id: payfastPaymentId,
+          payfast_event_id: payfastPaymentId,
+          payment_completed_at: completedAt,
+          updated_at: completedAt,
         })
-        .eq("id", order.id);
+        .eq("id", order.id)
+        .eq("payment_status", "pending")
+        .select("id")
+        .maybeSingle();
 
       if (updateError) {
         console.error(
-          "Failed to mark order as paid:",
-          updateError,
+          "Failed to record completed payment.",
         );
 
-        return new Response(
-          "Could not update order",
-          {
-            status: 500,
-            headers: corsHeaders,
-          },
-        );
+        return response("Could not update order", 500);
+      }
+
+      // Handle concurrent ITN notifications.
+
+      if (!updatedOrder) {
+        const {
+          data: latestOrder,
+          error: latestError,
+        } = await supabaseAdmin
+          .from("orders")
+          .select("payment_status, payfast_payment_id")
+          .eq("id", order.id)
+          .maybeSingle();
+
+        if (latestError) {
+          return response(
+            "Could not verify payment state",
+            500,
+          );
+        }
+
+        if (
+          latestOrder?.payment_status === "paid" &&
+          latestOrder.payfast_payment_id === payfastPaymentId
+        ) {
+          return response("OK", 200);
+        }
+
+        return response("Payment state conflict", 409);
       }
 
       console.log(
-        "Order successfully marked as paid:",
+        "Verified PayFast payment completed for order:",
         order.order_number,
       );
 
-      return new Response("OK", {
-        status: 200,
-        headers: corsHeaders,
-      });
+      return response("OK", 200);
     }
 
-    console.log(
-      "PayFast payment not complete:",
-      {
-        orderNumber: order.order_number,
-        paymentStatus,
-      },
-    );
+    // STEP 10: Handle unsuccessful payments.
 
     if (
       paymentStatus === "FAILED" ||
       paymentStatus === "CANCELLED"
     ) {
-      const {
-        error: updateError,
-      } = await supabaseAdmin
-        .from("orders")
-        .update({
-          payment_status: "failed",
-          payfast_payment_id:
-            payfastPaymentId,
-          payfast_event_id:
-            payfastPaymentId,
-          updated_at:
-            new Date().toISOString(),
-        })
-        .eq("id", order.id);
+      if (order.payment_status === "paid") {
+        return response("OK", 200);
+      }
+
+      if (order.payment_status !== "pending") {
+        return response("OK", 200);
+      }
+
+      const { error: updateError } =
+        await supabaseAdmin
+          .from("orders")
+          .update({
+            payment_status: "failed",
+            payfast_payment_id: payfastPaymentId ?? null,
+            payfast_event_id: payfastPaymentId ?? null,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", order.id)
+          .eq("payment_status", "pending");
 
       if (updateError) {
         console.error(
-          "Failed to update failed payment:",
-          updateError,
+          "Failed to record unsuccessful payment.",
         );
 
-        return new Response(
-          "Could not update order",
-          {
-            status: 500,
-            headers: corsHeaders,
-          },
-        );
+        return response("Could not update order", 500);
       }
+
+      return response("OK", 200);
     }
 
-    return new Response("OK", {
-      status: 200,
-      headers: corsHeaders,
-    });
-  } catch (error) {
-    console.error(
-      "PayFast ITN error:",
-      error,
+    // STEP 11: Acknowledge pending notifications.
+
+    if (paymentStatus === "PENDING") {
+      return response("OK", 200);
+    }
+
+    console.warn(
+      "Unrecognised PayFast payment status:",
+      paymentStatus,
     );
 
-    return new Response(
-      "Internal server error",
-      {
-        status: 500,
-        headers: corsHeaders,
-      },
+    return response("OK", 200);
+
+  } catch (error) {
+    console.error(
+      "PayFast ITN processing error:",
+      error instanceof Error
+        ? error.message
+        : "Unknown error",
     );
+
+    return response("Internal server error", 500);
   }
 });
