@@ -29,3 +29,6 @@ entrypoint = "./functions/csrf-token/index.ts"
 enabled = true
 verify_jwt = false
 entrypoint = "./functions/payfast-itn/index.ts"
+[functions.create-payfast-payment]
+enabled = true
+verify_jwt = false

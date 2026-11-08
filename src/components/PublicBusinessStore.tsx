@@ -522,21 +522,53 @@ export function PublicBusinessStore({ slug }: { slug: string }) {
           const orderNumber = Number(data.order.orderNumber);
           const orderTotal = Number(data.order.total);
 
+          // create-order returns the raw payment token at the top level,
+          // not inside data.order. The raw token is passed only to the
+          // payment function; the database stores its SHA-256 hash.
+          const paymentToken: unknown = data.paymentToken;
+
           if (!Number.isFinite(orderNumber) || !Number.isFinite(orderTotal)) {
             throw new Error('The server returned invalid order details.');
           }
 
           if (details.paymentMethod === 'online') {
-            const {
+            if (
+              typeof paymentToken !== 'string' ||
+              paymentToken.length < 32
+            ) {
+              throw new Error(
+                'The payment security token is missing. Please try placing your order again.',
+              );
+            }
+
+            let paymentCsrfToken = csrfToken;
+
+            let {
               data: paymentData,
               error: paymentError,
             } = await supabase.functions.invoke(
               'create-payfast-payment',
               {
-                headers: { 'x-csrf-token': csrfToken },
-                body: { orderNumber },
+                headers: { 'x-csrf-token': paymentCsrfToken },
+                body: { orderNumber, paymentToken },
               },
             );
+
+            if (paymentError?.status === 403) {
+              clearCsrfToken();
+              paymentCsrfToken = await getCsrfToken(true);
+
+              ({
+                data: paymentData,
+                error: paymentError,
+              } = await supabase.functions.invoke(
+                'create-payfast-payment',
+                {
+                  headers: { 'x-csrf-token': paymentCsrfToken },
+                  body: { orderNumber, paymentToken },
+                },
+              ));
+            }
 
             if (paymentError) {
               console.error('Create PayFast payment failed:', paymentError);

@@ -12,6 +12,7 @@ import {
   Store,
    Users,
   QrCode,
+  CreditCard,
 } from 'lucide-react';
 
 import { supabase } from '../lib/supabase';
@@ -22,6 +23,7 @@ import { BusinessStorefrontManager } from './BusinessStorefrontManager';
 import { BusinessAnalyticsManager } from './BusinessAnalyticsManager';
 import { BusinessPromotionsManager } from './BusinessPromotionsManager';
 import { BusinessQRCodeManager } from './BusinessQRCodeManager';
+import { BusinessPayFastSettings } from './BusinessPayFastSettings';
 
 type Business = {
   id: string;
@@ -54,7 +56,8 @@ type BusinessPage =
   | 'storefront'
   | 'analytics'
   | 'promotions'
-  | 'qr';
+  | 'qr'
+  | 'payments';
 
 const emptyStats: DashboardStats = {
   menuItems: 0,
@@ -371,6 +374,16 @@ if (currentPage === 'qr') {
     />
   );
 }
+
+if (currentPage === 'payments') {
+  return (
+    <BusinessPayFastSettings
+      businessId={business.id}
+      businessName={business.name}
+      onBack={() => setCurrentPage('dashboard')}
+    />
+  );
+}
   return (
     <div className="min-h-screen bg-[#F7FAF7] text-[#166534]">
       <header className="border-b border-[#E1EAE3] bg-white">
@@ -538,6 +551,13 @@ if (currentPage === 'qr') {
   badge="Get your QR code"
   onClick={() => setCurrentPage('qr')}
 />
+            <DashboardCard
+              icon={<CreditCard size={22} />}
+              title="Payments & PayFast"
+              description="Connect your own PayFast merchant account and manage online payments."
+              badge="Manage payments"
+              onClick={() => setCurrentPage('payments')}
+            />
             <DashboardCard
               icon={<ExternalLink size={22} />}
               title="Public store"
