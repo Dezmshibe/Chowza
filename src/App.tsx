@@ -26,9 +26,18 @@ declare global {
 }
 
 const AppContent: React.FC = () => {
-  const { businessesLoading } = useApp();
+  const { businessesLoading, setCurrentView } = useApp();
 
   const pathname = window.location.pathname;
+  const searchParams = new URLSearchParams(window.location.search);
+
+  const isTrackOrderPage = searchParams.get('track') === 'true';
+
+  React.useEffect(() => {
+    if (pathname === '/' && isTrackOrderPage) {
+      setCurrentView('track');
+    }
+  }, [pathname, isTrackOrderPage]);
 
   // ============================================================
   // CHOWZA PUBLIC MARKETPLACE HOMEPAGE
@@ -36,16 +45,20 @@ const AppContent: React.FC = () => {
   // Ordering and cart functionality stay on restaurant pages.
   // ============================================================
 
-  if (pathname === '/') {
-    const ssrData = window.__CHOWZA_HOME_DATA__;
+ if (pathname === '/' && isTrackOrderPage) {
+  return <CustomerApp />;
+}
 
-    return (
-      <ChowzaHome
-        initialBusinesses={ssrData?.businesses ?? []}
-        initialFoods={ssrData?.foods ?? []}
-      />
-    );
-  }
+if (pathname === '/') {
+  const ssrData = window.__CHOWZA_HOME_DATA__;
+
+  return (
+    <ChowzaHome
+      initialBusinesses={ssrData?.businesses ?? []}
+      initialFoods={ssrData?.foods ?? []}
+    />
+  );
+}
 
   // ============================================================
   // PRIVACY POLICY
@@ -235,6 +248,31 @@ const AppContent: React.FC = () => {
 };
 
 const App: React.FC = () => {
+  // Native builds select one focused experience at build time.
+  // The normal web build remains the full Chowza marketplace.
+  const appTarget = import.meta.env.VITE_APP_TARGET;
+
+  if (appTarget === 'business') {
+    if (window.location.pathname === '/reset-password') {
+      return (
+        <BusinessPasswordReset
+          onBack={() => {
+            window.location.href = '/';
+          }}
+        />
+      );
+    }
+    return <BusinessApp />;
+  }
+
+  if (appTarget === 'customer') {
+  return (
+    <AppProvider>
+      <CustomerApp />
+    </AppProvider>
+  );
+}
+
   return (
     <AppProvider>
       <AppContent />

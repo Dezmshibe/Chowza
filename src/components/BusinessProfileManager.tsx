@@ -14,6 +14,7 @@ import {
   XCircle,
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import { WhatsAppConnectionCard } from './WhatsAppConnectionCard';
 
 type BusinessProfile = {
   id: string;
@@ -737,6 +738,12 @@ export function BusinessProfileManager({
                     </div>
                   </div>
                 </section>
+
+                {/* WHATSAPP CLOUD API CONNECTION */}
+                <WhatsAppConnectionCard
+                  businessId={businessId}
+                  businessName={profile.name}
+                />
 
                 {/* LOCATION */}
                 <section className="rounded-3xl border border-[#E1EAE3] bg-white shadow-sm">

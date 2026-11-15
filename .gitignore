@@ -39,3 +39,9 @@ public/supabase/.temp/
 *.log
 .DS_Store
 Thumbs.db
+# Android release signing credentials - NEVER commit
+android/key.properties
+*.jks
+*.keystore
+# Local secrets file
+/secrets

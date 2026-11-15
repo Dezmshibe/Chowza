@@ -24,6 +24,7 @@ import { BusinessAnalyticsManager } from './BusinessAnalyticsManager';
 import { BusinessPromotionsManager } from './BusinessPromotionsManager';
 import { BusinessQRCodeManager } from './BusinessQRCodeManager';
 import { BusinessPayFastSettings } from './BusinessPayFastSettings';
+import { registerBusinessPushNotifications } from '../lib/businessPushNotifications';
 
 type Business = {
   id: string;
@@ -171,6 +172,7 @@ export function BusinessPortalGate({
         );
 
       setBusiness(businessData as Business);
+      void registerBusinessPushNotifications(user.id, businessData.id);
 
       setStats({
         menuItems: menuResult.count ?? 0,

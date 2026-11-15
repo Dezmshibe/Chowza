@@ -32,3 +32,17 @@ entrypoint = "./functions/payfast-itn/index.ts"
 [functions.create-payfast-payment]
 enabled = true
 verify_jwt = false
+[functions.register-customer-order-push]
+enabled = true
+verify_jwt = false
+entrypoint = "./functions/register-customer-order-push/index.ts"
+[functions.update-order-status]
+enabled = true
+verify_jwt = true
+import_map = "./functions/update-order-status/deno.json"
+entrypoint = "./functions/update-order-status/index.ts"
+[functions.whatsapp-connect]
+enabled = true
+verify_jwt = true
+import_map = "./functions/whatsapp-connect/deno.json"
+entrypoint = "./functions/whatsapp-connect/index.ts"

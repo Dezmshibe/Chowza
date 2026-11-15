@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useApp } from '../context/AppContext';
+import { subscribeCustomerToOrder } from '../lib/customerPushNotifications';
 
 type OrderStatus =
   | 'pending'
@@ -31,6 +32,7 @@ type OrderItem = {
 };
 
 type TrackedOrder = {
+  id: string;
   orderNumber: number;
   customerName: string;
   items: OrderItem[];
@@ -88,7 +90,18 @@ const [phoneInput, setPhoneInput] = useState(trackingPhone);
         );
       }
 
-      setOrder(data.order);
+     setOrder(data.order);
+
+// Subscribe this device to notifications for the verified order.
+const subscribed = await subscribeCustomerToOrder(
+  cleanOrderNumber,
+  cleanPhone,
+);
+
+console.log(
+  '[Chowza Customer] Order notification subscription:',
+  subscribed ? 'Successful' : 'Not completed',
+);
     } catch (error) {
       console.error('Order tracking error:', error);
 

@@ -333,7 +333,7 @@ const [customerAddress, setCustomerAddress] = useState('');
           orderData.order.orderNumber
         );
         const orderTotal = Number(orderData.order.total);
-        const paymentToken = orderData.order.paymentToken;
+      const paymentToken = orderData.paymentToken;
 
         if (
           !Number.isFinite(orderNumber) ||

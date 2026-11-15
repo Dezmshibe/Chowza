@@ -74,8 +74,9 @@ export default {
           await ctx.supabaseAdmin
             .from("orders")
             .select(
-              `
-                order_number,
+  `
+    id,
+    order_number,
                 customer_name,
                 customer_phone,
                 items,
@@ -117,7 +118,8 @@ export default {
         return Response.json({
           success: true,
           order: {
-            orderNumber: order.order_number,
+  id: order.id,
+  orderNumber: order.order_number,
             customerName: order.customer_name,
             items: order.items,
             total: order.total,

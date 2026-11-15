@@ -5,6 +5,8 @@ import { Navigation } from './Navigation';
 import { CustomerStore } from './CustomerStore';
 import { CartBottomSheet } from './CartBottomSheet';
 import { OrderTracker } from './OrderTracker';
+import { useEffect } from 'react';
+import { registerCustomerPushNotifications } from '../lib/customerPushNotifications';
 
 export const CustomerApp: React.FC = () => {
   const {
@@ -13,6 +15,10 @@ export const CustomerApp: React.FC = () => {
     flashMessages,
     removeFlash,
   } = useApp();
+
+  useEffect(() => {
+  void registerCustomerPushNotifications();
+}, []);
 
   return (
     <div className="min-h-screen flex flex-col bg-[#F7FAF7] text-[#17201A]">

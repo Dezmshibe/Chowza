@@ -545,50 +545,60 @@ const [activeTab, setActiveTab] = useState<AdminTab>('overview');
     );
   }
 
-  async function updateOrderStatus(
-    order: Order,
-    status: string,
-  ) {
-    setError(null);
+  
+async function updateOrderStatus(
+  order: Order,
+  status: string,
+) {
+  setError(null);
 
-    const { error: updateError } = await supabase
-      .from('orders')
-      .update({
+  // Send the update through the secured Supabase Edge Function.
+  const { data, error: updateError } = await supabase.functions.invoke(
+    "update-order-status",
+    {
+      body: {
+        orderId: order.id,
         status,
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', order.id);
+      },
+    },
+  );
 
-    if (updateError) {
-      setError(updateError.message);
-      return;
-    }
+  if (updateError) {
+    setError(updateError.message || "Could not update order status.");
+    return;
+  }
 
-    const updatedAt =
-      new Date().toISOString();
+  if (!data?.success) {
+    setError(data?.error || "Could not update order status.");
+    return;
+  }
 
-    setOrders((current) =>
-      current.map((item) =>
-        item.id === order.id
-          ? {
-              ...item,
-              status,
-              updated_at: updatedAt,
-            }
-          : item,
-      ),
-    );
+  const updatedAt = new Date().toISOString();
+  const confirmedStatus = data.status || status;
 
-    setSelectedOrder((current) =>
-      current && current.id === order.id
+  setOrders((current) =>
+    current.map((item) =>
+      item.id === order.id
         ? {
-            ...current,
-            status,
+            ...item,
+            status: confirmedStatus,
             updated_at: updatedAt,
           }
-        : current,
-    );
-  }
+        : item,
+    ),
+  );
+
+  setSelectedOrder((current) =>
+    current && current.id === order.id
+      ? {
+          ...current,
+          status: confirmedStatus,
+          updated_at: updatedAt,
+        }
+      : current,
+  );
+}
+
 
   async function handleLogout() {
     await supabase.auth.signOut();
