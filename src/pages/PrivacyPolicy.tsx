@@ -210,171 +210,435 @@ export default function PrivacyPolicy() {
         </div>
       </header>
 
+
       <main className="legal-container">
         <section className="legal-hero">
           <div className="eyebrow">Legal</div>
-
           <h1 className="legal-title">Privacy Policy</h1>
 
           <p className="legal-intro">
-            This Privacy Policy explains how Chowza collects, uses, protects
-            and retains information when you use the Chowza platform in South
-            Africa.
+            This Privacy Policy explains how Chowza collects, uses, stores,
+            shares and protects personal information when you use our
+            platform in South Africa.
           </p>
 
           <div className="updated">
-            Last updated: 15 September 2026
+            Last updated: 21 November 2026
           </div>
         </section>
 
         <section className="legal-section">
-          <h2>1. Information We Collect</h2>
+          <h2>1. Introduction</h2>
 
           <p>
-            Depending on how you use Chowza, we may collect information
-            including:
+            Chowza is a food ordering and business platform operated by
+            MSHIBE GROUP. It allows customers to discover participating
+            food businesses, view menus and place orders, including
+            orders through WhatsApp where that feature is available.
           </p>
 
+          <p>
+            This policy applies to customers, food businesses and their
+            authorised representatives who use Chowza.
+          </p>
+
+          <p>
+            We handle personal information in accordance with applicable
+            South African data protection laws, including the Protection
+            of Personal Information Act (POPIA), where applicable.
+          </p>
+        </section>
+
+        <section className="legal-section">
+          <h2>2. Information We Collect</h2>
+
+          <p>
+            The information we collect depends on how you use Chowza.
+            It may include the following:
+          </p>
+
+          <h3>Customer information</h3>
           <ul>
-            <li>Your name</li>
-            <li>Your phone number</li>
-            <li>Your delivery address</li>
-            <li>Order details</li>
-            <li>Customer notes provided with an order</li>
-            <li>Information provided by food businesses</li>
+            <li>Name and contact details, including phone number</li>
+            <li>Delivery address and delivery instructions</li>
+            <li>Order details, order history and customer notes</li>
+            <li>Payment status and relevant transaction references</li>
+            <li>Communications relating to orders and customer support</li>
+          </ul>
+
+          <h3>Food business information</h3>
+          <ul>
+            <li>Business name and contact information</li>
+            <li>Owner or authorised representative details</li>
+            <li>Menu items, descriptions and prices</li>
+            <li>Business photographs, operating hours and service information</li>
+            <li>Orders and information needed to manage business activity</li>
+          </ul>
+
+          <h3>WhatsApp integration information</h3>
+          <p>
+            Where a food business connects WhatsApp to Chowza, we may
+            process relevant integration information such as WhatsApp
+            Business Account identifiers, phone number identifiers,
+            connection status and authorisation information.
+          </p>
+
+          <h3>Technical information</h3>
+          <ul>
+            <li>IP address and browser information</li>
+            <li>Device and usage information</li>
+            <li>Login activity and security logs</li>
+            <li>Technical errors and diagnostic information</li>
+          </ul>
+        </section>
+
+        <section className="legal-section">
+          <h2>3. How We Use Your Information</h2>
+
+          <p>We may use personal information to:</p>
+          <ul>
+            <li>Create and manage customer and business accounts</li>
+            <li>Display food business menus and information</li>
+            <li>Process, manage and track customer orders</li>
+            <li>Communicate order confirmations and status updates</li>
+            <li>Support delivery and order fulfilment</li>
+            <li>Enable WhatsApp ordering and notifications where available</li>
+            <li>Facilitate payment processing where enabled</li>
+            <li>Provide customer and business support</li>
+            <li>Maintain, improve and secure the Chowza platform</li>
+            <li>Detect and prevent fraud, misuse and unauthorised access</li>
+            <li>Meet applicable legal and regulatory obligations</li>
+          </ul>
+        </section>
+
+        <section className="legal-section">
+          <h2>4. WhatsApp and Meta Services</h2>
+
+          <p>
+            Chowza may provide WhatsApp integration features that allow
+            participating food businesses to connect their WhatsApp
+            Business accounts and manage relevant customer communications.
+          </p>
+
+          <p>
+            When these features are used, information necessary to
+            establish and operate the integration may be processed,
+            including account identifiers, phone number identifiers,
+            connection details and relevant order information.
+          </p>
+
+          <p>
+            WhatsApp and Meta process information under their own terms
+            and privacy policies. Their services are subject to their
+            respective policies and requirements.
+          </p>
+
+          <p>
+            Food businesses are responsible for ensuring that their use
+            of WhatsApp and customer communications complies with
+            applicable laws and platform requirements.
+          </p>
+
+          <p>
+            You can review their policies here:
+          </p>
+          <ul>
             <li>
-              Technical and security information necessary to operate and
-              protect the platform
+              <a href="https://www.whatsapp.com/legal/privacy-policy"
+                 target="_blank" rel="noopener noreferrer">
+                WhatsApp Privacy Policy
+              </a>
+            </li>
+            <li>
+              <a href="https://www.facebook.com/privacy/policy/"
+                 target="_blank" rel="noopener noreferrer">
+                Meta Privacy Policy
+              </a>
             </li>
           </ul>
         </section>
 
         <section className="legal-section">
-          <h2>2. How We Use Your Information</h2>
+          <h2>5. Payments</h2>
 
-          <p>We may use information collected through Chowza to:</p>
+          <p>
+            Where online payments are available, transactions may be
+            processed by third-party payment service providers.
+            These providers handle payment information in accordance
+            with their own security practices and privacy policies.
+          </p>
+
+          <p>
+            Chowza may receive payment-related information such as
+            payment status, transaction references and confirmation
+            details needed to manage an order.
+          </p>
+
+          <p>
+            Food businesses may receive relevant payment status
+            information to help them determine whether an order has
+            been paid or is awaiting payment.
+          </p>
+
+          <p>
+            Chowza does not intentionally store complete payment card
+            details or banking credentials unless expressly stated
+            for a particular service.
+          </p>
+        </section>
+
+        <section className="legal-section">
+          <h2>6. How We Share Information</h2>
+
+          <p>
+            We may share relevant information where necessary to
+            operate Chowza and provide its services, including with:
+          </p>
 
           <ul>
-            <li>Process and manage customer orders</li>
-            <li>Communicate with customers about their orders</li>
-            <li>Send order status notifications through WhatsApp where applicable</li>
-            <li>Allow participating food businesses to manage and fulfil orders</li>
-            <li>Improve and maintain Chowza</li>
-            <li>Protect the platform against fraud, misuse and security threats</li>
+            <li>
+              Participating food businesses, so they can receive,
+              manage and fulfil customer orders
+            </li>
+            <li>
+              Technology and infrastructure providers that help
+              operate and maintain the platform
+            </li>
+            <li>
+              Meta and WhatsApp, where WhatsApp integration features
+              are used
+            </li>
+            <li>
+              Payment service providers, where payment processing
+              is enabled
+            </li>
+            <li>
+              Professional advisers, regulators or law enforcement
+              authorities where legally required
+            </li>
+          </ul>
+
+          <p>
+            We do not sell personal information to third parties.
+            Information is shared only where reasonably necessary
+            for the purposes described in this policy or where
+            otherwise permitted or required by law.
+          </p>
+        </section>
+
+        <section className="legal-section">
+          <h2>7. Storage and Processing of Information</h2>
+
+          <p>
+            Chowza uses third-party technology and infrastructure
+            services to operate the platform. Personal information
+            may be stored or processed in South Africa or other
+            countries, depending on the services and providers used.
+          </p>
+
+          <p>
+            Where personal information is transferred outside
+            South Africa, we aim to ensure that appropriate
+            safeguards are applied as required by applicable law,
+            including POPIA.
+          </p>
+        </section>
+
+        <section className="legal-section">
+          <h2>8. Information Security</h2>
+
+          <p>
+            We take reasonable technical and organisational measures
+            intended to protect information processed through Chowza
+            against unauthorised access, misuse, alteration, loss
+            or disclosure.
+          </p>
+
+          <p>
+            These measures may include access controls, authentication,
+            security monitoring and appropriate platform safeguards.
+          </p>
+
+          <p>
+            However, no online system or method of electronic storage
+            or transmission can be guaranteed to be completely secure.
+          </p>
+
+          <p>
+            Where a security compromise occurs, we will take appropriate
+            steps in accordance with applicable legal requirements.
+          </p>
+        </section>
+
+        <section className="legal-section">
+          <h2>9. Information Retention</h2>
+
+          <p>
+            We retain personal information only for as long as
+            reasonably necessary for the purposes for which it was
+            collected, including providing services, maintaining
+            business records, resolving disputes, meeting legal
+            obligations and protecting the platform.
+          </p>
+
+          <p>
+            When information is no longer required, we will take
+            reasonable steps to delete, destroy or de-identify it,
+            subject to any applicable legal retention requirements.
+          </p>
+        </section>
+
+        <section className="legal-section">
+          <h2>10. Your Privacy Rights</h2>
+
+          <p>
+            Subject to applicable law, you may have the right to:
+          </p>
+
+          <ul>
+            <li>Request access to personal information we hold about you</li>
+            <li>Request correction or updating of inaccurate information</li>
+            <li>Request deletion or destruction where legally permitted</li>
+            <li>Object to certain forms of processing</li>
+            <li>Withdraw consent where processing is based on consent</li>
+            <li>
+              Lodge a complaint with the Information Regulator
+            </li>
           </ul>
         </section>
 
         <section className="legal-section">
-          <h2>3. WhatsApp Communications</h2>
+          <h2>11. Requests About Your Personal Information</h2>
 
           <p>
-            Where WhatsApp communications are used, Chowza may process the
-            phone number and order information necessary to send relevant
-            communications, such as order confirmations or status updates.
+            To make a privacy-related request, contact us using the
+            email address provided in the Contact section.
           </p>
 
           <p>
-            WhatsApp is a third-party service and its own terms and privacy
-            policies may also apply.
-          </p>
-        </section>
-
-        <section className="legal-section">
-          <h2>4. Payments</h2>
-
-          <p>
-            Payments may be processed through third-party payment providers.
-            Payment information is handled according to the applicable
-            provider's policies and systems.
+            Please use the subject line:
+            <strong> Chowza – Personal Information Request</strong>.
           </p>
 
           <p>
-            Chowza does not intentionally store complete card or banking
-            credentials unless specifically stated.
+            Include enough information for us to understand your
+            request. We may ask for reasonable proof of identity
+            before providing access to personal information or
+            making certain changes.
+          </p>
+
+          <p>
+            We will handle requests in accordance with applicable
+            legal requirements. Some information may need to be
+            retained where there is a lawful reason to do so.
           </p>
         </section>
 
         <section className="legal-section">
-          <h2>5. Information Security</h2>
+          <h2>12. Cookies and Similar Technologies</h2>
 
           <p>
-            We take reasonable measures intended to protect information
-            processed through Chowza against unauthorised access, misuse,
-            alteration or disclosure.
+            Chowza may use cookies, local storage or similar
+            technologies where necessary to support website
+            functionality, remember preferences, maintain sessions
+            and improve platform security.
           </p>
 
           <p>
-            However, no online system can be guaranteed to be completely
-            secure.
-          </p>
-        </section>
-
-        <section className="legal-section">
-          <h2>6. Information Retention</h2>
-
-          <p>
-            Information may be retained for as long as reasonably necessary
-            to provide Chowza services, maintain business records, resolve
-            disputes, comply with legal obligations and protect the platform.
+            You can manage cookies through your browser settings.
+            Disabling certain technologies may affect some
+            website features.
           </p>
         </section>
 
         <section className="legal-section">
-          <h2>7. Your Rights</h2>
+          <h2>13. Children's Information</h2>
 
           <p>
-            Depending on applicable law, you may have rights relating to your
-            personal information, including the ability to request access to
-            or correction of information held about you.
-          </p>
-
-          <p>
-            Requests can be directed to the contact details provided below.
+            Chowza is not intended to knowingly collect children's
+            personal information unlawfully. Where information
+            relating to a child is processed, we will do so only
+            where permitted by applicable law and where any
+            required authorisation or consent has been obtained.
           </p>
         </section>
 
         <section className="legal-section">
-          <h2>8. Children's Information</h2>
+          <h2>14. Third-Party Services and Links</h2>
 
           <p>
-            Chowza is not intended to knowingly collect personal information
-            from children where doing so would be unlawful.
+            Chowza may connect with or contain links to third-party
+            services, websites and platforms. These services operate
+            under their own terms and privacy policies.
+          </p>
+
+          <p>
+            We encourage users to review the privacy policies of
+            third-party services before providing them with personal
+            information.
           </p>
         </section>
 
         <section className="legal-section">
-          <h2>9. Changes to This Policy</h2>
+          <h2>15. Changes to This Privacy Policy</h2>
 
           <p>
-            We may update this Privacy Policy from time to time to reflect
-            changes to Chowza, our information practices or applicable
-            requirements.
+            We may update this Privacy Policy from time to time to
+            reflect changes to Chowza, our services, information
+            practices or applicable legal requirements.
+          </p>
+
+          <p>
+            Any updated version will be published on this page with
+            a revised last-updated date.
           </p>
         </section>
 
         <section className="contact-box">
-          <h2>10. Contact</h2>
+          <h2>16. Contact Chowza</h2>
 
           <p>
-            If you have questions about this Privacy Policy or the way Chowza
-            handles information, please contact:
+            If you have questions about this Privacy Policy or
+            wish to make a request concerning your personal
+            information, contact:
           </p>
 
           <p>
             <strong>MSHIBE GROUP</strong>
             <br />
+            Platform: Chowza
+            <br />
             Email:{' '}
             <a href="mailto:mshibegroup@gmail.com">
               mshibegroup@gmail.com
+            </a>
+            <br />
+            Website:{' '}
+            <a href="https://chowza.onrender.com">
+              https://chowza.onrender.com
+            </a>
+          </p>
+        </section>
+
+        <section className="legal-section">
+          <h2>17. South African Information Regulator</h2>
+
+          <p>
+            If you believe your personal information has been
+            handled unlawfully, you may contact the Information
+            Regulator of South Africa.
+          </p>
+
+          <p>
+            <a href="https://inforegulator.org.za/"
+               target="_blank" rel="noopener noreferrer">
+              Information Regulator – South Africa
             </a>
           </p>
         </section>
 
         <footer className="legal-footer">
-          This Privacy Policy is a general starting point and should be
-          reviewed against the final Chowza structure, data flows and
-          applicable South African privacy requirements before production
-          launch.
+          © 2026 Chowza. Powered by MSHIBE GROUP.
         </footer>
       </main>
     </div>
