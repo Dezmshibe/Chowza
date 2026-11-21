@@ -43,19 +43,28 @@ type TrackedOrder = {
   updatedAt: string;
 };
 
+
 export const OrderTracker: React.FC = () => {
-    const {
+  const {
     trackingOrderId,
     trackingPhone,
     setTrackingLookup,
   } = useApp();
-  const [orderNumberInput, setOrderNumberInput] = useState(trackingOrderId);
-const [phoneInput, setPhoneInput] = useState(trackingPhone);
+
+  const [orderNumberInput, setOrderNumberInput] = useState(
+    () => sessionStorage.getItem('chowza_tracking_order') || String(trackingOrderId),
+  );
+
+  const [phoneInput, setPhoneInput] = useState(
+    () => sessionStorage.getItem('chowza_tracking_phone') || trackingPhone,
+  );
+
   const [order, setOrder] = useState<TrackedOrder | null>(null);
   const [isSearching, setIsSearching] = useState(false);
   const [searched, setSearched] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
 
+  // Manually search for an order.
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -67,7 +76,6 @@ const [phoneInput, setPhoneInput] = useState(trackingPhone);
     try {
       const cleanOrderNumber = orderNumberInput.trim().replace(/^#/, '');
       const cleanPhone = phoneInput.trim();
-      setTrackingLookup(cleanOrderNumber, cleanPhone);
 
       const { data, error } = await supabase.functions.invoke(
         'track-order',
@@ -90,18 +98,22 @@ const [phoneInput, setPhoneInput] = useState(trackingPhone);
         );
       }
 
-     setOrder(data.order);
+      // Save details only after the order has been verified.
+      sessionStorage.setItem('chowza_tracking_order', cleanOrderNumber);
+      sessionStorage.setItem('chowza_tracking_phone', cleanPhone);
 
-// Subscribe this device to notifications for the verified order.
-const subscribed = await subscribeCustomerToOrder(
-  cleanOrderNumber,
-  cleanPhone,
-);
+      setTrackingLookup(cleanOrderNumber, cleanPhone);
+      setOrder(data.order);
 
-console.log(
-  '[Chowza Customer] Order notification subscription:',
-  subscribed ? 'Successful' : 'Not completed',
-);
+      const subscribed = await subscribeCustomerToOrder(
+        cleanOrderNumber,
+        cleanPhone,
+      );
+
+      console.log(
+        '[Chowza Customer] Order notification subscription:',
+        subscribed ? 'Successful' : 'Not completed',
+      );
     } catch (error) {
       console.error('Order tracking error:', error);
 
@@ -115,8 +127,63 @@ console.log(
     }
   };
 
+  // Restore and verify the previous order after a page refresh.
   useEffect(() => {
-    if (!order) return;
+    const savedOrder = sessionStorage.getItem('chowza_tracking_order');
+    const savedPhone = sessionStorage.getItem('chowza_tracking_phone');
+
+    if (!savedOrder || !savedPhone) return;
+
+    const restoreOrder = async () => {
+      setIsSearching(true);
+      setSearched(true);
+      setErrorMessage('');
+
+      try {
+        const { data, error } = await supabase.functions.invoke(
+          'track-order',
+          {
+            body: {
+              orderNumber: savedOrder,
+              customerPhone: savedPhone,
+            },
+          },
+        );
+
+        if (error) {
+          throw new Error(error.message || 'Could not restore your order.');
+        }
+
+        if (!data?.success || !data?.order) {
+          throw new Error(
+            data?.error ||
+              'No matching order was found. Please check your details.',
+          );
+        }
+
+        setTrackingLookup(savedOrder, savedPhone);
+        setOrder(data.order);
+
+        void subscribeCustomerToOrder(savedOrder, savedPhone);
+      } catch (error) {
+        setOrder(null);
+
+        setErrorMessage(
+          error instanceof Error
+            ? error.message
+            : 'Could not restore your order.',
+        );
+      } finally {
+        setIsSearching(false);
+      }
+    };
+
+    void restoreOrder();
+  }, []);
+
+  // Automatically check for order status changes every five seconds.
+  useEffect(() => {
+    if (!order || !trackingPhone) return;
 
     const checkOrderStatus = async () => {
       try {
@@ -149,6 +216,8 @@ console.log(
       window.clearInterval(interval);
     };
   }, [order, trackingPhone]);
+
+    
 
   const statusSteps: {
     key: OrderStatus;

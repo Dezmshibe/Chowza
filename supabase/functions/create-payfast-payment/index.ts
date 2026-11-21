@@ -408,18 +408,29 @@ Deno.serve(async (req: Request) => {
         corsHeaders,
       );
     }
-console.log("CHOWZA SPLIT RECIPIENT CHECK:", {
-  matchesOrder122Recipient: platformMerchantId === "10054918",
-  merchantIdLength: platformMerchantId.length,
+// STEP 7: CALCULATE PAYMENT SPLIT
+
+const commissionSecret = Deno.env
+  .get("CHOWZA_COMMISSION_PERCENT")
+  ?.trim();
+
+console.log("Chowza commission configuration diagnostic:", {
+  exists: Boolean(commissionSecret),
+  isNumeric: commissionSecret
+    ? Number.isFinite(Number(commissionSecret))
+    : false,
+  isWithinRange: commissionSecret
+    ? Number(commissionSecret) >= 0 &&
+      Number(commissionSecret) <= 100
+    : false,
 });
-    // STEP 7: CALCULATE PAYMENT SPLIT
 
-    const commissionPercent = getConfiguredCommissionPercent(null);
+const commissionPercent = getConfiguredCommissionPercent(null);
 
-    const split = calculatePaymentSplit(
-      orderTotal,
-      commissionPercent,
-    );
+const split = calculatePaymentSplit(
+  orderTotal,
+  commissionPercent,
+);
 
     if (
       !Number.isFinite(split.grossAmount) ||

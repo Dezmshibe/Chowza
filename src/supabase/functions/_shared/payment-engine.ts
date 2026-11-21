@@ -37,23 +37,55 @@ export function calculatePaymentSplit(
   };
 }
 
+
 export function getConfiguredCommissionPercent(
   businessValue: unknown,
 ): number {
-  const businessCommission = Number(businessValue);
-  if (businessValue !== null && businessValue !== undefined && businessValue !== "" && Number.isFinite(businessCommission)) {
-    return businessCommission;
+  if (
+    businessValue !== null &&
+    businessValue !== undefined &&
+    businessValue !== ""
+  ) {
+    const businessCommission = Number(businessValue);
+
+    if (
+      Number.isFinite(businessCommission) &&
+      businessCommission >= 0 &&
+      businessCommission <= 100
+    ) {
+      return businessCommission;
+    }
+
+    throw new Error("Invalid business commission percentage.");
   }
 
-  const configured = Number(
-    Deno.env.get("CHOWZA_COMMISSION_PERCENT") ?? "",
-  );
+  const rawConfigured = Deno.env
+    .get("CHOWZA_COMMISSION_PERCENT")
+    ?.trim();
 
-  if (Number.isFinite(configured)) {
-    return configured;
+  if (!rawConfigured) {
+    throw new Error(
+      "CHOWZA_COMMISSION_PERCENT is missing or empty.",
+    );
   }
+
+  const configured = Number(rawConfigured);
+
+  if (
+    !Number.isFinite(configured) ||
+    configured < 0 ||
+    configured > 100
+  ) {
+    throw new Error(
+      "CHOWZA_COMMISSION_PERCENT must be between 0 and 100.",
+    );
+  }
+
+  return configured;
+}
+
 
   throw new Error(
     "CHOWZA_COMMISSION_PERCENT is not configured and this business has no commission setting.",
   );
-}
+
