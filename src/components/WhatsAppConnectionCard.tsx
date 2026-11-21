@@ -270,7 +270,6 @@ export const WhatsAppConnectionCard: React.FC<Props> = ({
 
 const firstBrace = rawMessage.indexOf("{");
 const lastBrace = rawMessage.lastIndexOf("}");
-
 console.log("[Chowza Meta] Safe message diagnostics:", {
   origin: event.origin,
   dataType: typeof event.data,
@@ -293,7 +292,7 @@ try {
   payload = JSON.parse(
     rawMessage.slice(firstBrace, lastBrace + 1)
   );
-} catch (err) {
+} catch (err){
   console.error("[Chowza Meta] Embedded JSON parsing failed:", {
     error: err instanceof Error ? err.message : "Unknown error",
   });
