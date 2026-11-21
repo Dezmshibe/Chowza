@@ -3,6 +3,7 @@ const CSRF_TOKEN_TTL_MS = 30 * 60 * 1000;
 const DEFAULT_ALLOWED_ORIGINS = [
   "https://chowza.onrender.com",
   "https://chowza-jku1.onrender.com",
+  "https://chowza-xbvj.onrender.com",
   "capacitor://localhost",
   "http://localhost",
   "http://localhost:3000",
