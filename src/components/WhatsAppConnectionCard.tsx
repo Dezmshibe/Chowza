@@ -267,7 +267,18 @@ export const WhatsAppConnectionCard: React.FC<Props> = ({
       // Facebook can send internal SDK messages that are not JSON.
       // Ignore those instead of treating them as signup failures.
      const rawMessage = event.data.trim();
+const safePreview = rawMessage
+  .slice(0, 1000)
+  .replace(
+    /("(?:access_token|token|code|authorization|auth_code|secret)"\s*:\s*")[^"]*"/gi,
+    '$1[REDACTED]"'
+  )
+  .replace(
+    /(access_token|authorization|code)=([^&\s]+)/gi,
+    "$1=[REDACTED]"
+  );
 
+console.log("[Chowza Meta] Message preview:", safePreview);
 const firstBrace = rawMessage.indexOf("{");
 const lastBrace = rawMessage.lastIndexOf("}");
 console.log("[Chowza Meta] Safe message diagnostics:", {
@@ -389,16 +400,15 @@ console.log("[Chowza Meta] Parsed message:", {
             }
           }
         },
-        {
-          config_id: META_CONFIG_ID,
-          auth_type: "rerequest",
-          response_type: "code",
-          override_default_response_type: true,
-         extras: {
-  setup: {},
-  sessionInfoVersion: "3",
-},
-        },
+       {
+  config_id: META_CONFIG_ID,
+  auth_type: "rerequest",
+  response_type: "code",
+  override_default_response_type: true,
+  extras: {
+    setup: {},
+  },
+}, 
       );
     };
 
