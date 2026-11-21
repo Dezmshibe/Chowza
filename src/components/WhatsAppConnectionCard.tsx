@@ -271,12 +271,15 @@ export const WhatsAppConnectionCard: React.FC<Props> = ({
 const firstBrace = rawMessage.indexOf("{");
 const lastBrace = rawMessage.lastIndexOf("}");
 
-console.log("[Chowza Meta] Message format:", {
-  startsWithJson: rawMessage.startsWith("{"),
+console.log("[Chowza Meta] Safe message diagnostics:", {
+  origin: event.origin,
+  dataType: typeof event.data,
+  messageLength: rawMessage.length,
   hasJsonObject: firstBrace >= 0 && lastBrace > firstBrace,
-  hasCallbackPrefix: /^cb-[a-z0-9]+/i.test(rawMessage),
-  firstBrace,
-  lastBrace,
+  containsSignupEvent: rawMessage.includes("WA_EMBEDDED_SIGNUP"),
+  containsFinishEvent: rawMessage.includes("FINISH"),
+  containsCancelEvent: rawMessage.includes("CANCEL"),
+  containsErrorEvent: rawMessage.includes("ERROR"),
 });
 
 if (firstBrace < 0 || lastBrace <= firstBrace) {
